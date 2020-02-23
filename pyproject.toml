@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "scalpel"
+version = "0.1.0"
+description = "Your easy-to-use and powerful web scraping library"
+authors = ["lewoudar <lewoudar@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+trio = "^0.13.0"
+parsel = "^1.5.2"
+httpx = "^0.11.1"
+attrs = "^19.3.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
