@@ -10,6 +10,7 @@ trio = "^0.13.0"
 parsel = "^1.5.2"
 httpx = "^0.11.1"
 attrs = "^19.3.0"
+fake-useragent = "^0.1.11"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -18,6 +19,7 @@ flake8 = "^3.7.9"
 bandit = "^1.6.2"
 codecov = "^2.0.15"
 pytest-cov = "^2.8.1"
+pytest-mock = "^2.0.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
