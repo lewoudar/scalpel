@@ -138,6 +138,18 @@ colorama = "*"
 
 [[package]]
 category = "main"
+description = "A configuration management toolkit"
+name = "configuror"
+optional = false
+python-versions = ">=3.6,<4.0"
+version = "0.1.2"
+
+[package.dependencies]
+pyyaml = ">=5.2,<6.0"
+toml = ">=0.10.0,<0.11.0"
+
+[[package]]
+category = "main"
 description = "PEP 567 Backport"
 marker = "python_version < \"3.7\""
 name = "contextvars"
@@ -561,7 +573,7 @@ pytest = ">=2.7"
 dev = ["pre-commit", "tox"]
 
 [[package]]
-category = "dev"
+category = "main"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
@@ -671,6 +683,14 @@ six = ">=1.10.0"
 
 [[package]]
 category = "main"
+description = "Python Library for Tom's Obvious, Minimal Language"
+name = "toml"
+optional = false
+python-versions = "*"
+version = "0.10.0"
+
+[[package]]
+category = "main"
 description = "A friendly Python library for async concurrency and I/O"
 name = "trio"
 optional = false
@@ -762,7 +782,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "26261508aaf27e23b48ced606a843490bf7e7754f19e906ebda4b3ebb28691a0"
+content-hash = "3be75347d6bbc3dc1e43380acc7a902e27f43b7be26be38f1fbc1926f4ec384f"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -843,6 +863,10 @@ colorama = [
 colorlog = [
     {file = "colorlog-4.1.0-py2.py3-none-any.whl", hash = "sha256:732c191ebbe9a353ec160d043d02c64ddef9028de8caae4cfa8bd49b6afed53e"},
     {file = "colorlog-4.1.0.tar.gz", hash = "sha256:30aaef5ab2a1873dec5da38fd6ba568fa761c9fa10b40241027fa3edea47f3d2"},
+]
+configuror = [
+    {file = "configuror-0.1.2-py3-none-any.whl", hash = "sha256:18ba5086156c2e6adac0832bd94b81aab389732569c374ea295b969c64ec9dda"},
+    {file = "configuror-0.1.2.tar.gz", hash = "sha256:310dde70099f0d4dc691375e55f43835382f6fd8633637945d2151a63d24f318"},
 ]
 contextvars = [
     {file = "contextvars-2.4.tar.gz", hash = "sha256:f38c908aaa59c14335eeea12abea5f443646216c4e29380d7bf34d2018e2c39e"},
@@ -1105,6 +1129,11 @@ sortedcontainers = [
 stevedore = [
     {file = "stevedore-1.32.0-py2.py3-none-any.whl", hash = "sha256:a4e7dc759fb0f2e3e2f7d8ffe2358c19d45b9b8297f393ef1256858d82f69c9b"},
     {file = "stevedore-1.32.0.tar.gz", hash = "sha256:18afaf1d623af5950cc0f7e75e70f917784c73b652a34a12d90b309451b5500b"},
+]
+toml = [
+    {file = "toml-0.10.0-py2.7.egg", hash = "sha256:f1db651f9657708513243e61e6cc67d101a39bad662eaa9b5546f789338e07a3"},
+    {file = "toml-0.10.0-py2.py3-none-any.whl", hash = "sha256:235682dd292d5899d361a811df37e04a8828a5b1da3115886b73cf81ebc9100e"},
+    {file = "toml-0.10.0.tar.gz", hash = "sha256:229f81c57791a41d65e399fc06bf0848bab550a9dfd5ed66df18ce5f05e73d5c"},
 ]
 trio = [
     {file = "trio-0.13.0-py3-none-any.whl", hash = "sha256:a6d83c0cb4a177ec0f5179ce88e27914d5c8e6fd01c4285176b949e6ddc88c6c"},

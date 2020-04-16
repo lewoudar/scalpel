@@ -12,6 +12,7 @@ attrs = "^19.3.0"
 fake-useragent = "^0.1.11"
 httpx = "^0.12.1"
 selenium = "^3.141.0"
+configuror = "^0.1.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
