@@ -15,32 +15,41 @@ logger = logging.getLogger('scalpel')
 def check_value_greater_or_equal_than_0(_, attribute: attr.Attribute, value: int) -> None:
     if value < 0:
         error_message = f'{attribute.name} must be a positive integer'
+        logger.exception(error_message)
         raise ValueError(error_message)
 
 
 def check_max_delay_greater_or_equal_than_min_delay(instance: 'Configuration', attribute: attr.Attribute,
                                                     value: int) -> None:
     if instance.min_request_delay > value:
-        raise ValueError(f'{attribute.name} must be greater or equal than min_request_delay')
+        error_message = f'{attribute.name} must be greater or equal than min_request_delay'
+        logger.exception(error_message)
+        raise ValueError(error_message)
 
 
 # I could just use return type "Any" but I want to insist on the fact that the function must
 # first return a boolean and in the other cases, the value given at input
 def bool_converter(value: Any) -> Union[bool, Any]:
     if not isinstance(value, str):
+        logger.debug('%s is not a string, returned it as it is', value)
         return value
 
     if value.lower() in ['1', 'true', 'yes', 'y']:
+        logger.debug('converts %s to True', value)
         return True
     elif value.lower() in ['0', 'false', 'no', 'n']:
+        logger.debug('converts %s to False', value)
         return False
     else:
-        raise ValueError(f'{value} does not represent a boolean')
+        error_message = f'{value} does not represent a boolean'
+        logger.exception(error_message)
+        raise ValueError(error_message)
 
 
 # The same logic as above converter applies to the type of return
 def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
     if not isinstance(value, str):
+        logger.debug('%s is not a string, returned it as it is', value)
         return value
 
     callables = []
@@ -51,6 +60,7 @@ def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
         module = import_module(module_name)
         callables.append(getattr(module, parts[-1]))
 
+    logger.debug('returning callables: %s', callables)
     return callables
 
 
@@ -81,12 +91,16 @@ class Configuration:
     def get_default_user_agent(self) -> str:
         try:
             ua = UserAgent()
-            return ua.random
+            user_agent = ua.random
+            logger.debug('returning a random user agent: %s', user_agent)
+            return user_agent
         except FakeUserAgentError:
             # for the fallback, I use a recent version found on http://useragentstring.com/
             # not sure if this is the best strategy but we will stick with it for now
-            return 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                   'Chrome/41.0.2225.0 Safari/537.36'
+            fallback = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
+                       'Chrome/41.0.2225.0 Safari/537.36'
+            logger.debug('returning fallback value for user agent: %s', fallback)
+            return fallback
 
     @property
     def request_delay(self) -> int:
@@ -97,6 +111,7 @@ class Configuration:
         for key in data.keys():
             value = data.pop(key)
             data[key.lower()] = value
+        logger.debug('returning dict with lower keys: %s', data)
         return data
 
     @classmethod
@@ -105,28 +120,35 @@ class Configuration:
         attributes = {}
 
         if data_key not in data:
+            logger.debug('no namespace "scalpel" in %s, returning empty attributes', data)
             return attributes
 
         data = cls._get_dict_with_lower_keys(data[data_key])
         for attribute in attr.fields(cls):
             if attribute.name != '_config' and attribute.name in data:
                 attributes[attribute.name] = data[attribute.name]
+        logger.debug('returning scalpel attributes: %s', attributes)
         return attributes
 
     @staticmethod
     def _check_file(config_file: Union[Path, str], file_type: str) -> None:
         if not isinstance(config_file, (Path, str)):
-            raise TypeError(f'{file_type} file must be of type Path or str but you provided {type(config_file)}')
+            error_message = f'{file_type} file must be of type Path or str but you provided {type(config_file)}'
+            logger.exception(error_message)
+            raise TypeError(error_message)
 
         config_file = Path(config_file)
         if not config_file.is_file():
-            raise FileNotFoundError(f'file {config_file} does not exist')
+            error_message = f'file {config_file} does not exist'
+            logger.exception(error_message)
+            raise FileNotFoundError(error_message)
 
     @classmethod
     def load_from_yaml(cls, yaml_file: Union[Path, str]) -> 'Configuration':
         cls._check_file(yaml_file, 'yaml')
 
         configuror = Config(mapping_files={'yaml': [f'{yaml_file}']})
+        logger.debug('loading configuration from yaml file: %s', f'{yaml_file}')
         return cls(**cls._scalpel_attributes(configuror))
 
     @classmethod
@@ -134,6 +156,7 @@ class Configuration:
         cls._check_file(toml_file, 'toml')
 
         configuror = Config(mapping_files={'toml': [f'{toml_file}']})
+        logger.debug('loading configuration from toml file: %s', f'{toml_file}')
         return cls(**cls._scalpel_attributes(configuror))
 
     @classmethod
@@ -143,4 +166,5 @@ class Configuration:
         configuror = Config(mapping_files={'env': [f'{env_file}']})
         data = configuror.get_dict_from_namespace('SCALPEL_')
         data = {'scalpel': data}  # little trick to search attributes using _scalpel_attributes class method
+        logger.debug('loading configuration from .env file: %s', f'{env_file}')
         return cls(**cls._scalpel_attributes(data))
