@@ -103,7 +103,10 @@ def test_should_raise_error_when_value_is_less_than_0(attribute, value):
 
 
 class TestRequestDelayAttributes:
-    """Checks min_delay_request and max_delay_request attributes"""
+    """
+    Checks min_delay_request and max_delay_request attributes.
+    Checks request_delay property
+    """
 
     @pytest.mark.parametrize('parameter', [
         {'min_request_delay': 'foo'},
@@ -138,6 +141,16 @@ class TestRequestDelayAttributes:
             Configuration(min_request_delay=1, max_request_delay=1)
         except ValueError:
             pytest.fail('unexpected error when min delay and max delay equal to 1')
+
+    @pytest.mark.parametrize(('min_delay', 'max_delay'), [
+        (1, 1),
+        (2, 5),
+    ])
+    def test_request_property_is_between_min_and_max_delay(self, min_delay, max_delay):
+        config = Configuration(min_request_delay=min_delay, max_request_delay=max_delay)
+
+        assert config.min_request_delay <= config.request_delay
+        assert config.request_delay <= config.max_request_delay
 
 
 class TestTimeoutAttributes:
