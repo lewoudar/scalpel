@@ -1,12 +1,92 @@
+import sys
+from importlib import import_module
+from pathlib import Path
+
 import pytest
+from configuror import DecodeError
 from fake_useragent import FakeUserAgentError
 
-from scalpel.core.config import Configuration
+from scalpel.core.config import Configuration, bool_converter, callable_list_converter
 
 
 @pytest.fixture(scope='module')
 def default_config():
     return Configuration()
+
+
+@pytest.fixture
+def math_module(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, 'path', [*sys.path, f'{tmp_path}'])
+    python_file = tmp_path / 'custom_math.py'
+    lines = """
+def add(a, b):
+    return a + b
+
+def minus(a, b):
+    return a - b
+    """
+    python_file.write_text(lines)
+    return import_module(python_file.stem)
+
+
+class TestBoolConverter:
+    """Tests helper function bool_converter"""
+
+    @pytest.mark.parametrize('value', [b'1', 1, 1.0])
+    def test_should_return_given_value_if_it_is_not_a_string(self, value):
+        assert value == bool_converter(value)
+
+    @pytest.mark.parametrize('value', ['y', 'yes', '1', 'True', 'TRUE'])
+    def test_should_return_true_when_value_represent_truthy(self, value):
+        assert bool_converter(value) is True
+
+    @pytest.mark.parametrize('value', ['n', 'no', '0', 'FALSE', 'false'])
+    def test_should_return_false_when_value_does_not_represent_truthy(self, value):
+        assert bool_converter(value) is False
+
+    @pytest.mark.parametrize('value', ['fal', 'hello'])
+    def test_should_raise_error_when_value_does_not_represent_true_or_false(self, value):
+        with pytest.raises(ValueError) as exc_info:
+            bool_converter(value)
+
+        assert f'{value} does not represent a boolean' == str(exc_info.value)
+
+
+class TestCallableListConverter:
+    """Tests helper function callable_list_converter"""
+
+    @pytest.mark.parametrize('value', [{}, set(), b'foo'])
+    def test_should_return_given_value_if_it_is_not_a_string(self, value):
+        assert value == callable_list_converter(value)
+
+    def test_should_raise_error_when_module_does_not_exist(self):
+        with pytest.raises(ModuleNotFoundError):
+            callable_list_converter('foo.bar')
+
+    def test_should_raise_error_when_module_is_badly_formatted(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(sys, 'path', [*sys.path, f'{tmp_path}'])
+        dummy_file = tmp_path / 'foo.py'
+        dummy_file.write_text('hello world')
+
+        with pytest.raises(SyntaxError):
+            callable_list_converter('foo.callable')
+
+    def test_should_raise_error_when_callable_does_not_exist(self, monkeypatch, tmp_path):
+        monkeypatch.setattr(sys, 'path', [*sys.path, f'{tmp_path}'])
+        dummy_file = tmp_path / 'foo.py'
+        dummy_file.write_text('hello = "world"')
+
+        with pytest.raises(AttributeError):
+            callable_list_converter('foo.bar')
+
+    @pytest.mark.parametrize('callable_string', [
+        'custom_math.add:custom_math.minus',
+        'custom_math.add, custom_math.minus',
+        'custom_math.add;  custom_math.minus',
+        'custom_math.add custom_math.minus'
+    ])
+    def test_should_return_correct_list_of_callable_when_given_correct_input(self, math_module, callable_string):
+        assert [math_module.add, math_module.minus] == callable_list_converter(callable_string)
 
 
 @pytest.mark.parametrize(('attribute', 'value'), [
@@ -26,14 +106,22 @@ class TestRequestDelayAttributes:
     """Checks min_delay_request and max_delay_request attributes"""
 
     @pytest.mark.parametrize('parameter', [
-        {'min_request_delay': '1'},
-        {'max_request_delay': '1'},
-        {'min_request_delay': 1.5},
-        {'max_request_delay': 1.5},
+        {'min_request_delay': 'foo'},
+        {'max_request_delay': 'foo'}
     ])
-    def test_should_raise_error_when_value_is_not_an_integer(self, parameter):
-        with pytest.raises(TypeError):
+    def test_should_raise_error_when_value_does_not_represent_integer(self, parameter):
+        with pytest.raises(ValueError):
             Configuration(**parameter)
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize(('min_delay', 'max_delay'), [
+        ('1', '2'),
+        (1.5, 2.1)
+    ])
+    def test_should_convert_string_or_float_to_integer(self, min_delay, max_delay):
+        config = Configuration(min_request_delay=min_delay, max_request_delay=max_delay)
+        assert 1 == config.min_request_delay
+        assert 2 == config.max_request_delay
 
     def test_default_value_is_0(self, default_config):
         assert 0 == default_config.min_request_delay
@@ -55,14 +143,21 @@ class TestRequestDelayAttributes:
 class TestTimeoutAttributes:
 
     @pytest.mark.parametrize('parameter', [
-        {'fetch_timeout': '1.0'},
-        {'fetch_timeout': 1},
-        {'selenium_find_timeout': '1.0'},
-        {'selenium_find_timeout': 1}
+        {'fetch_timeout': 'foo'},
+        {'selenium_find_timeout': 'foo'},
     ])
     def test_should_raise_error_when_timeout_is_not_float(self, parameter):
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             Configuration(**parameter)
+
+    @pytest.mark.parametrize(('fetch_timeout', 'selenium_find_timeout'), [
+        ('1.0', '1'),
+        (1, 2)
+    ])
+    def test_should_convert_string_or_int_to_float(self, fetch_timeout, selenium_find_timeout):
+        config = Configuration(fetch_timeout=fetch_timeout, selenium_find_timeout=selenium_find_timeout)
+        assert float(fetch_timeout) == config.fetch_timeout
+        assert float(selenium_find_timeout) == config.selenium_find_timeout
 
     def test_fetch_timeout_default_value_is_5(self, default_config):
         assert 5.0 == default_config.fetch_timeout
@@ -100,10 +195,22 @@ class TestUserAgentAttribute:
 class TestFollowRobotsTxt:
     """Checks attribute follow_robots_txt"""
 
-    @pytest.mark.parametrize('value', [1, 'true', 1.0])
-    def test_should_raise_error_when_value_is_not_a_boolean(self, value):
+    @pytest.mark.parametrize('value', [1, 1.0])
+    def test_should_raise_type_error_when_value_is_neither_a_string_nor_a_boolean(self, value):
         with pytest.raises(TypeError):
             Configuration(follow_robots_txt=value)
+
+    def test_should_raise_value_error_when_value_is_not_a_string_representing_a_boolean(self):
+        with pytest.raises(ValueError):
+            Configuration(follow_robots_txt='foo')
+
+    @pytest.mark.parametrize(('given_value', 'expected_value'), [
+        ('1', True),
+        ('no', False)
+    ])
+    def test_should_convert_string_to_correct_boolean_value(self, given_value, expected_value):
+        config = Configuration(follow_robots_txt=given_value)
+        assert config.follow_robots_txt is expected_value
 
     def test_default_value_is_false(self, default_config):
         assert default_config.follow_robots_txt is False
@@ -142,6 +249,170 @@ class TestMiddlewareAttributes:
         except TypeError as e:
             pytest.fail(f'unexpected error: {e}')
 
+    # noinspection PyTypeChecker
+    def test_should_convert_string_to_callable_list(self, math_module):
+        config = Configuration(
+            process_item_middlewares='custom_math.add, custom_math.minus',
+            response_middlewares='custom_math.add:custom_math.minus'
+        )
+
+        assert [math_module.add, math_module.minus] == config.response_middlewares
+        assert [math_module.add, math_module.minus] == config.process_item_middlewares
+
     def test_default_middleware_value_is_an_empty_list(self, default_config):
         assert [] == default_config.response_middlewares
         assert [] == default_config.process_item_middlewares
+
+
+class TestMethodGetDictWithLowerKeys:
+    """tests method _get_dict_with_lower_keys"""
+
+    @pytest.mark.parametrize(('given_dict', 'expected_dict'), [
+        ({'foo': 'bar', 'fruit': 'pineapple'}, {'foo': 'bar', 'fruit': 'pineapple'}),
+        ({'FOO': 2, 'Fruit': 'TOMATO'}, {'foo': 2, 'fruit': 'TOMATO'})
+    ])
+    def test_should_return_correct_dict_given_correct_input(self, given_dict, expected_dict):
+        assert expected_dict == Configuration._get_dict_with_lower_keys(given_dict)
+
+
+class TestMethodScalpelAttributes:
+    """Tests method _scalpel_attributes"""
+
+    def test_should_return_empty_dict_when_no_scalpel_attribute_found(self):
+        data = {'foo': 'bar', 'timeout': 2}
+        assert {} == Configuration._scalpel_attributes(data)
+
+    def test_should_return_non_empty_dict_when_scalpel_attributes_found(self):
+        data = {
+            'name': 'paul',
+            'scalpel': {
+                'min_request_delay': 1,
+                'foo': 'bar',
+                'USER_AGENT': 'Mozilla/5.0',
+                'fruit': 'pineapple',
+                '_config': 'foobar'
+            }
+        }
+        expected = {'min_request_delay': 1, 'user_agent': 'Mozilla/5.0'}
+
+        assert expected == Configuration._scalpel_attributes(data)
+
+
+class TestCheckFile:
+    """Test method _check_file"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('test_file', [2, b'fe', 5.0])
+    def test_should_raise_error_when_file_has_not_correct_type(self, test_file):
+        with pytest.raises(TypeError) as exc_info:
+            Configuration._check_file(test_file, 'txt')
+
+        assert f'txt file must be of type Path or str but you provided {type(test_file)}' == str(exc_info.value)
+
+    @pytest.mark.parametrize('test_file', ['foo.txt', Path('foo.txt')])
+    def test_should_raise_error_when_file_does_not_exist(self, test_file):
+        with pytest.raises(FileNotFoundError) as exc_info:
+            Configuration._check_file(test_file, 'txt')
+
+        assert f'file {test_file} does not exist' == str(exc_info.value)
+
+
+class TestLoadFromYaml:
+    """Tests method load_from_yaml"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('yaml_file', [b'foo.txt', 4.0])
+    def test_should_raise_error_when_file_is_not_path_or_string(self, yaml_file):
+        with pytest.raises(TypeError) as exc_info:
+            Configuration.load_from_yaml(yaml_file)
+
+        assert f'yaml file must be of type Path or str but you provided {type(yaml_file)}' == str(exc_info.value)
+
+    def test_should_return_correct_config_when_given_correct_yaml_file(self, tmp_path):
+        lines = """---
+        scalpel:
+          fetch_timeout: 4.0
+          user_agent: Mozilla/5.0
+          follow_robots_txt: true
+          foo: bar
+        """
+        yaml_file = tmp_path / 'settings.yml'
+        yaml_file.write_text(lines)
+        expected_config = Configuration(fetch_timeout=4.0, user_agent='Mozilla/5.0', follow_robots_txt=True)
+
+        for item in [f'{yaml_file}', yaml_file]:
+            config = Configuration.load_from_yaml(item)
+            assert expected_config == config
+
+    def test_should_raise_error_when_file_is_not_valid_yaml(self, tmp_path):
+        yaml_file = tmp_path / 'foo.yaml'
+        lines = """
+        [scalpel]
+        foo = bar
+        """
+        yaml_file.write_text(lines)
+
+        with pytest.raises(DecodeError):
+            Configuration.load_from_yaml(yaml_file)
+
+
+class TestLoadFromToml:
+    """Tests method load_from_toml"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('toml_file', [b'foo.txt', 4.0])
+    def test_should_raise_error_when_file_is_not_path_or_string(self, toml_file):
+        with pytest.raises(TypeError) as exc_info:
+            Configuration.load_from_toml(toml_file)
+
+        assert f'toml file must be of type Path or str but you provided {type(toml_file)}' == str(exc_info.value)
+
+    def test_should_return_correct_config_when_given_correct_toml_file(self, tmp_path):
+        toml_file = tmp_path / 'settings.toml'
+        lines = """
+        [scalpel]
+        foo = "bar"
+        user_agent = "Mozilla/5.0"
+        fetch_timeout = 4.0
+        follow_robots_txt = true
+        """
+        toml_file.write_text(lines)
+        expected_config = Configuration(fetch_timeout=4.0, user_agent='Mozilla/5.0', follow_robots_txt=True)
+
+        for item in [f'{toml_file}', toml_file]:
+            config = Configuration.load_from_toml(item)
+            assert expected_config == config
+
+    def test_should_raise_error_when_file_is_not_valid_toml(self, tmp_path):
+        toml_file = tmp_path / 'settings.toml'
+        toml_file.write_text('Hello!')
+
+        with pytest.raises(DecodeError):
+            Configuration.load_from_toml(toml_file)
+
+
+class TestLoadFromDotEnv:
+    """Tests method load_from_dotenv"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('env_file', [b'foo.txt', 4])
+    def test_should_raise_error_when_file_is_not_path_or_string(self, env_file):
+        with pytest.raises(TypeError) as exc_info:
+            Configuration.load_from_dotenv(env_file)
+
+        assert f'env file must be of type Path or str but you provided {type(env_file)}' == str(exc_info.value)
+
+    def test_should_return_correct_config_given_correct_env_file(self, tmp_path, math_module):
+        env_file = tmp_path / '.env'
+        lines = """
+        FOO = BAR
+        SCALPEL_FOLLOW_ROBOTS_TXT = yes
+        SCALPEL_FETCH_TIMEOUT = 2.0
+        SCALPEL_RESPONSE_MIDDLEWARES = custom_math.add:custom_math.minus
+        """
+        env_file.write_text(lines)
+
+        config = Configuration.load_from_dotenv(env_file)
+        assert config.follow_robots_txt is True
+        assert 2.0 == config.fetch_timeout
+        assert [math_module.add, math_module.minus] == config.response_middlewares
