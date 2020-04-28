@@ -56,8 +56,8 @@ class TestBoolConverter:
 class TestCallableListConverter:
     """Tests helper function callable_list_converter"""
 
-    @pytest.mark.parametrize('value', [{}, set(), b'foo'])
-    def test_should_return_given_value_if_it_is_not_a_string(self, value):
+    @pytest.mark.parametrize('value', [{}, set(), b'foo', ['foo', 2]])
+    def test_should_return_given_value_if_it_is_not_a_string_or_list_of_strings(self, value):
         assert value == callable_list_converter(value)
 
     def test_should_raise_error_when_module_does_not_exist(self):
@@ -86,8 +86,11 @@ class TestCallableListConverter:
         'custom_math.add;  custom_math.minus',
         'custom_math.add custom_math.minus'
     ])
-    def test_should_return_correct_list_of_callable_when_given_correct_input(self, math_module, callable_string):
+    def test_should_return_correct_list_of_callable_when_given_correct_string_input(self, math_module, callable_string):
         assert [math_module.add, math_module.minus] == callable_list_converter(callable_string)
+
+    def test_should_return_correct_list_of_callable_when_given_correct_list_input(self, math_module):
+        assert [math_module.minus, math_module.add] == callable_list_converter(['custom_math.minus', 'custom_math.add'])
 
 
 @pytest.mark.parametrize(('attribute', 'value'), [

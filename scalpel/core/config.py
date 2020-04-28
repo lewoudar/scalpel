@@ -48,12 +48,18 @@ def bool_converter(value: Any) -> Union[bool, Any]:
 
 # The same logic as above converter applies to the type of return
 def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
-    if not isinstance(value, str):
-        logger.debug('%s is not a string, returned it as it is', value)
+    if isinstance(value, list):
+        if not all(isinstance(item, str) for item in value):
+            logger.debug('not all items in %s are a string, returned it as it', value)
+            return value
+        str_callable_list = value
+    elif isinstance(value, str):
+        str_callable_list = re.split(r',\s*|;\s*|:\s*|\s+', value)
+    else:
+        logger.debug('%s is not a string or a list of strings, returned it as it is', value)
         return value
 
     callables = []
-    str_callable_list = re.split(r',\s*|;\s*|:\s*|\s+', value)
     for str_callable in str_callable_list:
         parts = str_callable.split('.')
         module_name = '.'.join(parts[:-1])
