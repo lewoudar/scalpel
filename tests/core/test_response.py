@@ -1,10 +1,8 @@
-import inspect
-
 import attr
 import httpx
 import pytest
 
-from scalpel.core.abc import Response, AbstractStaticResponse
+from scalpel.core.response import Response, BaseStaticResponse
 from tests.helpers import assert_dicts
 
 
@@ -20,19 +18,7 @@ def httpx_response(dummy_data):
 
 
 class TestResponse:
-    """Tests abstract class Response"""
-
-    class DummyResponse(Response):
-
-        def follow(self, url: str) -> None:
-            pass
-
-    def test_should_validate_class_is_abstract(self):
-        assert inspect.isabstract(Response)
-
-    def test_should_validate_abstract_method(self):
-        assert {'follow'} == Response.__abstractmethods__
-        assert inspect.isfunction(Response.follow)
+    """Tests class Response"""
 
     def test_should_validate_properties(self):
         url = 'http://foobar.com'
@@ -40,7 +26,7 @@ class TestResponse:
         headers = {'foo': 'bar', 'set-cookie': 'name=John'}
         content = b'hello world'
         httpx_response = httpx.Response(200, request=request, headers=headers, content=content)
-        response = self.DummyResponse(httpx_response)
+        response = Response(httpx_response)
 
         assert url == response.url
         assert_dicts(headers, response.headers)
@@ -54,28 +40,20 @@ class TestResponse:
 
 
 class TestAbstractStaticResponse:
-    """Tests abstract class AbstractStaticResponse"""
-
-    class DummyStaticResponse(AbstractStaticResponse):
-
-        def follow(self, url: str) -> None:
-            pass
-
-    def test_should_validate_class_is_abstract(self):
-        assert inspect.isabstract(AbstractStaticResponse)
+    """Tests class BaseStaticResponse"""
 
     def test_should_validate_attributes(self):
         fields = {attribute.name: attribute.type for attribute in attr.fields(Response)}
         assert {'_httpx_response': httpx.Response} == fields
 
     def test_should_validate_that_selector_attribute_is_correctly_instantiated(self, dummy_data, httpx_response):
-        response = self.DummyStaticResponse(httpx_response)
+        response = BaseStaticResponse(httpx_response)
         assert response._selector.get() == dummy_data.decode()
 
     def test_should_return_correct_data_when_calling_css_method(self, httpx_response):
-        response = self.DummyStaticResponse(httpx_response)
+        response = BaseStaticResponse(httpx_response)
         assert '<p>Hello World!</p>' == response.css('p').get()
 
     def test_should_return_correct_data_when_calling_xpath_method(self, httpx_response):
-        response = self.DummyStaticResponse(httpx_response)
+        response = BaseStaticResponse(httpx_response)
         assert '<p>Hello World!</p>' == response.xpath('//p').get()

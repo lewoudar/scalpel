@@ -1,5 +1,3 @@
-"""Module containing some base abstract classes"""
-from abc import abstractmethod, ABC
 from typing import Dict
 
 import attr
@@ -8,7 +6,7 @@ import parsel
 
 
 @attr.s
-class Response(ABC):
+class Response:
     _httpx_response: httpx.Response = attr.ib()
 
     @property
@@ -31,14 +29,9 @@ class Response(ABC):
     def cookies(self) -> Dict[str, str]:
         return dict(self._httpx_response.cookies)
 
-    @abstractmethod
-    def follow(self, url: str) -> None:  # pragma: no cover
-        pass
 
-
-# noinspection PyAbstractClass
 @attr.s
-class AbstractStaticResponse(Response):
+class BaseStaticResponse(Response):
     _selector: parsel.Selector = attr.ib(init=False)
 
     @_selector.default
