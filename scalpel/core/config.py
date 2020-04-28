@@ -110,7 +110,9 @@ class Configuration:
 
     @property
     def request_delay(self) -> int:
-        return random.randint(self.min_request_delay, self.max_request_delay)
+        delay = random.randint(self.min_request_delay, self.max_request_delay)
+        logger.debug('returning computed request delay: %s s', delay)
+        return delay
 
     @staticmethod
     def _get_dict_with_lower_keys(data: Dict[str, Any]) -> Dict[str, Any]:
