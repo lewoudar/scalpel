@@ -32,7 +32,7 @@ class Response(ABC):
         return dict(self._httpx_response.cookies)
 
     @abstractmethod
-    def follow(self, url: str) -> None:
+    def follow(self, url: str) -> None:  # pragma: no cover
         pass
 
 

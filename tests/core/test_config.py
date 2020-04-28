@@ -7,6 +7,7 @@ from configuror import DecodeError
 from fake_useragent import FakeUserAgentError
 
 from scalpel.core.config import Configuration, bool_converter, callable_list_converter
+from tests.helpers import assert_dicts
 
 
 @pytest.fixture(scope='module')
@@ -285,7 +286,7 @@ class TestMethodGetDictWithLowerKeys:
         ({'FOO': 2, 'Fruit': 'TOMATO'}, {'foo': 2, 'fruit': 'TOMATO'})
     ])
     def test_should_return_correct_dict_given_correct_input(self, given_dict, expected_dict):
-        assert expected_dict == Configuration._get_dict_with_lower_keys(given_dict)
+        assert_dicts(expected_dict, Configuration._get_dict_with_lower_keys(given_dict))
 
 
 class TestMethodScalpelAttributes:
@@ -308,7 +309,7 @@ class TestMethodScalpelAttributes:
         }
         expected = {'min_request_delay': 1, 'user_agent': 'Mozilla/5.0'}
 
-        assert expected == Configuration._scalpel_attributes(data)
+        assert_dicts(expected, Configuration._scalpel_attributes(data))
 
 
 class TestCheckFile:

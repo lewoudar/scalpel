@@ -108,9 +108,7 @@ class Configuration:
 
     @staticmethod
     def _get_dict_with_lower_keys(data: Dict[str, Any]) -> Dict[str, Any]:
-        for key in data.keys():
-            value = data.pop(key)
-            data[key.lower()] = value
+        data = {key.lower(): value for key, value in data.items()}
         logger.debug('returning dict with lower keys: %s', data)
         return data
 
