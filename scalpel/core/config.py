@@ -50,7 +50,7 @@ def bool_converter(value: Any) -> Union[bool, Any]:
 def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
     if isinstance(value, list):
         if not all(isinstance(item, str) for item in value):
-            logger.debug('not all items in %s are a string, returned it as it', value)
+            logger.debug('not all items in the list are a string, returned it as it: %s', value)
             return value
         str_callable_list = value
     elif isinstance(value, str):
