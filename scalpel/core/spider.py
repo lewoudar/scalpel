@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Union, Set, List, Tuple, Callable
+from typing import Union, Set, List, Tuple, Callable, Sequence
 
 import attr
 from rfc3986 import iri_reference, validators, exceptions
@@ -77,3 +77,13 @@ class Spider:
     def config(self) -> Configuration:
         logger.debug('returning config property: %s', self._config)
         return self._config
+
+
+@attr.s(frozen=True)
+class SpiderStatistics:
+    fetched_urls: Sequence[str] = attr.ib()
+    followed_url_count: int = attr.ib()
+    average_fetch_time: float = attr.ib()
+    unreachable_urls: Sequence[str] = attr.ib()
+    robot_excluded_urls: Sequence[str] = attr.ib()
+    total_time: float = attr.ib()

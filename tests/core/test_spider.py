@@ -6,7 +6,7 @@ from rfc3986 import uri_reference
 from rfc3986.exceptions import InvalidComponentsError
 
 from scalpel.core.config import Configuration
-from scalpel.core.spider import Spider
+from scalpel.core.spider import Spider, SpiderStatistics
 
 
 @pytest.fixture(scope='module')
@@ -156,3 +156,27 @@ class TestFetchedUrlsAttribute:
     def test_should_return_empty_set_when_getting_fetched_urls_attribute(self, default_spider_arguments):
         spider = Spider(**default_spider_arguments)
         assert set() == spider._fetched_urls
+
+
+class TestSpiderStatisticsClass:
+    """Tests SpiderStatistics class"""
+
+    def test_should_correctly_instantiate_class(self):
+        fetched_urls = ('http://foo.com', 'http://bar.com')
+        unreachable_urls = ()
+        robot_excluded_urls = ('http://forbidden.com',)
+        stats = SpiderStatistics(
+            fetched_urls=fetched_urls,
+            followed_url_count=3,
+            average_fetch_time=1.2,
+            unreachable_urls=unreachable_urls,
+            robot_excluded_urls=robot_excluded_urls,
+            total_time=4.6
+        )
+
+        assert fetched_urls == stats.fetched_urls
+        assert 3 == stats.followed_url_count
+        assert 1.2 == stats.average_fetch_time
+        assert unreachable_urls == stats.unreachable_urls
+        assert robot_excluded_urls == stats.robot_excluded_urls
+        assert 4.6 == stats.total_time
