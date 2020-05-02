@@ -1,6 +1,7 @@
 import random
 import re
 import logging
+import tempfile
 from importlib import import_module
 from pathlib import Path
 from typing import List, Callable, Any, Dict, Union
@@ -14,17 +15,37 @@ logger = logging.getLogger('scalpel')
 
 def check_value_greater_or_equal_than_0(_, attribute: attr.Attribute, value: int) -> None:
     if value < 0:
-        error_message = f'{attribute.name} must be a positive integer'
-        logger.exception(error_message)
-        raise ValueError(error_message)
+        message = f'{attribute.name} must be a positive integer'
+        logger.exception(message)
+        raise ValueError(message)
 
 
 def check_max_delay_greater_or_equal_than_min_delay(instance: 'Configuration', attribute: attr.Attribute,
                                                     value: int) -> None:
     if instance.min_request_delay > value:
-        error_message = f'{attribute.name} must be greater or equal than min_request_delay'
-        logger.exception(error_message)
-        raise ValueError(error_message)
+        message = f'{attribute.name} must be greater or equal than min_request_delay'
+        logger.exception(message)
+        raise ValueError(message)
+
+
+def validate_robots_folder(_, attribute: attr.Attribute, path: Path) -> None:
+    if not path.exists():
+        message = f'{attribute.name} does not exist'
+        logger.exception(message)
+        raise FileNotFoundError(message)
+
+    dummy_file = path / 'dummy_file'
+    try:
+        dummy_file.write_text('hello')
+    except PermissionError:
+        logger.exception(f'Cannot write file in {path}')
+        raise
+    try:
+        dummy_file.read_text()
+    except PermissionError:
+        logger.exception(f'Cannot read file in {path}')
+        raise
+    dummy_file.unlink()
 
 
 # I could just use return type "Any" but I want to insist on the fact that the function must
@@ -41,9 +62,9 @@ def bool_converter(value: Any) -> Union[bool, Any]:
         logger.debug('converts %s to False', value)
         return False
     else:
-        error_message = f'{value} does not represent a boolean'
-        logger.exception(error_message)
-        raise ValueError(error_message)
+        message = f'{value} does not represent a boolean'
+        logger.exception(message)
+        raise ValueError(message)
 
 
 # The same logic as above converter applies to the type of return
@@ -88,6 +109,7 @@ class Configuration:
     user_agent: str = attr.ib(validator=attr.validators.instance_of(str))
     follow_robots_txt: bool = attr.ib(default=False, converter=bool_converter,
                                       validator=attr.validators.instance_of(bool))
+    robots_cache_folder: Path = attr.ib(converter=Path, validator=validate_robots_folder)
     response_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
                                                    validator=middleware_validator)
     process_item_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
@@ -107,6 +129,12 @@ class Configuration:
                        'Chrome/41.0.2225.0 Safari/537.36'
             logger.debug('returning fallback value for user agent: %s', fallback)
             return fallback
+
+    @robots_cache_folder.default
+    def get_robots_cache_folder(self) -> Path:
+        temp_dir = Path(tempfile.mkdtemp(prefix='robots_'))
+        logger.debug('returning default created temporary directory: %s', temp_dir)
+        return temp_dir
 
     @property
     def request_delay(self) -> int:

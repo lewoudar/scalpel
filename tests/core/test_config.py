@@ -1,4 +1,5 @@
 import sys
+import tempfile
 from importlib import import_module
 from pathlib import Path
 
@@ -233,6 +234,49 @@ class TestFollowRobotsTxt:
         assert default_config.follow_robots_txt is False
 
 
+# noinspection PyTypeChecker
+class TestRobotsCacheFolder:
+    """Checks attribute robots_cache_folder"""
+
+    @pytest.mark.parametrize('value', [4, b'foo'])
+    def test_should_raise_error_when_value_is_not_a_string(self, value):
+        with pytest.raises(TypeError):
+            Configuration(robots_cache_folder=value)
+
+    def test_should_raise_error_when_path_is_does_not_exist(self):
+        with pytest.raises(FileNotFoundError) as exc_info:
+            Configuration(robots_cache_folder='/path/to/file')
+
+        assert 'robots_cache_folder does not exist' == str(exc_info.value)
+
+    def test_should_raise_error_when_path_is_not_writable(self, mocker, tmp_path):
+        mocker.patch('pathlib.Path.write_text', side_effect=PermissionError())
+        with pytest.raises(PermissionError):
+            Configuration(robots_cache_folder=tmp_path)
+
+    def test_should_raise_error_when_path_is_not_readable(self, mocker, tmp_path):
+        mocker.patch('pathlib.Path.read_text', side_effect=PermissionError())
+        with pytest.raises(PermissionError):
+            Configuration(robots_cache_folder=tmp_path)
+
+    def test_should_not_raise_error_when_giving_correct_path(self, tmp_path):
+        try:
+            Configuration(robots_cache_folder=tmp_path)
+        except (FileNotFoundError, PermissionError) as e:
+            pytest.fail(f'unexpected error when instantiating Configuration with robots_cache_folder: {e}')
+
+        p = tmp_path / 'dummy_file'
+        assert not p.exists()
+
+    def test_default_value_is_a_temporary_directory_starting_with_prefix_robots(self, default_config):
+        temp_dir = tempfile.gettempdir()
+        robots_cache_folder = default_config.robots_cache_folder
+        prefix_path = Path(temp_dir) / 'robots_'
+
+        assert f'{robots_cache_folder}'.startswith(f'{prefix_path}')
+        robots_cache_folder.rmdir()
+
+
 class TestMiddlewareAttributes:
     """Checks attributes response_middlewares and process_item_middlewares"""
 
@@ -359,7 +403,9 @@ class TestLoadFromYaml:
 
         for item in [f'{yaml_file}', yaml_file]:
             config = Configuration.load_from_yaml(item)
-            assert expected_config == config
+            assert expected_config.fetch_timeout == config.fetch_timeout
+            assert expected_config.user_agent == config.user_agent
+            assert expected_config.follow_robots_txt == config.follow_robots_txt
 
     def test_should_raise_error_when_file_is_not_valid_yaml(self, tmp_path):
         yaml_file = tmp_path / 'foo.yaml'
@@ -398,7 +444,9 @@ class TestLoadFromToml:
 
         for item in [f'{toml_file}', toml_file]:
             config = Configuration.load_from_toml(item)
-            assert expected_config == config
+            assert expected_config.fetch_timeout == config.fetch_timeout
+            assert expected_config.user_agent == config.user_agent
+            assert expected_config.follow_robots_txt == config.follow_robots_txt
 
     def test_should_raise_error_when_file_is_not_valid_toml(self, tmp_path):
         toml_file = tmp_path / 'settings.toml'
