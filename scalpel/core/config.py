@@ -138,7 +138,11 @@ class Configuration:
 
     @property
     def request_delay(self) -> int:
-        delay = random.randint(self.min_request_delay, self.max_request_delay)
+        # for bandit, using random module to generate pseudo-random values is not a good
+        # idea for cryptography / security purposes, but since we are not in this case, we just
+        # ignore this warning.
+        # More about the warning: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b311-random
+        delay = random.randint(self.min_request_delay, self.max_request_delay)  # nosec
         logger.debug('returning computed request delay: %s s', delay)
         return delay
 
