@@ -13,7 +13,11 @@ from tests.helpers import assert_dicts
 
 @pytest.fixture(scope='module')
 def default_config():
-    return Configuration()
+    config = Configuration()
+    path = Path(config.robots_cache_folder)
+    yield config
+    if path.exists():
+        path.rmdir()
 
 
 @pytest.fixture
