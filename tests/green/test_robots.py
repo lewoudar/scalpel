@@ -4,14 +4,30 @@ from urllib.robotparser import RobotFileParser
 import httpx
 import pytest
 import respx
+from gevent.lock import RLock
 
 from scalpel.green.robots import RobotsAnalyzer
 from tests.helpers import assert_dicts
 
 
 @pytest.fixture()
-def default_analyzer(tmp_path):
-    return RobotsAnalyzer(user_agent='Mozilla/5.0', robots_cache=tmp_path)
+def robots_mapping_lock_mock(mocker):
+    return mocker.patch('gevent.lock.RLock')
+
+
+@pytest.fixture()
+def delay_mapping_lock_mock(mocker):
+    return mocker.patch('gevent.lock.RLock')
+
+
+@pytest.fixture()
+def default_analyzer(tmp_path, robots_mapping_lock_mock, delay_mapping_lock_mock):
+    return RobotsAnalyzer(
+        user_agent='Mozilla/5.0',
+        robots_cache=tmp_path,
+        robots_mapping_lock=robots_mapping_lock_mock,
+        delay_mapping_lock=delay_mapping_lock_mock
+    )
 
 
 class TestRobotsAnalyzerInstantiation:
@@ -25,6 +41,8 @@ class TestRobotsAnalyzerInstantiation:
         assert isinstance(analyzer._http_client, httpx.Client)
         assert 'Mozilla/5.0' == analyzer._http_client.headers['User-Agent']
         assert isinstance(analyzer._robots_parser, RobotFileParser)
+        assert isinstance(analyzer._robots_mapping_lock, RLock)
+        assert isinstance(analyzer._delay_mapping_lock, RLock)
         assert_dicts(analyzer._robots_mapping, {})
         assert_dicts(analyzer._delay_mapping, {})
 
@@ -41,6 +59,8 @@ class TestRobotsAnalyzerInstantiation:
         assert isinstance(analyzer._http_client, httpx.Client)
         assert 'python-httpx' == analyzer._http_client.headers['User-Agent']
         assert isinstance(analyzer._robots_parser, RobotFileParser)
+        assert isinstance(analyzer._robots_mapping_lock, RLock)
+        assert isinstance(analyzer._delay_mapping_lock, RLock)
         assert_dicts(analyzer._robots_mapping, {})
         assert_dicts(analyzer._delay_mapping, {})
 
@@ -71,7 +91,10 @@ class TestCanFetch:
 
     def test_should_return_false_when_host_does_not_exist(self, default_analyzer, httpx_mock):
         httpx_mock.get('/robots.txt', content=httpx.ConnectTimeout())
+
         assert default_analyzer.can_fetch('http://example.com/path') is False
+        assert 1 == len(default_analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 1 == len(default_analyzer._robots_mapping_lock.__exit__.mock_calls)
 
     @pytest.mark.parametrize('code', [401, 403])
     def test_should_return_false_when_robots_is_unauthorized_or_forbidden(self, default_analyzer, httpx_mock, code):
@@ -84,21 +107,38 @@ class TestCanFetch:
         assert default_analyzer.can_fetch('http://example.com/') is True
 
     @pytest.mark.parametrize('url_path', ['photos', 'videos'])
-    def test_should_return_false_when_requesting_forbidden_url(self, httpx_mock, tmp_path, robots_content, url_path):
-        # don't forget to look at robots_content fixture
-        analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=tmp_path)
+    def test_should_return_false_when_requesting_forbidden_url(self, httpx_mock, tmp_path, robots_content, url_path,
+                                                               robots_mapping_lock_mock, delay_mapping_lock_mock):
+        analyzer = RobotsAnalyzer(
+            user_agent='Googlebot',
+            robots_cache=tmp_path,
+            robots_mapping_lock=robots_mapping_lock_mock,
+            delay_mapping_lock=delay_mapping_lock_mock
+        )
         httpx_mock.get('/robots.txt', content=robots_content)
+
         assert analyzer.can_fetch(f'http://example.com/{url_path}/1') is False
+        assert 2 == len(analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(analyzer._robots_mapping_lock.__exit__.mock_calls)
 
     @pytest.mark.parametrize('url_path', ['admin/', 'ajax/'])
-    def test_should_return_true_when_requesting_allowed_url(self, httpx_mock, tmp_path, robots_content, url_path):
-        analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=tmp_path)
+    def test_should_return_true_when_requesting_allowed_url(self, httpx_mock, tmp_path, robots_content, url_path,
+                                                            robots_mapping_lock_mock, delay_mapping_lock_mock):
+        analyzer = RobotsAnalyzer(
+            user_agent='Googlebot',
+            robots_cache=tmp_path,
+            robots_mapping_lock=robots_mapping_lock_mock,
+            delay_mapping_lock=delay_mapping_lock_mock
+        )
         httpx_mock.get('/robots.txt', content=robots_content)
+
         assert analyzer.can_fetch(f'http://example.com/{url_path}') is True
+        assert 2 == len(analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(analyzer._robots_mapping_lock.__exit__.mock_calls)
 
     @respx.mock
-    def test_should_not_enter_if_block_if_host_is_already_registered_in_internal_mapping(self, default_analyzer,
-                                                                                         tmp_path, robots_content):
+    def test_should_not_enter_if_block_if_robots_content_is_already_cached(self, default_analyzer, tmp_path,
+                                                                           robots_content):
         request = respx.get('http://example.com/robots.txt')
         robots_path = tmp_path / 'example.com'
         robots_path.write_text(robots_content)
@@ -113,20 +153,32 @@ class TestGetRequestDelay:
 
     # tests get_request_delay
 
-    def test_should_return_delay_if_it_is_in_internal_delay_mapping(self, mocker, tmp_path):
+    def test_should_return_delay_if_it_is_in_internal_delay_mapping(self, mocker, tmp_path, delay_mapping_lock_mock):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay')
         can_fetch_mock = mocker.patch('scalpel.green.robots.RobotsAnalyzer.can_fetch')
         delay = 2
-        analyzer = RobotsAnalyzer(robots_cache=tmp_path, user_agent='Mozilla/5.0')
+        analyzer = RobotsAnalyzer(
+            robots_cache=tmp_path,
+            user_agent='Mozilla/5.0',
+            delay_mapping_lock=delay_mapping_lock_mock
+        )
         analyzer._delay_mapping['example.com'] = delay
 
         assert delay == analyzer.get_request_delay('http://example.com/page/1', 0)
         can_fetch_mock.assert_not_called()
         crawl_delay_mock.assert_not_called()
+        assert 1 == len(analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 1 == len(analyzer._delay_mapping_lock.__exit__.mock_calls)
 
     def test_should_return_negative_value_when_url_is_not_fetchable(self, default_analyzer, httpx_mock):
         httpx_mock.get('/robots.txt', status_code=401)
+
         assert -1 == default_analyzer.get_request_delay('http://example.com/page/1', 0)
+
+        assert 2 == len(default_analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(default_analyzer._robots_mapping_lock.__exit__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__exit__.mock_calls)
 
     def test_should_call_can_fetch_only_one_time(self, mocker, tmp_path):
         url = 'http://example.com/page/1'
@@ -144,6 +196,11 @@ class TestGetRequestDelay:
 
         assert 2 == default_analyzer.get_request_delay('http://example.com/page/1', 0)
 
+        assert 3 == len(default_analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 3 == len(default_analyzer._robots_mapping_lock.__exit__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__exit__.mock_calls)
+
     def test_should_call_crawl_delay_method_only_one_time(self, mocker, default_analyzer, robots_content, httpx_mock):
         httpx_mock.get('/robots.txt', content=robots_content)
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=2)
@@ -157,6 +214,11 @@ class TestGetRequestDelay:
         httpx_mock.get('/robots.txt', content=new_content)
 
         assert 2.5 == default_analyzer.get_request_delay('http://example.com/page/1', 0)
+
+        assert 3 == len(default_analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 3 == len(default_analyzer._robots_mapping_lock.__exit__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__exit__.mock_calls)
 
     def test_should_call_request_rate_method_only_one_time(self, mocker, default_analyzer, httpx_mock, robots_content):
         httpx_mock.get('/robots.txt', content=robots_content)
@@ -173,3 +235,48 @@ class TestGetRequestDelay:
         httpx_mock.get('/robots.txt', content=robots_content)
 
         assert 3 == default_analyzer.get_request_delay('http://example.com/page/1', 3)
+
+        assert 3 == len(default_analyzer._robots_mapping_lock.__enter__.mock_calls)
+        assert 3 == len(default_analyzer._robots_mapping_lock.__exit__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 2 == len(default_analyzer._delay_mapping_lock.__exit__.mock_calls)
+
+    def test_should_return_cache_given_delay_if_compatible_url_is_called_twice(self, default_analyzer, httpx_mock,
+                                                                               robots_content):
+        httpx_mock.get('/robots.txt', content=robots_content)
+
+        assert 3 == default_analyzer.get_request_delay('http://example.com/page/1', 3)
+        assert 3 == default_analyzer.get_request_delay('http://example.com/page/1', 3)
+        # we check that the _delay_mapping_lock is not called 2 * 2 times to ensure that
+        # the cache value is returned
+        assert 3 == len(default_analyzer._delay_mapping_lock.__enter__.mock_calls)
+        assert 3 == len(default_analyzer._delay_mapping_lock.__exit__.mock_calls)
+
+    @respx.mock
+    def test_should_not_call_can_fetch_method_if_robots_content_is_already_cached(self, default_analyzer, tmp_path,
+                                                                                  robots_content):
+        request = respx.get('http://example.com/robots.txt')
+        robots_path = tmp_path / 'example.com'
+        robots_path.write_text(robots_content)
+        default_analyzer._robots_mapping['example.com'] = tmp_path / 'example.com'
+
+        assert 3 == default_analyzer.get_request_delay('http://example.com/page/1', 3)
+        assert not request.called
+
+
+class TestClose:
+    """Tests method close"""
+
+    def test_should_call_http_client_close_method(self, mocker, tmp_path, robots_content, robots_mapping_lock_mock,
+                                                  delay_mapping_lock_mock):
+        http_client_mock = mocker.MagicMock()
+        analyzer = RobotsAnalyzer(
+            robots_cache=tmp_path,
+            user_agent='Mozilla/5.0',
+            http_client=http_client_mock,
+            delay_mapping_lock=delay_mapping_lock_mock,
+            robots_mapping_lock=robots_mapping_lock_mock
+        )
+        analyzer.close()
+
+        http_client_mock.close.assert_called_once()
