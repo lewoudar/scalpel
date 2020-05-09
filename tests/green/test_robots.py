@@ -74,14 +74,17 @@ class TestCanFetch:
 
         assert green_analyzer.can_fetch('http://example.com/path') is False
 
-    @pytest.mark.parametrize('code', [401, 403])
-    def test_should_return_false_when_robots_is_unauthorized_or_forbidden(self, green_analyzer, httpx_mock, code):
-        httpx_mock.get('/robots.txt', status_code=code)
+    @pytest.mark.parametrize('status_code', [401, 403])
+    def test_should_return_false_when_robots_is_unauthorized_or_forbidden(self, green_analyzer, httpx_mock,
+                                                                          status_code):
+        httpx_mock.get('/robots.txt', status_code=status_code)
+
         assert green_analyzer.can_fetch('http://example.com/') is False
 
-    @pytest.mark.parametrize('code', [404, 500])
-    def test_should_return_true_when_other_http_errors_occurred(self, green_analyzer, httpx_mock, code):
-        httpx_mock.get('/robots.txt', status_code=code)
+    @pytest.mark.parametrize('status_code', [404, 500])
+    def test_should_return_true_when_other_http_errors_occurred(self, green_analyzer, httpx_mock, status_code):
+        httpx_mock.get('/robots.txt', status_code=status_code)
+
         assert green_analyzer.can_fetch('http://example.com/') is True
 
     @pytest.mark.parametrize('url_path', ['photos', 'videos'])
@@ -113,8 +116,6 @@ class TestCanFetch:
 class TestGetRequestDelay:
     """Tests method get_request_delay"""
 
-    # tests get_request_delay
-
     def test_should_return_delay_if_it_is_in_internal_delay_mapping(self, mocker, tmp_path):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay')
         can_fetch_mock = mocker.patch('scalpel.green.robots.RobotsAnalyzer.can_fetch')
@@ -128,6 +129,7 @@ class TestGetRequestDelay:
 
     def test_should_return_negative_value_when_url_is_not_fetchable(self, green_analyzer, httpx_mock):
         httpx_mock.get('/robots.txt', status_code=401)
+
         assert -1 == green_analyzer.get_request_delay('http://example.com/page/1', 0)
 
     def test_should_call_can_fetch_only_one_time(self, mocker, tmp_path):
@@ -189,7 +191,7 @@ class TestGetRequestDelay:
 class TestClose:
     """Tests method close"""
 
-    def test_should_call_http_client_close_method(self, mocker, tmp_path, robots_content):
+    def test_should_call_http_client_close_method(self, mocker, tmp_path):
         http_client_mock = mocker.MagicMock()
         analyzer = RobotsAnalyzer(
             robots_cache=tmp_path,
