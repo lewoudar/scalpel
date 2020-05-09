@@ -6,7 +6,6 @@ from urllib.robotparser import RobotFileParser
 import attr
 import httpx
 from gevent.fileobject import FileObjectThread
-from gevent.lock import RLock
 
 logger = logging.getLogger('scalpel')
 
@@ -17,11 +16,9 @@ class RobotsAnalyzer:
     _user_agent: str = attr.ib()
     _robots_cache: Path = attr.ib()
     _robots_mapping: Dict[str, Path] = attr.ib(factory=dict)
-    _robots_mapping_lock: RLock = attr.ib(factory=RLock)
     _http_client: httpx.Client = attr.ib()
     _robots_parser: RobotFileParser = attr.ib(init=False, factory=RobotFileParser)
     _delay_mapping: Dict[str, Union[int, float]] = attr.ib(init=False, factory=dict)
-    _delay_mapping_lock: RLock = attr.ib(factory=RLock)
 
     @_http_client.default
     def get_http_client(self) -> httpx.Client:
@@ -45,13 +42,8 @@ class RobotsAnalyzer:
         httpx_url = httpx.URL(url)
         host = httpx_url.host
         robots_url = httpx_url.copy_with(path='/robots.txt')
-        host_in_mapping = False
 
-        with self._robots_mapping_lock:
-            if host in self._robots_mapping:
-                host_in_mapping = True
-
-        if not host_in_mapping:
+        if host not in self._robots_mapping:
             try:
                 response = self._http_client.get(f'{robots_url}')
             except httpx.ConnectTimeout:
@@ -74,8 +66,7 @@ class RobotsAnalyzer:
             else:
                 robot_path = self._robots_cache / host
                 self._create_robots_file(robot_path, response.text)
-                with self._robots_mapping_lock:
-                    self._robots_mapping[host] = robot_path.absolute()
+                self._robots_mapping[host] = robot_path.absolute()
 
         self._robots_parser.parse(self._get_robots_lines(self._robots_mapping[host]))
         is_fetchable = self._robots_parser.can_fetch(self._user_agent, url)
@@ -86,44 +77,34 @@ class RobotsAnalyzer:
     def get_request_delay(self, url: str, delay: Union[int, float]) -> Union[int, float]:
         host = httpx.URL(url).host
 
-        with self._delay_mapping_lock:
-            if host in self._delay_mapping:
-                logger.debug('returning caching value %s', self._delay_mapping[host])
-                return self._delay_mapping[host]
+        if host in self._delay_mapping:
+            logger.debug('returning caching value %s', self._delay_mapping[host])
+            return self._delay_mapping[host]
 
-        host_in_robots_mapping = False
-        with self._robots_mapping_lock:
-            if host in self._robots_mapping:
-                host_in_robots_mapping = True
-
-        if not host_in_robots_mapping:
+        if host not in self._robots_mapping:
             is_fetchable = self.can_fetch(url)
             if not is_fetchable:
-                with self._delay_mapping_lock:
-                    self._delay_mapping[host] = -1
+                self._delay_mapping[host] = -1
                 logger.debug('url %s is not fetchable, returning negative value', url)
                 return -1
 
         crawl_delay = self._robots_parser.crawl_delay('*')
         if crawl_delay is not None:
-            with self._delay_mapping_lock:
-                self._delay_mapping[host] = crawl_delay
+            self._delay_mapping[host] = crawl_delay
             logger.debug('returning crawl delay value "%s" from robots.txt for url %s', crawl_delay, url)
             return crawl_delay
 
         request_rate = self._robots_parser.request_rate('*')
         if request_rate is not None:
             request_delay = request_rate.seconds / request_rate.requests
-            with self._delay_mapping_lock:
-                self._delay_mapping[host] = request_delay
+            self._delay_mapping[host] = request_delay
             logger.debug(
                 'computing value "%s" from request delay info (%s/%s) from robots.txt for url %s',
                 request_delay, request_rate.requests, request_rate.seconds, url
             )
             return request_delay
 
-        with self._delay_mapping_lock:
-            self._delay_mapping[host] = delay
+        self._delay_mapping[host] = delay
         logger.debug('returning default value "%s" for url %s', delay, url)
         return delay
 
