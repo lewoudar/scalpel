@@ -19,9 +19,12 @@ def read_jl(filename: Union[str, Path]) -> Iterator[Any]:
             yield data
 
 
-def write_jl(filename: Union[str, Path], data: Any, mode='a') -> int:
+def write_jl(filename: Union[str, Path], data: Any, mode: str = 'a') -> int:
     if mode not in ['a', 'w']:
-        raise TypeError(f'The only modes expected are "a" and "w" but you provided {mode}')
+        message = f'The only modes expected are "a" and "w" but you provided {mode}'
+        logger.exception(message)
+        raise TypeError(message)
+
     with open(filename, f'{mode}b') as f:
         data_length = f.write(msgpack.packb(data))
         logger.debug('writing %s bytes in file %s', data_length, filename)
