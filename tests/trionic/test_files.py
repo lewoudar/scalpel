@@ -5,7 +5,7 @@ from scalpel.trionic import read_jl, write_jl
 
 
 class TestReadJl:
-    """Tests function read_jl"""
+    """Tests function read_mp"""
 
     async def test_should_return_python_objects_when_reading_file(self, tmp_path, create_msgpack_file):
         given_data = [[1, 2], 'hello', {'fruit': 'apple'}]
@@ -17,7 +17,7 @@ class TestReadJl:
 
 
 class TestWriteJl:
-    """Tests function write_jl"""
+    """Tests function write_mp"""
 
     @pytest.mark.parametrize('mode', ['r', 'foo', 4])
     async def test_should_raise_error_when_mode_is_not_correct(self, mode):
