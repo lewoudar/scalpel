@@ -16,15 +16,15 @@ class TestReadMp:
 
         assert f'{decoder} is not callable' == str(exc_info.value)
 
-    def test_should_return_python_objects_when_reading_file_without_custom_objects(self, tmp_path, create_msgpack_file):
+    def test_should_return_python_objects_when_reading_file_without_custom_decoder(self, tmp_path, create_msgpack_file):
         given_data = [[1, 2], 'hello', {'fruit': 'apple'}]
         mp_file = tmp_path / 'data.mp'
         create_msgpack_file(mp_file, given_data)
 
-        for file in [mp_file, str(mp_file)]:
+        for file in [mp_file, f'{mp_file}']:
             assert [item for item in read_mp(file)] == given_data
 
-    def test_should_return_python_object_when_reading_file_with_custom_objects(self, tmp_path, create_msgpack_file,
+    def test_should_return_python_object_when_reading_file_with_custom_decoder(self, tmp_path, create_msgpack_file,
                                                                                decode_datetime):
         given_data = ['hello', datetime.now()]
         mp_file = tmp_path / 'data.mp'
