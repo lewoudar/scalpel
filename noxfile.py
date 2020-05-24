@@ -15,7 +15,7 @@ CI_ENVIRONMENT = 'GITHUB_ACTIONS' in os.environ
 def lint(session):
     """Performs pep8 and security checks."""
     source_code = 'scalpel'
-    session.install('flake8==3.8.2', 'bandit==1.6.2')
+    session.install('flake8==3.7.9', 'bandit==1.6.2')
     session.run('flake8', source_code)
     session.run('bandit', '-r', source_code)
 
@@ -25,16 +25,15 @@ def tests(session):
     """Runs the test suite."""
     session.install('poetry>=1.0.0,<2.0.0')
     session.run('poetry', 'install')
-    session.run('pytest')
+    session.run('pytest', 'tests/core')
+    session.run('codecov')
+    session.run('pytest', 'tests/green')
+    session.run('codecov')
+    session.run('pytest', 'tests/trionic')
+    session.run('codecov')
 
     if not CI_ENVIRONMENT:
         session.notify('clean-robots-cache')
-
-
-@nox.session(python=False)
-def codecov(session):
-    """Runs codecov command to share coverage information on codecov.io"""
-    session.run('codecov')
 
 
 @nox.session(python=PYTHON_VERSIONS[-1])
