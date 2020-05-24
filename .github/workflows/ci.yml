@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -12,6 +13,7 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+        # probably need to port pypy usage on travis (more appropriate)
         python: [pypy3, 3.6, 3.7, 3.8]
         exclude:
           - os: windows-latest
