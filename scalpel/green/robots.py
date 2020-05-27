@@ -7,11 +7,13 @@ import attr
 import httpx
 from gevent.fileobject import FileObjectThread
 
+from scalpel.core.robots import RobotsMixin
+
 logger = logging.getLogger('scalpel')
 
 
 @attr.s
-class RobotsAnalyzer:
+class RobotsAnalyzer(RobotsMixin):
     # order is important, _http_client can use the _user_agent info to instantiate itself
     _user_agent: str = attr.ib()
     _robots_cache: Path = attr.ib()
@@ -73,7 +75,6 @@ class RobotsAnalyzer:
         logger.info('after analyzing %s file, returning value is %s', f'{robots_url}', is_fetchable)
         return is_fetchable
 
-    # noinspection PyTypeChecker
     def get_request_delay(self, url: str, delay: Union[int, float]) -> Union[int, float]:
         host = httpx.URL(url).host
 
@@ -88,25 +89,7 @@ class RobotsAnalyzer:
                 logger.debug('url %s is not fetchable, returning negative value', url)
                 return -1
 
-        crawl_delay = self._robots_parser.crawl_delay('*')
-        if crawl_delay is not None:
-            self._delay_mapping[host] = crawl_delay
-            logger.debug('returning crawl delay value "%s" from robots.txt for url %s', crawl_delay, url)
-            return crawl_delay
-
-        request_rate = self._robots_parser.request_rate('*')
-        if request_rate is not None:
-            request_delay = request_rate.seconds / request_rate.requests
-            self._delay_mapping[host] = request_delay
-            logger.debug(
-                'computing value "%s" from request delay info (%s/%s) from robots.txt for url %s',
-                request_delay, request_rate.requests, request_rate.seconds, url
-            )
-            return request_delay
-
-        self._delay_mapping[host] = delay
-        logger.debug('returning default value "%s" for url %s', delay, url)
-        return delay
+        return self._get_request_delay(host, url, self._robots_parser, self._delay_mapping, delay)
 
     def close(self):
         self._http_client.close()
