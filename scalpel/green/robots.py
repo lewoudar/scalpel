@@ -5,9 +5,9 @@ from urllib.robotparser import RobotFileParser
 
 import attr
 import httpx
-from gevent.fileobject import FileObjectThread
 
 from scalpel.core.robots import RobotsMixin
+from .utils.io import open_file
 
 logger = logging.getLogger('scalpel')
 
@@ -31,13 +31,13 @@ class RobotsAnalyzer(RobotsMixin):
     @staticmethod
     def _create_robots_file(robots_path: Path, content: str) -> None:
         logger.debug('creating robots file at path: %s', robots_path)
-        with FileObjectThread(robots_path, mode='w') as f:
+        with open_file(robots_path, 'w') as f:
             f.write(content)
 
     @staticmethod
     def _get_robots_lines(path: Path) -> List[str]:
         logger.debug('getting robots file lines at path: %s', path)
-        with FileObjectThread(path) as f:
+        with open_file(path) as f:
             return f.readlines()
 
     def can_fetch(self, url: str) -> bool:

@@ -5,11 +5,10 @@ from typing import Union, Iterator, Any, Callable
 
 import msgpack
 
+from .utils.io import open_file
+
 logger = logging.getLogger('scalpel')
 
-
-# Usage of gevent.fileobject.FileObjectThread gives a strange error
-# so I just use a regular file object for these functions
 
 def read_mp(filename: Union[str, Path], decoder: Callable = None) -> Iterator[Any]:
     if decoder is not None and not callable(decoder):
@@ -17,7 +16,7 @@ def read_mp(filename: Union[str, Path], decoder: Callable = None) -> Iterator[An
         logger.exception(message)
         raise TypeError(message)
 
-    with open(filename, 'rb') as f:
+    with open_file(filename, 'rb') as f:
         unpacker = msgpack.Unpacker(f, object_hook=decoder)
         logger.debug('reading data from file %s', filename)
         for data in unpacker:
@@ -35,7 +34,7 @@ def write_mp(filename: Union[str, Path], data: Any, mode: str = 'a', encoder: Ca
         logger.exception(message)
         raise TypeError(message)
 
-    with open(filename, f'{mode}b') as f:
+    with open_file(filename, f'{mode}b') as f:
         data_length = f.write(msgpack.packb(data, default=encoder))
         logger.debug('writing %s bytes in file %s', data_length, filename)
         return data_length
