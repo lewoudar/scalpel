@@ -2,9 +2,9 @@ import collections
 from urllib.robotparser import RobotFileParser
 
 import httpx
+import mock
 import pytest
 import respx
-import trio
 
 from scalpel.trionic.robots import RobotsAnalyzer
 from tests.helpers import assert_dicts
@@ -134,21 +134,15 @@ class TestGetRequestDelay:
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == -1
 
-    async def test_should_call_can_fetch_only_one_time(self, monkeypatch, trio_tmp_path):
+    async def test_should_call_can_fetch_only_one_time(self, mocker, trio_tmp_path):
         url = 'http://example.com/page/1'
-        count = 0
-
-        async def fake_can_fetch(*_):
-            await trio.sleep(0)
-            nonlocal count
-            count += 1
-
-        monkeypatch.setattr(RobotsAnalyzer, 'can_fetch', fake_can_fetch)
+        can_fetch_mock = mocker.patch('scalpel.trionic.robots.RobotsAnalyzer.can_fetch', new=mock.AsyncMock())
+        can_fetch_mock.return_value = False
         analyzer = RobotsAnalyzer(robots_cache=trio_tmp_path, user_agent='Mozilla/5.0')
 
-        assert await analyzer.get_request_delay(url, 0) == -1
-        assert await analyzer.get_request_delay(url, 0) == -1
-        assert count == 1
+        assert -1 == await analyzer.get_request_delay(url, 0)
+        assert -1 == await analyzer.get_request_delay(url, 0)
+        can_fetch_mock.assert_awaited_once_with(url)
 
     async def test_should_return_crawl_delay_value_if_robots_txt_specified_it(self, httpx_mock, trio_analyzer,
                                                                               robots_content):
@@ -203,16 +197,13 @@ class TestGetRequestDelay:
 class TestClose:
     """Tests method close"""
 
-    async def test_should_call_http_client_aclose_method(self, monkeypatch, trio_tmp_path):
-        called = False
-
-        async def aclose(*_):
-            await trio.sleep(0)
-            nonlocal called
-            called = True
-
-        monkeypatch.setattr(httpx.AsyncClient, 'aclose', aclose)
-        analyzer = RobotsAnalyzer(user_agent='Mozilla/5.0', robots_cache=trio_tmp_path)
+    async def test_should_call_http_client_aclose_method(self, trio_tmp_path):
+        http_client_mock = mock.AsyncMock()
+        analyzer = RobotsAnalyzer(
+            robots_cache=trio_tmp_path,
+            user_agent='Mozilla/5.0',
+            http_client=http_client_mock,
+        )
         await analyzer.close()
 
-        assert called
+        http_client_mock.aclose.assert_awaited_once()

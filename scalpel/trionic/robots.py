@@ -22,7 +22,7 @@ class RobotsAnalyzer(RobotsMixin):
     _delay_mapping: Dict[str, Union[int, float]] = attr.ib(init=False, factory=dict)
 
     @_http_client.default
-    def get_default_client(self) -> httpx.AsyncClient:
+    def _get_default_client(self) -> httpx.AsyncClient:
         logger.debug('returning default http client with user agent: %s', self._user_agent)
         headers = {'User-Agent': self._user_agent}
         return httpx.AsyncClient(headers=headers)
