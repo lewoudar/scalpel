@@ -3,8 +3,8 @@ from urllib.robotparser import RobotFileParser
 
 import httpx
 import pytest
+import respx
 import trio
-from asyncmock import AsyncMock
 
 from scalpel.trionic.robots import RobotsAnalyzer
 from tests.helpers import assert_dicts
@@ -70,50 +70,49 @@ class TestGetRobotsLines:
 class TestCanFetch:
     """Tests method can_fetch"""
 
-    async def test_should_return_false_when_host_does_not_exist(self, trio_analyzer):
-        trio_analyzer._http_client.get = AsyncMock(side_effect=httpx.ConnectTimeout)
-
+    async def test_should_return_false_when_host_does_not_exist(self, httpx_mock, trio_analyzer):
+        httpx_mock.get('/robots.txt', content=httpx.ConnectTimeout())
         assert await trio_analyzer.can_fetch('http://example.com/path') is False
 
     @pytest.mark.parametrize('status_code', [401, 403])
-    async def test_should_return_false_when_robots_is_unauthorized_or_forbidden(self, trio_analyzer, get_response,
-                                                                                status_code):
-        trio_analyzer._http_client.get = get_response(status_code=status_code)
+    async def test_should_return_false_when_robots_are_unauthorized_or_forbidden(self, trio_analyzer, httpx_mock,
+                                                                                 status_code):
+        httpx_mock.get('/robots.txt', status_code=status_code)
 
         assert await trio_analyzer.can_fetch('http://example.com/path') is False
 
     @pytest.mark.parametrize('status_code', [404, 500])
-    async def test_should_return_true_when_other_http_errors_occurred(self, trio_analyzer, get_response, status_code):
-        trio_analyzer._http_client.get = get_response(status_code=status_code)
+    async def test_should_return_true_when_other_http_errors_occurred(self, trio_analyzer, httpx_mock, status_code):
+        httpx_mock.get('/robots.txt', status_code=status_code)
 
         assert await trio_analyzer.can_fetch('http://example.com/path') is True
 
     @pytest.mark.parametrize('url_path', ['photos', 'videos'])
-    async def test_should_return_false_when_requesting_forbidden_url(self, trio_analyzer, get_response, trio_tmp_path,
-                                                                     robots_content, url_path):
+    async def test_should_return_false_when_requesting_forbidden_url(self, httpx_mock, trio_tmp_path, robots_content,
+                                                                     url_path):
         analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=trio_tmp_path)
-        analyzer._http_client.get = get_response(content=robots_content)
+        httpx_mock.get('/robots.txt', content=robots_content)
 
         assert await analyzer.can_fetch(f'http://example.com/{url_path}/1') is False
 
     @pytest.mark.parametrize('url_path', ['admin/', 'ajax/'])
-    async def test_should_return_true_when_requesting_allowed_url(self, trio_analyzer, get_response, trio_tmp_path,
-                                                                  robots_content, url_path):
+    async def test_should_return_true_when_requesting_allowed_url(self, httpx_mock, trio_tmp_path, robots_content,
+                                                                  url_path):
         analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=trio_tmp_path)
-        analyzer._http_client.get = get_response(content=robots_content)
+        httpx_mock.get('/robots.txt', content=robots_content)
 
         assert await analyzer.can_fetch(f'http://example.com/{url_path}') is True
 
+    @respx.mock
     async def test_should_not_enter_if_block_if_robots_content_is_already_cached(self, trio_analyzer, trio_tmp_path,
-                                                                                 robots_content, get_response):
+                                                                                 robots_content):
+        request = respx.get('http://example.com/robots.txt')
         robots_path = trio_tmp_path / 'example.com'
         await robots_path.write_text(robots_content)
-        trio_analyzer._robots_mapping['example.com'] = robots_path
-        get_mock = get_response()
-        trio_analyzer._http_client.get = get_mock
+        trio_analyzer._robots_mapping['example.com'] = trio_tmp_path / 'example.com'
 
-        assert await trio_analyzer.can_fetch(f'http://example.com/path') is True
-        get_mock.assert_not_called()
+        assert await trio_analyzer.can_fetch('http://example.com/path') is True
+        assert not request.called
 
 
 class TestGetRequestDelay:
@@ -130,8 +129,8 @@ class TestGetRequestDelay:
         can_fetch_mock.assert_not_called()
         crawl_delay_mock.assert_not_called()
 
-    async def test_should_return_negative_value_when_url_is_not_fetchable(self, trio_analyzer, get_response):
-        trio_analyzer._http_client.get = get_response(status_code=401)
+    async def test_should_return_negative_value_when_url_is_not_fetchable(self, httpx_mock, trio_analyzer):
+        httpx_mock.get('/robots.txt', status_code=401)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == -1
 
@@ -151,30 +150,32 @@ class TestGetRequestDelay:
         assert await analyzer.get_request_delay(url, 0) == -1
         assert count == 1
 
-    async def test_should_return_crawl_delay_value_if_robots_txt_specified_it(self, trio_analyzer, robots_content,
-                                                                              get_response):
+    async def test_should_return_crawl_delay_value_if_robots_txt_specified_it(self, httpx_mock, trio_analyzer,
+                                                                              robots_content):
         new_content = robots_content + '\nCrawl-delay: 2'
-        trio_analyzer._http_client.get = get_response(content=new_content)
+        httpx_mock.get('/robots.txt', content=new_content)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2
 
-    async def test_should_call_crawl_delay_method_only_one_time(self, mocker, trio_analyzer, robots_content):
+    async def test_should_call_crawl_delay_method_only_one_time(self, mocker, trio_analyzer, robots_content,
+                                                                httpx_mock):
+        httpx_mock.get('/robots.txt', content=robots_content)
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=2)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2
         crawl_delay_mock.assert_called_once_with('*')
 
-    async def test_should_return_request_rate_if_robots_txt_specified_it(self, robots_content, trio_analyzer,
-                                                                         get_response):
+    async def test_should_return_request_rate_if_robots_txt_specified_it(self, httpx_mock, trio_analyzer,
+                                                                         robots_content):
         new_content = robots_content + '\nRequest-rate: 2/5'
-        trio_analyzer._http_client.get = get_response(content=new_content)
+        httpx_mock.get('/robots.txt', content=new_content)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2.5
 
     async def test_should_call_request_rate_method_only_one_time(self, mocker, robots_content, trio_analyzer,
-                                                                 get_response):
-        trio_analyzer._http_client.get = get_response(content=robots_content)
+                                                                 httpx_mock):
+        httpx_mock.get('/robots.txt', content=robots_content)
         RequestRate = collections.namedtuple('RequestRate', 'requests seconds')
         request_rate = RequestRate(2, 5)
         request_rate_mock = mocker.patch('urllib.robotparser.RobotFileParser.request_rate', return_value=request_rate)
@@ -184,15 +185,15 @@ class TestGetRequestDelay:
         request_rate_mock.assert_called_once_with('*')
 
     async def test_should_return_given_delay_if_no_crawl_delay_or_request_rate_are_given(self, trio_analyzer,
-                                                                                         get_response, robots_content):
-        trio_analyzer._http_client.get = get_response(content=robots_content)
+                                                                                         httpx_mock, robots_content):
+        httpx_mock.get('/robots.txt', content=robots_content)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 3) == 3
 
-    async def test_should_return_cache_given_delay_if_compatible_url_is_called_twice(self, mocker, get_response,
+    async def test_should_return_cache_given_delay_if_compatible_url_is_called_twice(self, mocker, httpx_mock,
                                                                                      robots_content, trio_analyzer):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=None)
-        trio_analyzer._http_client.get = get_response(content=robots_content)
+        httpx_mock.get('/robots.txt', content=robots_content)
 
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 3) == 3
         assert await trio_analyzer.get_request_delay('http://example.com/page/1', 3) == 3

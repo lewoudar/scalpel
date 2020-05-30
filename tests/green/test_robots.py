@@ -75,8 +75,8 @@ class TestCanFetch:
         assert green_analyzer.can_fetch('http://example.com/path') is False
 
     @pytest.mark.parametrize('status_code', [401, 403])
-    def test_should_return_false_when_robots_is_unauthorized_or_forbidden(self, green_analyzer, httpx_mock,
-                                                                          status_code):
+    def test_should_return_false_when_robots_are_unauthorized_or_forbidden(self, green_analyzer, httpx_mock,
+                                                                           status_code):
         httpx_mock.get('/robots.txt', status_code=status_code)
 
         assert green_analyzer.can_fetch('http://example.com/') is False
