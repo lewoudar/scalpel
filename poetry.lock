@@ -87,7 +87,7 @@ version = "2020.6.20"
 [[package]]
 category = "main"
 description = "Foreign Function Interface for Python calling C code."
-marker = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\" or platform_python_implementation == \"CPython\" or os_name == \"nt\""
+marker = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\" or platform_python_implementation == \"CPython\" or os_name == \"nt\" and implementation_name != \"pypy\""
 name = "cffi"
 optional = false
 python-versions = "*"
@@ -570,7 +570,7 @@ version = "2.6.0"
 [[package]]
 category = "main"
 description = "C parser in Python"
-marker = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\" and os_name == \"nt\" or platform_python_implementation == \"CPython\" and os_name == \"nt\" or os_name == \"nt\" or platform_python_implementation == \"CPython\" and sys_platform == \"win32\" or platform_python_implementation == \"CPython\""
+marker = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\" or platform_python_implementation == \"CPython\" and sys_platform == \"win32\" and os_name == \"nt\" and implementation_name != \"pypy\" or platform_python_implementation == \"CPython\" or platform_python_implementation == \"CPython\" and os_name == \"nt\" and implementation_name != \"pypy\" or os_name == \"nt\" and implementation_name != \"pypy\" and (platform_python_implementation == \"CPython\" and sys_platform == \"win32\" or platform_python_implementation == \"CPython\" or os_name == \"nt\" and implementation_name != \"pypy\")"
 name = "pycparser"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -638,12 +638,13 @@ description = "Pytest plugin for trio"
 name = "pytest-trio"
 optional = false
 python-versions = ">=3.5"
-version = "0.5.2"
+version = "0.6.0"
 
 [package.dependencies]
 async-generator = ">=1.9"
+outcome = "*"
 pytest = ">=3.6"
-trio = ">=0.11"
+trio = ">=0.15.0"
 
 [[package]]
 category = "main"
@@ -770,13 +771,13 @@ category = "main"
 description = "A friendly Python library for async concurrency and I/O"
 name = "trio"
 optional = false
-python-versions = ">=3.5"
-version = "0.13.0"
+python-versions = ">=3.6"
+version = "0.16.0"
 
 [package.dependencies]
 async-generator = ">=1.9"
 attrs = ">=19.2.0"
-cffi = ">=1.12"
+cffi = ">=1.14"
 idna = "*"
 outcome = "*"
 sniffio = "*"
@@ -889,7 +890,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "8548adb566514483c41ad11aa1b4cbb03c2ddd4c930d91a01b57a2f20bb29e04"
+content-hash = "469768779957a5e0183ac0bc1555864fed0dba52480c63438524b07d74369d69"
 python-versions = "^3.6"
 
 [metadata.files]
@@ -1272,8 +1273,8 @@ pytest-mock = [
     {file = "pytest_mock-2.0.0-py2.py3-none-any.whl", hash = "sha256:cb67402d87d5f53c579263d37971a164743dc33c159dfb4fb4a86f37c5552307"},
 ]
 pytest-trio = [
-    {file = "pytest-trio-0.5.2.tar.gz", hash = "sha256:6a50e9585ebbb0ce9ae83d33bde7865952d76c4d4b8759a0345a551f113d468c"},
-    {file = "pytest_trio-0.5.2-py3-none-any.whl", hash = "sha256:848c2ba632d9c2d4e2770fe4eb149c8db69ecefc9239e2e6f77c41d9a2393d5e"},
+    {file = "pytest-trio-0.6.0.tar.gz", hash = "sha256:9bf0a490fd177a33617e8709242293fae47934de2b51f8209eb2c0545b6ca8fe"},
+    {file = "pytest_trio-0.6.0-py3-none-any.whl", hash = "sha256:3f48cc1df66d279d705af38ad38d1639c2e2380ddffcdc3a45bb81758de61f03"},
 ]
 pyyaml = [
     {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},
@@ -1329,8 +1330,8 @@ toml = [
     {file = "toml-0.10.1.tar.gz", hash = "sha256:926b612be1e5ce0634a2ca03470f95169cf16f939018233a670519cb4ac58b0f"},
 ]
 trio = [
-    {file = "trio-0.13.0-py3-none-any.whl", hash = "sha256:a6d83c0cb4a177ec0f5179ce88e27914d5c8e6fd01c4285176b949e6ddc88c6c"},
-    {file = "trio-0.13.0.tar.gz", hash = "sha256:f1cf00054ad974c86d9b7afa187a65d79fd5995340abe01e8e4784d86f4acb30"},
+    {file = "trio-0.16.0-py3-none-any.whl", hash = "sha256:451ddb27b4e5215e00646fcbb8028d341fccf284e053dc376506a14bb133dbcf"},
+    {file = "trio-0.16.0.tar.gz", hash = "sha256:df067dd0560c321af39d412cd81fc3a7d13f55af9150527daab980683e9fcf3c"},
 ]
 urllib3 = [
     {file = "urllib3-1.25.9-py2.py3-none-any.whl", hash = "sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115"},
