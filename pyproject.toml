@@ -12,7 +12,7 @@ attrs = "^19.3.0"
 fake-useragent = "^0.1.11"
 httpx = "^0.12.1"
 selenium = "^3.141.0"
-configuror = "^0.1.2"
+configuror = "^0.2.0"
 gevent = {extras = ["recommended"], version = "^20.4.0"}
 rfc3986 = {extras = ["idna"], version = "^1.4.0"}
 msgpack = "^1.0.0"
