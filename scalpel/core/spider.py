@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Union, Set, List, Tuple, Callable, Sequence
+from typing import Union, Set, List, Tuple, Callable
 
 import attr
 from rfc3986 import iri_reference, validators, exceptions
@@ -53,16 +53,29 @@ def url_validator(_, attribute: attr.Attribute, urls: URLS):
             raise ValueError(message)
 
 
-@attr.s(frozen=True)
+@attr.s
+class State:
+    """An empty class used to store arbitrary data"""
+    pass
+
+
+@attr.s(slots=True)
 class Spider:
     urls: URLS = attr.ib(validator=url_validator)
     parse: Callable = attr.ib(validator=attr.validators.is_callable())
     _name: str = attr.ib(validator=attr.validators.instance_of(str))
-    _config: Configuration = attr.ib(factory=Configuration, validator=attr.validators.instance_of(Configuration))
-    _fetched_urls: set = attr.ib(factory=set, init=False)
+    _config: Configuration = attr.ib(factory=Configuration, validator=attr.validators.instance_of(Configuration),
+                                     repr=False)
+    _ignore_errors: bool = attr.ib(default=False, validator=attr.validators.instance_of(bool))
+    reachable_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)
+    unreachable_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)
+    robots_excluded_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)
+    request_counter: int = attr.ib(default=0, init=False, repr=False)
+    _total_fetch_time: float = attr.ib(default=0.0)
+    _state: State = attr.ib(factory=State, init=False, repr=False)
 
     @_name.default
-    def get_name(self) -> str:
+    def _get_name(self) -> str:
         now = datetime.now()
         name = f'spider-{now.strftime("%Y-%m-%d@%H:%M:%S.%f")}'
         logger.debug('getting a default spider name: %s', name)
@@ -78,12 +91,18 @@ class Spider:
         logger.debug('returning config property: %s', self._config)
         return self._config
 
+    @property
+    def state(self) -> State:
+        logger.debug('returning state property: %s', self._state)
+        return self._state
+
 
 @attr.s(frozen=True)
 class SpiderStatistics:
-    fetched_urls: Sequence[str] = attr.ib()
+    reachable_urls: Set[str] = attr.ib()
+    unreachable_urls: Set[str] = attr.ib()
+    robot_excluded_urls: Set[str] = attr.ib()
     followed_url_count: int = attr.ib()
+    request_counter: int = attr.ib()
     average_fetch_time: float = attr.ib()
-    unreachable_urls: Sequence[str] = attr.ib()
-    robot_excluded_urls: Sequence[str] = attr.ib()
     total_time: float = attr.ib()

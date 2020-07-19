@@ -6,7 +6,7 @@ from rfc3986 import uri_reference
 from rfc3986.exceptions import InvalidComponentsError
 
 from scalpel.core.config import Configuration
-from scalpel.core.spider import Spider, SpiderStatistics
+from scalpel.core.spider import Spider, SpiderStatistics, State
 
 
 @pytest.fixture(scope='module')
@@ -150,33 +150,86 @@ class TestConfigAttribute:
         assert config == spider.config
 
 
-class TestFetchedUrlsAttribute:
-    """Tests spider _fetched_urls attributes"""
+class TestUrlAttributes:
+    """Tests spider reachable_urls, unreachable_urls and robots_excluded_urls"""
 
-    def test_should_return_empty_set_when_getting_fetched_urls_attribute(self, default_spider_arguments):
+    def test_should_return_empty_set_when_getting_urls_attributes(self, default_spider_arguments):
         spider = Spider(**default_spider_arguments)
-        assert set() == spider._fetched_urls
+        assert set() == spider.reachable_urls
+        assert set() == spider.unreachable_urls
+        assert set() == spider.robots_excluded_urls
+
+
+class TestIgnoreErrorsAttribute:
+    """Tests spider _ignore_errors attribute"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('value', [1, '1'])
+    def test_should_raise_error_when_given_value_is_not_a_boolean(self, default_spider_arguments, value):
+        with pytest.raises(TypeError):
+            Spider(**default_spider_arguments, ignore_errors=value)
+
+    @pytest.mark.parametrize('value', [True, False])
+    def test_should_not_raise_error_when_giving_correct_value(self, default_spider_arguments, value):
+        try:
+            Spider(**default_spider_arguments, ignore_errors=value)
+        except TypeError as e:
+            pytest.fail(f'unexpected error when instantiating spider: {e}')
+
+
+class TestCounterAttribute:
+    """Tests spider request_counter attribute and property"""
+
+    def test_should_return_empty_value_when_getting_attributes(self, default_spider_arguments):
+        spider = Spider(**default_spider_arguments)
+        assert 0 == spider.request_counter
+
+
+class TestStateAttribute:
+    """Tests _state attribute and property"""
+
+    def test_should_return_empty_state(self, default_spider_arguments):
+        spider = Spider(**default_spider_arguments)
+        assert State() == spider.state
+
+    def test_should_be_able_to_add_arbitrary_properties_without_errors(self, default_spider_arguments):
+        spider = Spider(**default_spider_arguments)
+        try:
+            spider.state.hello = 'hello'
+            spider.state.multiply_by_2 = lambda x: x * 2
+        except Exception as e:
+            pytest.fail(f'unexpected error when setting state: {e}')
+
+
+class TestTotalFetchTimeAttribute:
+    """Tests spider _total_fetch_time attribute"""
+
+    def test_should_return_default_empty_value(self, default_spider_arguments):
+        spider = Spider(**default_spider_arguments)
+        assert 0.0 == spider._total_fetch_time
 
 
 class TestSpiderStatisticsClass:
     """Tests SpiderStatistics class"""
 
     def test_should_correctly_instantiate_class(self):
-        fetched_urls = ('http://foo.com', 'http://bar.com')
-        unreachable_urls = ()
-        robot_excluded_urls = ('http://forbidden.com',)
+        reachable_urls = {'http://foo.com', 'http://bar.com'}
+        unreachable_urls = set()
+        robot_excluded_urls = {'http://forbidden.com'}
         stats = SpiderStatistics(
-            fetched_urls=fetched_urls,
+            reachable_urls=reachable_urls,
             followed_url_count=3,
             average_fetch_time=1.2,
             unreachable_urls=unreachable_urls,
             robot_excluded_urls=robot_excluded_urls,
+            request_counter=2,
             total_time=4.6
         )
 
-        assert fetched_urls == stats.fetched_urls
+        assert reachable_urls == stats.reachable_urls
         assert 3 == stats.followed_url_count
         assert 1.2 == stats.average_fetch_time
         assert unreachable_urls == stats.unreachable_urls
         assert robot_excluded_urls == stats.robot_excluded_urls
+        assert 2 == stats.request_counter
         assert 4.6 == stats.total_time
