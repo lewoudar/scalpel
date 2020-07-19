@@ -238,6 +238,27 @@ class TestFollowRobotsTxt:
         assert default_config.follow_robots_txt is False
 
 
+class TestBackupFilename:
+    """Checks attribute backup_filename"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('value', [b'file', 4])
+    def test_should_raise_type_error_when_value_is_not_a_string(self, value):
+        with pytest.raises(TypeError):
+            Configuration(backup_filename=value)
+
+    def test_should_raise_error_when_provided_path_is_not_writable(self, mocker):
+        mocker.patch('pathlib.Path.touch', side_effect=RuntimeError)
+        with pytest.raises(RuntimeError):
+            Configuration(backup_filename='foo.txt')
+
+    def test_should_not_raise_error_when_value_is_a_string(self):
+        try:
+            Configuration(backup_filename='hello.mp')
+        except TypeError as e:
+            pytest.fail(f'unexpected error when configuring backup_filename: {e}')
+
+
 # noinspection PyTypeChecker
 class TestRobotsCacheFolder:
     """Checks attribute robots_cache_folder"""

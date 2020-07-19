@@ -4,7 +4,7 @@ import re
 import tempfile
 from importlib import import_module
 from pathlib import Path
-from typing import List, Callable, Any, Dict, Union
+from typing import List, Callable, Any, Dict, Union, Optional
 
 import attr
 from configuror import Config
@@ -46,6 +46,15 @@ def validate_robots_folder(_, attribute: attr.Attribute, path: Path) -> None:
         logger.exception(f'Cannot read file in {path}')
         raise
     dummy_file.unlink()
+
+
+def check_backup_file_can_be_created(_, _attribute: attr.Attribute, value: str) -> None:
+    if value is not None:
+        p = Path(value)
+        # touch helps to see if a file can be created with the given path
+        p.touch()
+        # we don't want to have a created file if other attributes validation failed
+        p.unlink()
 
 
 # I could just use return type "Any" but I want to insist on the fact that the function must
@@ -98,6 +107,8 @@ middleware_validator = attr.validators.deep_iterable(
     member_validator=attr.validators.is_callable(),
     iterable_validator=attr.validators.instance_of((list, tuple))
 )
+backup_filename_validators = [attr.validators.optional(attr.validators.instance_of(str)),
+                              check_backup_file_can_be_created]
 
 
 @attr.s(frozen=True)
@@ -110,6 +121,7 @@ class Configuration:
     follow_robots_txt: bool = attr.ib(default=False, converter=bool_converter,
                                       validator=attr.validators.instance_of(bool))
     robots_cache_folder: Path = attr.ib(converter=Path, validator=validate_robots_folder)
+    backup_filename: Optional[str] = attr.ib(default=None, validator=backup_filename_validators)
     response_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
                                                    validator=middleware_validator)
     item_processors: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
