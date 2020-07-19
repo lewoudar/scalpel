@@ -1,6 +1,6 @@
+import logging
 import random
 import re
-import logging
 import tempfile
 from importlib import import_module
 from pathlib import Path
@@ -112,8 +112,8 @@ class Configuration:
     robots_cache_folder: Path = attr.ib(converter=Path, validator=validate_robots_folder)
     response_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
                                                    validator=middleware_validator)
-    process_item_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
-                                                       validator=middleware_validator)
+    item_processors: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
+                                              validator=middleware_validator)
 
     @user_agent.default
     def get_default_user_agent(self) -> str:

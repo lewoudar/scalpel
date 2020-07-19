@@ -282,13 +282,13 @@ class TestRobotsCacheFolder:
 
 
 class TestMiddlewareAttributes:
-    """Checks attributes response_middlewares and process_item_middlewares"""
+    """Checks attributes response_middlewares and item_processors"""
 
     @pytest.mark.parametrize('parameter', [
         {'response_middlewares': {}},
         {'response_middlewares': set()},
-        {'process_item_middlewares': {}},
-        {'process_item_middlewares': set()}
+        {'item_processors': {}},
+        {'item_processors': set()}
     ])
     def test_should_raise_error_when_value_is_not_a_sequence(self, parameter):
         with pytest.raises(TypeError):
@@ -296,7 +296,7 @@ class TestMiddlewareAttributes:
 
     @pytest.mark.parametrize('parameter', [
         {'response_middlewares': [lambda x: x, 'foo']},
-        {'process_item_middlewares': (lambda x: x, 'bar')}
+        {'item_processors': (lambda x: x, 'bar')}
     ])
     def test_should_raise_error_when_item_in_iterable_is_not_a_callable(self, parameter):
         with pytest.raises(TypeError):
@@ -305,8 +305,8 @@ class TestMiddlewareAttributes:
     @pytest.mark.parametrize('parameter', [
         {'response_middlewares': [lambda x: x]},
         {'response_middlewares': (lambda x: x,)},
-        {'process_item_middlewares': [lambda x: x]},
-        {'process_item_middlewares': (lambda x: x,)}
+        {'item_processors': [lambda x: x]},
+        {'item_processors': (lambda x: x,)}
     ])
     def test_should_not_raise_error_when_giving_correct_sequence(self, parameter):
         try:
@@ -317,16 +317,16 @@ class TestMiddlewareAttributes:
     # noinspection PyTypeChecker
     def test_should_convert_string_to_callable_list(self, math_module):
         config = Configuration(
-            process_item_middlewares='custom_math.add, custom_math.minus',
+            item_processors='custom_math.add, custom_math.minus',
             response_middlewares='custom_math.add:custom_math.minus'
         )
 
         assert [math_module.add, math_module.minus] == config.response_middlewares
-        assert [math_module.add, math_module.minus] == config.process_item_middlewares
+        assert [math_module.add, math_module.minus] == config.item_processors
 
     def test_default_middleware_value_is_an_empty_list(self, default_config):
         assert [] == default_config.response_middlewares
-        assert [] == default_config.process_item_middlewares
+        assert [] == default_config.item_processors
 
 
 class TestMethodGetDictWithLowerKeys:
