@@ -80,7 +80,10 @@ class BaseStaticResponse(Response):
         logger.debug('selecting content using xpath selector: %s', query)
         return self._selector.xpath(query)
 
-    def _join_url(self, url: str) -> str:
+    def _get_absolute_url(self, url: str) -> str:
+        """
+        This method will help to get absolute url from local or http urls.
+        """
         if self._url:
             absolute_uri = uri_reference(self._url)
             given_uri = uri_reference(url)

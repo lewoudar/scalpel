@@ -81,25 +81,25 @@ class TestBaseStaticResponse:
         response = BaseStaticResponse(httpx_response=httpx_response)
         assert '<p>Hello World!</p>' == response.xpath('//p').get()
 
-    # tests method _join_url
+    # tests method _get_absolute_url
 
-    @pytest.mark.parametrize(('given_url', 'joined_url'), [
+    @pytest.mark.parametrize(('given_url', 'absolute_url'), [
         ('hello', 'http://foobar.com/hello'),
         ('/hello', 'http://foobar.com/hello'),
         ('#hello', 'http://foobar.com#hello'),
         ('http://example.com', 'http://example.com')
     ])
-    def test_should_return_joined_url_given_httpx_response(self, httpx_response, given_url, joined_url):
+    def test_should_return_absolute_url_given_httpx_response(self, httpx_response, given_url, absolute_url):
         response = BaseStaticResponse(httpx_response=httpx_response)
-        assert joined_url == response._join_url(given_url)
+        assert absolute_url == response._get_absolute_url(given_url)
 
-    @pytest.mark.parametrize(('given_url', 'joined_url'), [
+    @pytest.mark.parametrize(('given_url', 'absolute_url'), [
         ('page.html', 'file:/C/foo/page.html'),
         ('/page.html', 'file:/page.html'),
         ('#page', 'file:/C/foo/bar.html'),
         ('http://foo.com', 'http://foo.com'),
         ('file:///C:/path/to/file', 'file:///C:/path/to/file')
     ])
-    def test_should_return_joined_url_given_url_and_text(self, dummy_data, given_url, joined_url):
+    def test_should_return_absolute_url_given_url_and_text(self, dummy_data, given_url, absolute_url):
         response = BaseStaticResponse(url='file:/C/foo/bar.html', text=dummy_data.decode())
-        assert joined_url == response._join_url(given_url)
+        assert absolute_url == response._get_absolute_url(given_url)
