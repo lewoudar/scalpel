@@ -9,12 +9,12 @@ from rfc3986 import uri_reference
 logger = logging.getLogger('scalpel')
 
 
-@attr.s
+@attr.s(kw_only=True)
 class Response:
-    _url: str = attr.ib(default='', validator=attr.validators.optional(attr.validators.instance_of(str)), kw_only=True)
-    _text: str = attr.ib(default='', validator=attr.validators.instance_of(str), kw_only=True)
+    _url: str = attr.ib(default='', validator=attr.validators.optional(attr.validators.instance_of(str)))
+    _text: str = attr.ib(default='', validator=attr.validators.instance_of(str))
     _httpx_response: Optional[httpx.Response] = attr.ib(
-        default=None, validator=attr.validators.optional(attr.validators.instance_of(httpx.Response)), kw_only=True
+        default=None, validator=attr.validators.optional(attr.validators.instance_of(httpx.Response))
     )
 
     @property
