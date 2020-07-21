@@ -215,10 +215,11 @@ class TestSpiderStatisticsClass:
     def test_should_correctly_instantiate_class(self):
         reachable_urls = {'http://foo.com', 'http://bar.com'}
         unreachable_urls = set()
+        followed_urls = {'http://followed.com'}
         robot_excluded_urls = {'http://forbidden.com'}
         stats = SpiderStatistics(
             reachable_urls=reachable_urls,
-            followed_url_count=3,
+            followed_urls=followed_urls,
             average_fetch_time=1.2,
             unreachable_urls=unreachable_urls,
             robot_excluded_urls=robot_excluded_urls,
@@ -227,7 +228,7 @@ class TestSpiderStatisticsClass:
         )
 
         assert reachable_urls == stats.reachable_urls
-        assert 3 == stats.followed_url_count
+        assert followed_urls == stats.followed_urls
         assert 1.2 == stats.average_fetch_time
         assert unreachable_urls == stats.unreachable_urls
         assert robot_excluded_urls == stats.robot_excluded_urls
