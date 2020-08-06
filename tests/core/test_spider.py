@@ -201,12 +201,13 @@ class TestStateAttribute:
             pytest.fail(f'unexpected error when setting state: {e}')
 
 
-class TestTotalFetchTimeAttribute:
-    """Tests spider _total_fetch_time attribute"""
+class TestFloatAttributes:
+    """Tests spider _total_fetch_time and _duration attributes"""
 
     def test_should_return_default_empty_value(self, default_spider_arguments):
         spider = Spider(**default_spider_arguments)
         assert 0.0 == spider._total_fetch_time
+        assert 0.0 == spider._duration
 
 
 class TestSpiderStatisticsClass:
