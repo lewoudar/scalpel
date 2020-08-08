@@ -3,10 +3,10 @@ from datetime import datetime
 from typing import Any
 
 
-def datetime_encoder(data: Any) -> dict:
+def datetime_encoder(data: Any) -> Any:
     if isinstance(data, datetime):
         return {'__datetime__': True, 'as_str': data.strftime('%Y%m%dT%H:%M:%S.%f')}
-    return data
+    return data  # pragma: no cover
 
 
 def datetime_decoder(data: Any) -> Any:

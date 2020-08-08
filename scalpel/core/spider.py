@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Union, Set, List, Tuple, Callable
 
 import attr
@@ -75,6 +76,20 @@ class Spider:
     _duration: float = attr.ib(init=False, default=0.0, repr=False)
     _total_fetch_time: float = attr.ib(default=0.0)
     _state: State = attr.ib(factory=State, init=False, repr=False)
+    _backup_filename: str = attr.ib(init=False, repr=False)
+
+    def __attrs_post_init__(self):
+        # we don't use a default factory method for self._backup_filename because self._config used in this method
+        # is not yet validated, so if self._config is not correct, we get a confused error related to the latter
+        if self._config.backup_filename is None:
+            backup_path = Path.cwd() / self._name
+        else:
+            backup_path = Path(self._config.backup_filename)
+            if not backup_path.is_absolute():
+                backup_path = Path.cwd() / self._config.backup_filename
+
+        self._backup_filename = f'{backup_path.absolute()}'
+        logger.debug('computing backup filename to value: %s', self._backup_filename)
 
     @_name.default
     def _get_name(self) -> str:
