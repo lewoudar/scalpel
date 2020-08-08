@@ -8,6 +8,7 @@ from configuror import DecodeError
 from fake_useragent import FakeUserAgentError
 
 from scalpel.core.config import Configuration, bool_converter, callable_list_converter
+from scalpel.core.message_pack import datetime_decoder, datetime_encoder
 from tests.helpers import assert_dicts
 
 
@@ -324,6 +325,15 @@ class TestMiddlewareAttributes:
             Configuration(**parameter)
 
     @pytest.mark.parametrize('parameter', [
+        {'response_middlewares': 'custom_math.add hello'},
+        {'item_processors': 'custom_math.add hello'}
+    ])
+    @pytest.mark.usefixtures('math_module')
+    def test_should_raise_error_when_string_path_does_not_represent_a_callable(self, parameter):
+        with pytest.raises(ValueError):
+            Configuration(**parameter)
+
+    @pytest.mark.parametrize('parameter', [
         {'response_middlewares': [lambda x: x]},
         {'response_middlewares': (lambda x: x,)},
         {'item_processors': [lambda x: x]},
@@ -348,6 +358,60 @@ class TestMiddlewareAttributes:
     def test_default_middleware_value_is_an_empty_list(self, default_config):
         assert [] == default_config.response_middlewares
         assert [] == default_config.item_processors
+
+
+class TestMsgPackAttributes:
+    """Tests msgpack_encoder and msgpack decoder attributes"""
+
+    @pytest.mark.parametrize('parameter', [
+        {'msgpack_encoder': 4},
+        {'msgpack_decoder': 4}
+    ])
+    def test_should_raise_error_when_msgpack_encoder_or_decoder_is_not_a_callable(self, parameter):
+        with pytest.raises(TypeError):
+            Configuration(**parameter)
+
+    @pytest.mark.parametrize('parameter', [
+        {'msgpack_decoder': 'hello'},
+        {'msgpack_encoder': 'hello'}
+    ])
+    def test_should_raise_error_when_msgpack_encoder_or_decoder_is_not_a_string_representing_a_callable(
+            self, parameter
+    ):
+        with pytest.raises(ValueError):
+            Configuration(**parameter)
+
+    @pytest.mark.parametrize('parameter', [
+        {'msgpack_encoder': lambda x: x},
+        {'msgpack_decoder': lambda x: x}
+    ])
+    def test_should_not_raise_error_when_msgpack_encoder_or_decoder_is_a_callable(self, parameter):
+        try:
+            Configuration(**parameter)
+        except Exception as e:
+            pytest.fail(f'unexpected error when instantiating msgpack encoder or decoder: {e}')
+
+    # noinspection PyTypeChecker
+    def test_should_not_raise_error_when_msgpack_encoder_or_decoder_is_a_string_representing_a_callable(
+            self, math_module
+    ):
+        config = None
+        try:
+            # ok, the functions don't look as normal msgpack encoder or decoder, but it is just to test that the feature
+            # works as expected
+            config = Configuration(
+                msgpack_encoder='custom_math.add',
+                msgpack_decoder='custom_math.minus'
+            )
+        except Exception as e:
+            pytest.fail(f'unexpected error when instantiating msgpack encoder or decoder: {e}')
+
+        assert math_module.add is config.msgpack_encoder
+        assert math_module.minus is config.msgpack_decoder
+
+    def test_should_match_default_msgpack_encoder_and_decoder(self, default_config):
+        assert datetime_decoder is default_config.msgpack_decoder
+        assert datetime_encoder is default_config.msgpack_encoder
 
 
 class TestMethodGetDictWithLowerKeys:

@@ -10,6 +10,8 @@ import attr
 from configuror import Config
 from fake_useragent import UserAgent, FakeUserAgentError
 
+from .message_pack import datetime_encoder, datetime_decoder
+
 logger = logging.getLogger('scalpel')
 
 
@@ -76,7 +78,14 @@ def bool_converter(value: Any) -> Union[bool, Any]:
         raise ValueError(message)
 
 
-# The same logic as above converter applies to the type of return
+def get_callable_from_string(callable_string: str) -> Callable:
+    parts = callable_string.split('.')
+    module_name = '.'.join(parts[:-1])
+    module = import_module(module_name)
+    return getattr(module, parts[-1])
+
+
+# The same logic as the bool converter applies to the type of return
 def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
     if isinstance(value, list):
         if not all(isinstance(item, str) for item in value):
@@ -91,13 +100,17 @@ def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
 
     callables = []
     for str_callable in str_callable_list:
-        parts = str_callable.split('.')
-        module_name = '.'.join(parts[:-1])
-        module = import_module(module_name)
-        callables.append(getattr(module, parts[-1]))
+        callables.append(get_callable_from_string(str_callable))
 
     logger.debug('returning callables: %s', callables)
     return callables
+
+
+def msgpack_converter(value: Any) -> Union[Callable, Any]:
+    if not isinstance(value, str):
+        logger.debug(f'{value} is not a string, returning it as it')
+        return value
+    return get_callable_from_string(value)
 
 
 positive_int_validators = [attr.validators.instance_of(int), check_value_greater_or_equal_than_0]
@@ -126,6 +139,10 @@ class Configuration:
                                                    validator=middleware_validator)
     item_processors: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
                                               validator=middleware_validator)
+    msgpack_encoder: Callable = attr.ib(repr=False, converter=msgpack_converter, default=datetime_encoder,
+                                        validator=attr.validators.is_callable())
+    msgpack_decoder: Callable = attr.ib(repr=False, converter=msgpack_converter, default=datetime_decoder,
+                                        validator=attr.validators.is_callable())
 
     @user_agent.default
     def get_default_user_agent(self) -> str:
