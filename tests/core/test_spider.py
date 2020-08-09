@@ -210,37 +210,6 @@ class TestFloatAttributes:
         assert 0.0 == spider._duration
 
 
-class TestBackupFileAttribute:
-    """Tests spider _backup_file attribute"""
-
-    def test_should_return_a_custom_backup_filename_when_no_one_is_given_in_config(
-            self, tmp_path, mocker, default_spider_arguments
-    ):
-        mocker.patch('pathlib.Path.cwd', return_value=tmp_path)
-        spider = Spider(name='spider', **default_spider_arguments)
-        backup_path = tmp_path / 'spider'
-
-        assert f'{backup_path.resolve()}' == spider._backup_filename
-
-    def test_should_return_config_backup_file_when_it_is_an_absolute_path(self, tmp_path, default_spider_arguments):
-        backup_path = tmp_path / 'backup.mp'
-        backup_filename = f'{backup_path.resolve()}'
-        config = Configuration(backup_filename=backup_filename)
-        spider = Spider(**default_spider_arguments, config=config)
-
-        assert backup_filename == spider._backup_filename
-
-    def test_should_return_an_absolute_filename_containing_current_directory_when_config_filename_is_relative(
-            self, tmp_path, mocker, default_spider_arguments
-    ):
-        mocker.patch('pathlib.Path.cwd', return_value=tmp_path)
-        config = Configuration(backup_filename='backup.mp')
-        spider = Spider(**default_spider_arguments, config=config)
-        backup_filename = tmp_path / 'backup.mp'
-
-        assert f'{backup_filename.resolve()}' == spider._backup_filename
-
-
 class TestSpiderStatisticsClass:
     """Tests SpiderStatistics class"""
 

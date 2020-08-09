@@ -1,5 +1,6 @@
 import sys
 import tempfile
+import uuid
 from importlib import import_module
 from pathlib import Path
 
@@ -258,6 +259,11 @@ class TestBackupFilename:
             Configuration(backup_filename='hello.mp')
         except TypeError as e:
             pytest.fail(f'unexpected error when configuring backup_filename: {e}')
+
+    def tests_should_return_default_backup_filename_when_no_one_is_given(self, mocker):
+        mocker.patch('uuid.uuid4', return_value=uuid.UUID('84a49591-c522-4a1c-971c-cf0282c6a759'))
+        config = Configuration()
+        assert 'backup-84a49591-c522-4a1c-971c-cf0282c6a759.mp' == config.backup_filename
 
 
 # noinspection PyTypeChecker

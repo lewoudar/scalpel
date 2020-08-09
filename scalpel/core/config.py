@@ -2,6 +2,7 @@ import logging
 import random
 import re
 import tempfile
+import uuid
 from importlib import import_module
 from pathlib import Path
 from typing import List, Callable, Any, Dict, Union, Optional
@@ -120,8 +121,7 @@ middleware_validator = attr.validators.deep_iterable(
     member_validator=attr.validators.is_callable(),
     iterable_validator=attr.validators.instance_of((list, tuple))
 )
-backup_filename_validators = [attr.validators.optional(attr.validators.instance_of(str)),
-                              check_backup_file_can_be_created]
+backup_filename_validators = [attr.validators.instance_of(str), check_backup_file_can_be_created]
 
 
 @attr.s(frozen=True)
@@ -134,7 +134,7 @@ class Configuration:
     follow_robots_txt: bool = attr.ib(default=False, converter=bool_converter,
                                       validator=attr.validators.instance_of(bool))
     robots_cache_folder: Path = attr.ib(converter=Path, validator=validate_robots_folder)
-    backup_filename: Optional[str] = attr.ib(default=None, validator=backup_filename_validators)
+    backup_filename: Optional[str] = attr.ib(validator=backup_filename_validators)
     response_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
                                                    validator=middleware_validator)
     item_processors: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
@@ -145,7 +145,7 @@ class Configuration:
                                         validator=attr.validators.is_callable())
 
     @user_agent.default
-    def get_default_user_agent(self) -> str:
+    def _get_default_user_agent(self) -> str:
         try:
             ua = UserAgent()
             user_agent = ua.random
@@ -160,10 +160,16 @@ class Configuration:
             return fallback
 
     @robots_cache_folder.default
-    def get_robots_cache_folder(self) -> Path:
+    def _get_robots_cache_folder(self) -> Path:
         temp_dir = Path(tempfile.mkdtemp(prefix='robots_'))
         logger.debug('returning default created temporary directory: %s', temp_dir)
         return temp_dir
+
+    @backup_filename.default
+    def _get_backup_filename(self) -> str:
+        name = f'backup-{uuid.uuid4()}.mp'
+        logger.debug('returning computed backup filename: %s', name)
+        return name
 
     @property
     def request_delay(self) -> int:
