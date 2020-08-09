@@ -123,6 +123,23 @@ class TestStaticSpider:
         assert file_url == static_response._url
         assert 'hello world' == static_response._text
         assert static_response._httpx_response is None
+        assert {file_url} == static_spider.reachable_urls
+
+    def test_should_not_called_parse_method_when_file_can_be_opened(self, tmp_path, mocker):
+        logger_mock = mocker.patch('logging.Logger.exception')
+        hello_file = tmp_path / 'hello.txt'
+        file_url = hello_file.resolve().as_uri()
+        parse_args = []
+
+        def parse(spider, response):
+            parse_args.extend([spider, response])
+
+        static_spider = StaticSpider(urls=[file_url], parse=parse)
+        static_spider._handle_url(file_url)
+
+        assert [] == parse_args
+        logger_mock.assert_any_call('unable to open file %s', file_url)
+        assert {file_url} == static_spider.unreachable_urls
 
     @respx.mock
     @pytest.mark.parametrize('status_code', [404, 500])
@@ -234,31 +251,6 @@ class TestStaticSpider:
         task.link_exception(StaticSpider._error_callback)
 
         logger_mock.assert_not_called()
-
-    # test _get_delay_before_request
-
-    def test_should_called_robots_analyzer_method_when_follow_robots_attribute_is_true(self, mocker):
-        get_request_delay_mock = mocker.patch(
-            'scalpel.green.robots.RobotsAnalyzer.get_request_delay', return_value=1
-        )
-        url = 'http://foo.com'
-        config = Configuration(follow_robots_txt=True)
-        spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=config)
-
-        assert 1 == spider._get_delay_before_request(url)
-        get_request_delay_mock.assert_called_once_with(url, config.request_delay)
-
-    def test_should_not_called_robots_analyzer_method_when_follow_robots_attribute_is_false(self, mocker):
-        get_request_delay_mock = mocker.patch(
-            'scalpel.green.robots.RobotsAnalyzer.get_request_delay', return_value=1
-        )
-        url = 'http://foo.com'
-        config = Configuration(follow_robots_txt=False)
-        spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=config)
-
-        # config.request_delay is 0 by default
-        assert 0 == spider._get_delay_before_request(url)
-        get_request_delay_mock.assert_not_called()
 
     # test save_item
 

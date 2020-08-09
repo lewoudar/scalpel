@@ -1,7 +1,7 @@
 import logging
 import platform
 from time import time
-from typing import Callable, Optional, Union, Any
+from typing import Callable, Optional, Any
 
 import attr
 import gevent
@@ -79,8 +79,14 @@ class StaticSpider(Spider):
             static_url = url
             logger.debug('url %s is a file url so we attempt to read its content')
             file_path = ur.path[1:] if platform.system() == 'Windows' else ur.path
-            with open_file(file_path) as f:
-                text = f.read()
+            try:
+                with open_file(file_path) as f:
+                    text = f.read()
+            except OSError:
+                logger.exception('unable to open file %s', url)
+                self.unreachable_urls.add(url)
+                return
+            self.reachable_urls.add(url)
         else:
             if self.config.follow_robots_txt:
                 if not self._robots_analyser.can_fetch(url):
@@ -134,14 +140,6 @@ class StaticSpider(Spider):
     def _done_callback(self, *_) -> None:
         logger.debug('running greenlet done callback')
         self._queue.task_done()
-
-    # TODO: this method is not used now, because of the issue revealed in _worker method, may be remove it?
-    def _get_delay_before_request(self, url: str) -> Union[int, float]:
-        logger.debug('getting request delay before performing http request')
-        if self.config.follow_robots_txt:
-            return self._robots_analyser.get_request_delay(url, self.config.request_delay)
-        else:
-            return self.config.request_delay
 
     def _worker(self):
         # TODO: I had a weird LoopExit issue (while testing) when I tried to get the delay between requests
