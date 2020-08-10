@@ -47,7 +47,7 @@ class Response:
     @property
     def content(self) -> bytes:
         if self._text:
-            _content = self._text.encode()
+            _content = self._text.encode(errors='replace')
         else:
             _content = self._httpx_response.content
         logger.debug('returning response byte content:\n %s', _content)
