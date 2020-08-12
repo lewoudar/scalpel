@@ -1,3 +1,6 @@
+from datetime import datetime
+from pathlib import Path
+
 import gevent
 import httpx
 import pytest
@@ -7,6 +10,8 @@ from gevent.pool import Pool
 from gevent.queue import JoinableQueue
 
 from scalpel.core.config import Configuration
+from scalpel.core.message_pack import datetime_decoder
+from scalpel.core.spider import SpiderStatistics
 from scalpel.green.files import read_mp
 from scalpel.green.response import StaticResponse
 from scalpel.green.robots import RobotsAnalyzer
@@ -315,3 +320,82 @@ class TestStaticSpider:
         assert stats.request_counter == 1
         assert stats.total_time > 0
         assert stats.average_fetch_time > 0
+
+
+class TestIntegrationStaticSpider:
+    """More concrete tests of StaticSpider class"""
+
+    @staticmethod
+    def processor(item: dict) -> dict:
+        item['date'] = datetime.now()
+        return item
+
+    @staticmethod
+    def parse(spider: StaticSpider, response: StaticResponse) -> None:
+        quotes = [quote.strip() for quote in response.xpath('//blockquote/p/text()').getall()]
+        authors = [author.strip() for author in response.css('blockquote footer::text').getall()]
+        for quote, author in zip(quotes, authors):
+            spider.save_item({
+                'quote': quote,
+                'author': author
+            })
+
+        link = response.xpath('//a[2][contains(@href, "page")]/@href').get()
+        if link is not None:
+            response.follow(link)
+
+    @staticmethod
+    def common_assert(stats: SpiderStatistics, backup_path: Path):
+        assert stats.unreachable_urls == set()
+        assert stats.robot_excluded_urls == set()
+        assert stats.total_time > 0
+
+        albert_count = 0
+        for item in read_mp(backup_path, decoder=datetime_decoder):
+            assert isinstance(item['date'], datetime)
+            if item['author'] == 'Albert Einstein':
+                albert_count += 1
+
+        assert albert_count == 3
+
+    def test_should_work_with_file_url(self, page_1_file_url, tmp_path):
+        backup_path = tmp_path / 'backup.mp'
+        config = Configuration(item_processors=[self.processor], backup_filename=f'{backup_path}')
+        static_spider = StaticSpider(urls=[page_1_file_url], parse=self.parse, config=config)
+        static_spider.run()
+        stats = static_spider.statistics()
+        followed_urls = {
+            page_1_file_url.replace('1', '2').replace('///', '/'),
+            page_1_file_url.replace('1', '3').replace('///', '/')
+        }
+
+        assert stats.reachable_urls == {page_1_file_url} | followed_urls
+        assert stats.followed_urls == followed_urls
+        assert stats.request_counter == 0
+        assert stats.average_fetch_time == 0.0
+        self.common_assert(stats, backup_path)
+
+    @respx.mock
+    def test_should_work_with_http_url(self, page_content, tmp_path):
+        url = 'http://quotes.com'
+        respx.get(f'{url}/robots.txt', status_code=404)
+        respx.get(url, content=page_content('page1.html'))
+        for i in range(2, 4):
+            respx.get(f'{url}/page{i}.html', content=page_content(f'page{i}.html'))
+
+        backup_path = tmp_path / 'backup.mp'
+        config = Configuration(
+            item_processors=[self.processor],
+            backup_filename=f'{backup_path}',
+            follow_robots_txt=True
+        )
+        static_spider = StaticSpider(urls=[url], parse=self.parse, config=config)
+        static_spider.run()
+        stats = static_spider.statistics()
+        followed_urls = {f'{url}/page{i}.html' for i in range(2, 4)}
+
+        assert stats.reachable_urls == {url} | followed_urls
+        assert stats.followed_urls == followed_urls
+        assert stats.request_counter == 3
+        assert stats.average_fetch_time > 0
+        self.common_assert(stats, backup_path)

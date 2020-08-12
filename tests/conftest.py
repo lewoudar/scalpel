@@ -58,3 +58,21 @@ def create_msgpack_file(encode_datetime):
         packer.reset()
 
     return _create_msgpack_file
+
+
+@pytest.fixture(scope='session')
+def page_1_file_url():
+    """Returns file url of website/page1.html"""
+    p = Path(__file__).parent / 'website' / 'page1.html'
+    return p.as_uri()
+
+
+@pytest.fixture(scope='session')
+def page_content():
+    """Returns function factory to get page content of each html page in website folder"""
+
+    def _page_content(page: str):
+        p = Path(__file__).parent / 'website' / page
+        return p.read_text()
+
+    return _page_content
