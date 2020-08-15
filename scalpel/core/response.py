@@ -68,7 +68,7 @@ class BaseStaticResponse(Response):
     _selector: parsel.Selector = attr.ib(init=False)
 
     @_selector.default
-    def get_selector(self) -> parsel.Selector:
+    def _get_selector(self) -> parsel.Selector:
         logger.debug('creating parsel selector with text:\n %s', self.text)
         return parsel.Selector(self.text)
 
