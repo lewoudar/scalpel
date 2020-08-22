@@ -59,6 +59,17 @@ class State:
     pass
 
 
+@attr.s(frozen=True)
+class SpiderStatistics:
+    reachable_urls: Set[str] = attr.ib()
+    unreachable_urls: Set[str] = attr.ib()
+    robot_excluded_urls: Set[str] = attr.ib()
+    followed_urls: Set[str] = attr.ib()
+    request_counter: int = attr.ib()
+    average_fetch_time: float = attr.ib()
+    total_time: float = attr.ib()
+
+
 @attr.s(slots=True)
 class Spider:
     urls: URLS = attr.ib(validator=url_validator)
@@ -98,13 +109,14 @@ class Spider:
         logger.debug('returning state property: %s', self._state)
         return self._state
 
-
-@attr.s(frozen=True)
-class SpiderStatistics:
-    reachable_urls: Set[str] = attr.ib()
-    unreachable_urls: Set[str] = attr.ib()
-    robot_excluded_urls: Set[str] = attr.ib()
-    followed_urls: Set[str] = attr.ib()
-    request_counter: int = attr.ib()
-    average_fetch_time: float = attr.ib()
-    total_time: float = attr.ib()
+    def statistics(self) -> SpiderStatistics:
+        return SpiderStatistics(
+            reachable_urls=self.reachable_urls,
+            unreachable_urls=self.unreachable_urls,
+            robot_excluded_urls=self.robots_excluded_urls,
+            followed_urls=self.followed_urls,
+            request_counter=self.request_counter,
+            # for file urls there are no http requests involved, so request_counter can be equal to 0
+            average_fetch_time=self._total_fetch_time / self.request_counter if self.request_counter else 0.0,
+            total_time=self._duration
+        )
