@@ -1,8 +1,8 @@
 import httpx
 import pytest
-import trio
 
 from scalpel.trionic.response import StaticResponse
+from scalpel.trionic.utils.queue import Queue
 
 
 class TestStaticResponse:
@@ -17,16 +17,16 @@ class TestStaticResponse:
         url = 'http://foo.com'
         request = httpx.Request('GET', url)
         httpx_response = httpx.Response(200, request=request)
-        send_channel, receive_channel = trio.open_memory_channel(0)
+        queue = Queue()
         response = StaticResponse(
             reachable_urls=reachable_urls,
             followed_urls=followed_urls,
-            send_channel=send_channel,
+            queue=queue,
             httpx_response=httpx_response
         )
+
         await response.follow(url)
-        await send_channel.aclose()
-        await receive_channel.aclose()
+        await queue.close()
 
         assert mocker.call('url %s has already been processed, nothing to do here', url) in logger_mock.call_args_list
 
@@ -34,18 +34,17 @@ class TestStaticResponse:
         url = 'http://foo.com'
         request = httpx.Request('GET', url)
         httpx_response = httpx.Response(200, request=request)
-        send_channel, receive_channel = trio.open_memory_channel(2)
+        queue = Queue(2)
         response = StaticResponse(
             reachable_urls={'http://bar.com'},
             followed_urls=set(),
-            send_channel=send_channel,
+            queue=queue,
             httpx_response=httpx_response
         )
         await response.follow(url)
-        stats = send_channel.statistics()
-        await send_channel.aclose()
-        await receive_channel.aclose()
+        queue_length = queue.length
+        await queue.close()
 
         assert {'http://bar.com'} == response._reachable_urls
         assert {url} == response._followed_urls
-        assert 1 == stats.current_buffer_used
+        assert 1 == queue_length
