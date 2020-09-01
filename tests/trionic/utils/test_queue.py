@@ -15,6 +15,7 @@ class TestQueueInitialization:
         assert 0 == queue._tasks_in_progress
         assert isinstance(queue._send_channel, trio.MemorySendChannel)
         assert isinstance(queue._receive_channel, trio.MemoryReceiveChannel)
+        assert isinstance(queue._finished, trio.Event)
 
     def test_should_work_when_initializing_buffer_size(self):
         queue = Queue(size=3)
@@ -26,7 +27,7 @@ class TestQueueInitialization:
         queue = Queue(items=items)
         assert 0 == queue._size
         assert items == queue._items
-        assert len(items) == queue.length
+        assert len(items) == queue.length == queue._tasks_in_progress
 
     def test_length_property_works_with_infinity_size(self):
         queue = Queue(size=math.inf)
@@ -74,6 +75,20 @@ class TestPutMethods:
 
         with pytest.raises(trio.WouldBlock):
             queue.put_nowait(2)
+
+    async def test_should_reset_event_when_event_is_set_and_put_method_is_called(self):
+        queue = Queue(size=1)
+        queue._finished.set()
+        await queue.put(2)
+
+        assert not queue._finished.is_set()
+
+    async def test_should_reset_event_when_event_is_set_and_put_nowait_is_called(self):
+        queue = Queue(size=1)
+        queue._finished.set()
+        queue.put_nowait(2)
+
+        assert not queue._finished.is_set()
 
 
 class TestGetMethods:
@@ -124,6 +139,13 @@ class TestCloseMethod:
 
 class TestTaskDoneAndJoinMethods:
     """Tests methods task_done and join"""
+
+    async def test_should_raise_error_when_task_done_is_called_without_adding_items_in_queue(self):
+        async with Queue(size=1) as queue:
+            with pytest.raises(ValueError) as exc_info:
+                queue.task_done()
+
+            assert 'task_done method was calling too many times without adding items in queue' == str(exc_info.value)
 
     async def test_should_work_when_using_task_done_and_join_methods(self):
         async with Queue(size=1) as queue:
