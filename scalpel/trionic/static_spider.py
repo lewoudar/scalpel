@@ -10,9 +10,10 @@ import trio
 from rfc3986 import uri_reference
 
 from scalpel.core.spider import Spider
-from . import write_mp
+from .files import write_mp
 from .response import StaticResponse
 from .robots import RobotsAnalyzer
+from .utils.queue import Queue
 
 logger = logging.getLogger('scalpel')
 
@@ -25,14 +26,9 @@ class StaticSpider(Spider):
     _robots_analyser: RobotsAnalyzer = attr.ib(init=False, repr=False)
     _fetch: Callable = attr.ib(init=False, repr=False)
     _lock: trio.Lock = attr.ib(init=False, repr=False, factory=trio.Lock)
-    _send_channel: trio.MemorySendChannel = attr.ib(init=False, repr=False)
-    _receive_channel: trio.MemoryReceiveChannel = attr.ib(init=False, repr=False)
+    _queue: Queue = attr.ib(init=False, repr=False)
 
     def __attrs_post_init__(self):
-        # having a channel with no limited boundaries is generally a bad idea, except in a few cases like
-        # web scraping, more information here:
-        # https://trio.readthedocs.io/en/stable/reference-core.html#buffering-in-channels
-        self._send_channel, self._receive_channel = trio.open_memory_channel(math.inf)
 
         async def _get_fetch(url: str) -> httpx.Response:
             return await self._http_client.get(url)
@@ -56,6 +52,11 @@ class StaticSpider(Spider):
             user_agent=self.config.user_agent
         )
 
+    @_queue.default
+    def _get_queue(self) -> Queue:
+        logger.debug('getting a default queue')
+        return Queue(size=math.inf, items=self.urls)
+
     def _get_static_response(
             self, url: str = '', text: str = '', httpx_response: httpx.Response = None
     ) -> StaticResponse:
@@ -63,7 +64,7 @@ class StaticSpider(Spider):
             'returning StaticResponse object with url: %s, text: %s and httpx_response: %s', url, text, httpx_response
         )
         return StaticResponse(
-            self.reachable_urls, self.followed_urls, self._send_channel, url=url, text=text,
+            self.reachable_urls, self.followed_urls, self._queue, url=url, text=text,
             httpx_response=httpx_response
         )
 
@@ -71,6 +72,7 @@ class StaticSpider(Spider):
     async def _handle_url(self, url: str) -> None:
         if url in self.reachable_urls or url in self.unreachable_urls or url in self.robots_excluded_urls:
             logger.debug('url %s has already been processed', url)
+            self._queue.task_done()
             return
 
         static_url = text = ''
@@ -104,7 +106,9 @@ class StaticSpider(Spider):
         except Exception:
             logger.exception('something unexpected happened while parsing the content at url %s', url)
             if not self._ignore_errors:
+                self._queue.task_done()
                 raise
+        self._queue.task_done()
         logger.info('content at url %s has been processed', url)
 
     async def save_item(self, item: Any) -> None:
@@ -126,41 +130,31 @@ class StaticSpider(Spider):
         async with self._lock:
             await write_mp(self.config.backup_filename, item, mode='a', encoder=self.config.msgpack_encoder)
 
-    @staticmethod
-    async def _watch_tasks(nursery: trio.Nursery) -> None:
-        while True:
-            await trio.sleep(0)
-            if len(nursery.child_tasks) == 1:
-                nursery.cancel_scope.cancel()
-
     async def _get_request_delay(self, url: str) -> Union[int, float]:
         if self.config.follow_robots_txt:
             return await self._robots_analyser.get_request_delay(url, self.config.request_delay)
+        await trio.sleep(0)  # checkpoint to ensure an async function in every case
         return self.config.request_delay
+
+    async def worker(self, nursery: trio.Nursery) -> None:
+        while True:
+            url = await self._queue.get()
+            request_delay = await self._get_request_delay(url)
+            if request_delay == -1:  # url is not accessible
+                self.robots_excluded_urls.add(url)
+                self._queue.task_done()
+                continue
+            nursery.start_soon(self._handle_url, url)
+            await trio.sleep(request_delay)
 
     async def run(self):
         """
         The spider main loop where all downloads, parsing happens.
         """
         async with trio.open_nursery() as nursery:
-            # first urls are directly handled
-            for url in self.urls:
-                delay = await self._get_request_delay(url)
-                if delay == -1:  # url is not accessible
-                    self.robots_excluded_urls.add(url)
-                    continue
-                nursery.start_soon(self._handle_url, url)
-                await trio.sleep(delay)
-            # we watch for the end of tasks here
-            nursery.start_soon(self._watch_tasks, nursery)
-
-            # other urls parsed in handle callback will be handled here
-            async for url in self._receive_channel:
-                delay = await self._get_request_delay(url)
-                if delay == -1:
-                    self.robots_excluded_urls.add(url)
-                    continue
-                nursery.start_soon(self._handle_url, url)
-                await trio.sleep(delay)
+            nursery.start_soon(self.worker, nursery)
+            await self._queue.join()
+            # at this point, all the urls were handled, so the only remaining task is the worker
+            nursery.cancel_scope.cancel()
 
         self._duration = trio.current_time() - self._start_time

@@ -10,9 +10,10 @@ from scalpel.core.config import Configuration
 from scalpel.core.message_pack import datetime_decoder
 from scalpel.core.spider import SpiderStatistics
 from scalpel.trionic import read_mp
+from scalpel.trionic.response import StaticResponse
 from scalpel.trionic.robots import RobotsAnalyzer
 from scalpel.trionic.static_spider import StaticSpider
-from scalpel.trionic.response import StaticResponse
+from scalpel.trionic.utils.queue import Queue
 
 
 @pytest.fixture()
@@ -34,8 +35,7 @@ class TestStaticSpider:
         assert isinstance(spider._robots_analyser, RobotsAnalyzer)
         assert config == spider._config
         assert isinstance(spider._lock, trio.Lock)
-        assert isinstance(spider._send_channel, trio.MemorySendChannel)
-        assert isinstance(spider._receive_channel, trio.MemoryReceiveChannel)
+        assert isinstance(spider._queue, Queue)
 
     # _fetch tests
 
@@ -84,7 +84,7 @@ class TestStaticSpider:
         assert isinstance(static_response, StaticResponse)
         assert static_response._reachable_urls is trio_spider.reachable_urls
         assert static_response._followed_urls is trio_spider.followed_urls
-        assert static_response._send_channel is trio_spider._send_channel
+        assert static_response._queue is trio_spider._queue
         assert url == static_response._url
         assert text == static_response._text
         assert static_response._httpx_response is httpx_response
@@ -280,24 +280,38 @@ class TestStaticSpider:
     # simple test of run and statistics methods, more reliable tests are below
 
     @respx.mock
-    async def test_should_return_correct_statistics_after_running_spider(self):
-        url1 = 'http://foo.com'
-        url2 = 'http://bar.com'
-        respx.get(url1)
-        respx.get(f'{url1}/robots.txt', status_code=404)
-        respx.get(f'{url2}/robots.txt', status_code=401)
+    # it is very weird but when I try to combine this test with the next one (to have only one test) I get
+    # a strange error related to mocking. This is why I have two tests, one to check exclusion works and another
+    # to check the rest of the logic
+    async def test_should_exclude_url_when_robots_txt_excludes_it(self):
+        url = 'http://foo.com'
+        respx.get(f'{url}/robots.txt', status_code=401)
 
         async def parse(*_) -> None:
             pass
 
-        static_spider = StaticSpider(urls=[url1, url2], parse=parse, config=Configuration(follow_robots_txt=True))
+        static_spider = StaticSpider(urls=[url], parse=parse, config=Configuration(follow_robots_txt=True))
+        await static_spider.run()
+        assert static_spider.reachable_urls == set()
+        assert static_spider.robots_excluded_urls == {url}
+
+    @respx.mock
+    async def test_should_return_correct_statistics_after_running_spider(self):
+        url1 = 'http://foo.com'
+        respx.get(url1)
+        respx.get(f'{url1}/robots.txt', status_code=404)
+
+        async def parse(*_) -> None:
+            pass
+
+        static_spider = StaticSpider(urls=[url1], parse=parse, config=Configuration(follow_robots_txt=True))
         await static_spider.run()
         stats = static_spider.statistics()
 
         assert stats.reachable_urls == {url1}
         assert stats.unreachable_urls == set()
         assert stats.followed_urls == set()
-        assert stats.robot_excluded_urls == {url2}
+        assert stats.robot_excluded_urls == set()
         assert stats.request_counter == 1
         assert stats.total_time > 0
         assert stats.average_fetch_time > 0
@@ -354,4 +368,29 @@ class TestIntegrationStaticSpider:
         assert stats.followed_urls == followed_urls
         assert stats.request_counter == 0
         assert stats.average_fetch_time == 0.0
+        await self.common_assert(stats, backup_path)
+
+    @respx.mock
+    async def test_should_work_with_http_url(self, page_content, tmp_path):
+        url = 'http://quotes.com'
+        respx.get(f'{url}/robots.txt', status_code=404)
+        respx.get(url, content=page_content('page1.html'))
+        for i in range(2, 4):
+            respx.get(f'{url}/page{i}.html', content=page_content(f'page{i}.html'))
+
+        backup_path = tmp_path / 'backup.mp'
+        config = Configuration(
+            item_processors=[self.processor],
+            backup_filename=f'{backup_path}',
+            follow_robots_txt=True
+        )
+        static_spider = StaticSpider(urls=[url], parse=self.parse, config=config)
+        await static_spider.run()
+        stats = static_spider.statistics()
+        followed_urls = {f'{url}/page{i}.html' for i in range(2, 4)}
+
+        assert stats.reachable_urls == {url} | followed_urls
+        assert stats.followed_urls == followed_urls
+        assert stats.request_counter == 3
+        assert stats.average_fetch_time > 0
         await self.common_assert(stats, backup_path)
