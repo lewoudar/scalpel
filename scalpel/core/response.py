@@ -10,12 +10,13 @@ logger = logging.getLogger('scalpel')
 
 
 @attr.s(kw_only=True)
-class Response:
+class BaseStaticResponse:
     _url: str = attr.ib(default='', validator=attr.validators.optional(attr.validators.instance_of(str)))
     _text: str = attr.ib(default='', validator=attr.validators.instance_of(str))
     _httpx_response: Optional[httpx.Response] = attr.ib(
         default=None, validator=attr.validators.optional(attr.validators.instance_of(httpx.Response))
     )
+    _selector: parsel.Selector = attr.ib(init=False)
 
     @property
     def url(self) -> str:
@@ -61,11 +62,6 @@ class Response:
             _cookies = dict(self._httpx_response.cookies)
         logger.debug('returning response cookies: %s', _cookies)
         return _cookies
-
-
-@attr.s
-class BaseStaticResponse(Response):
-    _selector: parsel.Selector = attr.ib(init=False)
 
     @_selector.default
     def _get_selector(self) -> parsel.Selector:

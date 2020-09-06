@@ -5,7 +5,7 @@ import httpx
 import parsel
 import pytest
 
-from scalpel.core.response import Response, BaseStaticResponse
+from scalpel.core.response import BaseStaticResponse
 from tests.helpers import assert_dicts
 
 
@@ -20,11 +20,11 @@ def httpx_response(dummy_data):
     return httpx.Response(200, request=request, content=dummy_data)
 
 
-class TestResponse:
-    """Tests Response class"""
+class TestBaseStaticResponse:
+    """Tests class BaseStaticResponse"""
 
     def test_should_validate_properties_when_passing_url_and_text(self, dummy_data):
-        response = Response(url='http://foo.com', text=dummy_data.decode())
+        response = BaseStaticResponse(url='http://foo.com', text=dummy_data.decode())
 
         assert 'http://foo.com' == response.url
         assert_dicts({}, response.headers)
@@ -38,26 +38,13 @@ class TestResponse:
         headers = {'foo': 'bar', 'set-cookie': 'name=John'}
         content = b'hello world'
         httpx_response = httpx.Response(200, request=request, headers=headers, content=content)
-        response = Response(httpx_response=httpx_response)
+        response = BaseStaticResponse(httpx_response=httpx_response)
 
         assert url == response.url
         assert_dicts(headers, response.headers)
         assert_dicts({'name': 'John'}, response.cookies)
         assert content == response.content
         assert content.decode() == response.text
-
-    def test_should_validate_attributes(self):
-        fields = {attribute.name: attribute.type for attribute in attr.fields(Response)}
-        attributes = {
-            '_httpx_response': Union[httpx._models.Response, type(None)],
-            '_url': str,
-            '_text': str
-        }
-        assert_dicts(fields, attributes)
-
-
-class TestBaseStaticResponse:
-    """Tests class BaseStaticResponse"""
 
     def test_should_validate_attributes(self):
         fields = {attribute.name: attribute.type for attribute in attr.fields(BaseStaticResponse)}
