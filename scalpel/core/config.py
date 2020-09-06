@@ -3,6 +3,7 @@ import random
 import re
 import tempfile
 import uuid
+from enum import Enum, auto
 from importlib import import_module
 from pathlib import Path
 from typing import List, Callable, Any, Dict, Union, Optional
@@ -31,6 +32,20 @@ def check_max_delay_greater_or_equal_than_min_delay(instance: 'Configuration', a
         raise ValueError(message)
 
 
+def check_file_presence(_, attribute: attr.Attribute, filename: str) -> None:
+    path = Path(filename)
+    if not path.exists():
+        message = f'File {filename} does not exist'
+        logger.exception(f'attribute {attribute.name} does not have a valid path: {message}')
+        raise FileNotFoundError(message)
+
+
+def check_driver_presence(config: 'Configuration', attribute: attr.Attribute, filename: str) -> None:
+    if filename in ['chromedriver', 'geckodriver']:
+        return
+    check_file_presence(config, attribute, filename)
+
+
 def validate_robots_folder(_, attribute: attr.Attribute, path: Path) -> None:
     if not path.exists():
         message = f'{attribute.name} does not exist'
@@ -51,7 +66,7 @@ def validate_robots_folder(_, attribute: attr.Attribute, path: Path) -> None:
     dummy_file.unlink()
 
 
-def check_backup_file_can_be_created(_, _attribute: attr.Attribute, value: str) -> None:
+def check_file_can_be_created(_, _attribute: attr.Attribute, value: str) -> None:
     if value is not None:
         p = Path(value)
         # touch helps to see if a file can be created with the given path
@@ -114,6 +129,19 @@ def msgpack_converter(value: Any) -> Union[Callable, Any]:
     return get_callable_from_string(value)
 
 
+def str_converter(value: Any) -> Optional[str]:
+    if value is None:
+        return
+    if isinstance(value, Path):
+        return str(value.absolute())
+    return str(value)
+
+
+class Browser(Enum):
+    FIREFOX = auto()
+    CHROME = auto()
+
+
 positive_int_validators = [attr.validators.instance_of(int), check_value_greater_or_equal_than_0]
 max_delay_validators = [*positive_int_validators, check_max_delay_greater_or_equal_than_min_delay]
 positive_float_validators = [attr.validators.instance_of(float), check_value_greater_or_equal_than_0]
@@ -121,7 +149,8 @@ middleware_validator = attr.validators.deep_iterable(
     member_validator=attr.validators.is_callable(),
     iterable_validator=attr.validators.instance_of((list, tuple))
 )
-backup_filename_validators = [attr.validators.instance_of(str), check_backup_file_can_be_created]
+backup_filename_validators = [attr.validators.instance_of(str), check_file_can_be_created]
+selenium_path_validators = [attr.validators.optional(attr.validators.instance_of(str)), check_file_can_be_created]
 
 
 @attr.s(frozen=True)
@@ -130,19 +159,32 @@ class Configuration:
     max_request_delay: int = attr.ib(default=0, converter=int, validator=max_delay_validators)
     fetch_timeout: float = attr.ib(default=5.0, converter=float, validator=positive_float_validators)
     selenium_find_timeout: float = attr.ib(default=10.0, converter=float, validator=positive_float_validators)
+    selenium_driver_log_file: Optional[str] = attr.ib(
+        converter=str_converter, default='driver.log', validator=selenium_path_validators
+    )
+    selenium_browser: Browser = attr.ib(default=Browser.FIREFOX, validator=attr.validators.in_(Browser))
+    # default value of this attribute depends if selenium browser, so the order is important here
+    selenium_driver_executable_path: str = attr.ib(
+        converter=str_converter, validator=[attr.validators.instance_of(str), check_driver_presence]
+    )
     user_agent: str = attr.ib(validator=attr.validators.instance_of(str))
-    follow_robots_txt: bool = attr.ib(default=False, converter=bool_converter,
-                                      validator=attr.validators.instance_of(bool))
+    follow_robots_txt: bool = attr.ib(
+        default=False, converter=bool_converter, validator=attr.validators.instance_of(bool)
+    )
     robots_cache_folder: Path = attr.ib(converter=Path, validator=validate_robots_folder)
-    backup_filename: Optional[str] = attr.ib(validator=backup_filename_validators)
-    response_middlewares: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
-                                                   validator=middleware_validator)
-    item_processors: List[Callable] = attr.ib(repr=False, converter=callable_list_converter, factory=list,
-                                              validator=middleware_validator)
-    msgpack_encoder: Callable = attr.ib(repr=False, converter=msgpack_converter, default=datetime_encoder,
-                                        validator=attr.validators.is_callable())
-    msgpack_decoder: Callable = attr.ib(repr=False, converter=msgpack_converter, default=datetime_decoder,
-                                        validator=attr.validators.is_callable())
+    backup_filename: str = attr.ib(validator=backup_filename_validators)
+    response_middlewares: List[Callable] = attr.ib(
+        repr=False, converter=callable_list_converter, factory=list, validator=middleware_validator
+    )
+    item_processors: List[Callable] = attr.ib(
+        repr=False, converter=callable_list_converter, factory=list, validator=middleware_validator
+    )
+    msgpack_encoder: Callable = attr.ib(
+        repr=False, converter=msgpack_converter, default=datetime_encoder, validator=attr.validators.is_callable()
+    )
+    msgpack_decoder: Callable = attr.ib(
+        repr=False, converter=msgpack_converter, default=datetime_decoder, validator=attr.validators.is_callable()
+    )
 
     @user_agent.default
     def _get_default_user_agent(self) -> str:
@@ -170,6 +212,17 @@ class Configuration:
         name = f'backup-{uuid.uuid4()}.mp'
         logger.debug('returning computed backup filename: %s', name)
         return name
+
+    @selenium_driver_executable_path.default
+    def _get_driver_executable_path(self) -> str:
+        executable = 'geckodriver' if self.selenium_browser is Browser.FIREFOX else 'chromedriver'
+        # I don't use self.selenium_browser.name attribute because some tests fail here when testing browser attribute
+        # with a string
+        logger.debug(
+            'returning default executable path to %s since browser selected is %s', executable,
+            self.selenium_browser
+        )
+        return executable
 
     @property
     def request_delay(self) -> int:

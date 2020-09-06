@@ -8,7 +8,7 @@ import pytest
 from configuror import DecodeError
 from fake_useragent import FakeUserAgentError
 
-from scalpel.core.config import Configuration, bool_converter, callable_list_converter
+from scalpel.core.config import Configuration, bool_converter, callable_list_converter, Browser
 from scalpel.core.message_pack import datetime_decoder, datetime_encoder
 from tests.helpers import assert_dicts
 
@@ -264,6 +264,88 @@ class TestBackupFilename:
         mocker.patch('uuid.uuid4', return_value=uuid.UUID('84a49591-c522-4a1c-971c-cf0282c6a759'))
         config = Configuration()
         assert 'backup-84a49591-c522-4a1c-971c-cf0282c6a759.mp' == config.backup_filename
+
+
+class TestSeleniumDriverLogPath:
+    """Checks attribute selenium_driver_log_path"""
+
+    def test_should_not_raise_error_when_value_is_none(self):
+        try:
+            Configuration(selenium_driver_log_file=None)
+        except ValueError:
+            pytest.fail('unexpected error when setting selenium_driver_log_path with None value')
+
+    # noinspection PyTypeChecker
+    def test_should_convert_path_object_to_an_absolute_string_path(self, tmp_path):
+        log_path = tmp_path / 'driver.log'
+        config = Configuration(selenium_driver_log_file=log_path)
+        path = Path(config.selenium_driver_log_file)
+        assert path.is_absolute()
+
+    @pytest.mark.parametrize(('given', 'expected'), [
+        ('foo.log', 'foo.log'),
+        (4, '4')
+    ])
+    def test_should_convert_given_values_when_needed(self, given, expected):
+        config = Configuration(selenium_driver_log_file=given)
+        assert expected == config.selenium_driver_log_file
+
+    def test_should_raise_error_when_provided_path_is_not_writable(self, mocker):
+        mocker.patch('pathlib.Path.touch', side_effect=RuntimeError)
+        with pytest.raises(RuntimeError):
+            Configuration(selenium_driver_log_file='foo.txt')
+
+    def test_should_return_correct_default_log_file_when_no_one_is_given(self):
+        config = Configuration()
+        assert 'driver.log' == config.selenium_driver_log_file
+
+
+class TestSeleniumBrowser:
+    """Checks attribute selenium_browser"""
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('value', ['firefox', 'CHROME', 1])
+    def test_should_raise_error_when_value_is_not_a_browser_enum_member(self, value):
+        with pytest.raises(ValueError):
+            Configuration(selenium_browser=value)
+
+    @pytest.mark.parametrize('value', [Browser.FIREFOX, Browser.CHROME])
+    def test_should_not_raise_error_when_value_is_a_browser_enum_member(self, value):
+        try:
+            config = Configuration(selenium_browser=value)
+            assert value is config.selenium_browser
+        except ValueError:
+            pytest.fail('unexpected error when setting selenium browser attribute')
+
+    def test_should_return_firefox_value_when_no_value_is_given(self):
+        config = Configuration()
+        assert Browser.FIREFOX is config.selenium_browser
+
+
+class TestSeleniumDriverExecutablePath:
+    """Checks attribute selenium_driver_executable_path"""
+
+    @pytest.mark.parametrize('value', [4, 'executable'])
+    def test_should_raise_error_when_file_is_a_string_or_does_not_exist(self, value):
+        with pytest.raises(FileNotFoundError) as exc_info:
+            Configuration(selenium_driver_executable_path=value)
+
+        assert f'File {value} does not exist' == str(exc_info.value)
+
+    # noinspection PyTypeChecker
+    def test_should_not_raise_error_when_providing_a_valid_path(self, tmp_path):
+        executable = tmp_path / 'executable'
+        executable.touch()
+        config = Configuration(selenium_driver_executable_path=executable)
+        assert f'{executable.absolute()}' == config.selenium_driver_executable_path
+
+    @pytest.mark.parametrize(('browser', 'expected'), [
+        (Browser.FIREFOX, 'geckodriver'),
+        (Browser.CHROME, 'chromedriver')
+    ])
+    def test_should_return_correct_default_value_when_no_one_is_given(self, browser, expected):
+        config = Configuration(selenium_browser=browser)
+        assert expected == config.selenium_driver_executable_path
 
 
 # noinspection PyTypeChecker
