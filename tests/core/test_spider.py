@@ -210,6 +210,14 @@ class TestFloatAttributes:
         assert 0.0 == spider._duration
 
 
+class TestStatisticsMethod:
+    """Tests spider statistics method"""
+
+    def test_should_return_spider_statistics_object(self, default_spider_arguments):
+        spider = Spider(**default_spider_arguments)
+        assert isinstance(spider.statistics(), SpiderStatistics)
+
+
 class TestSpiderStatisticsClass:
     """Tests SpiderStatistics class"""
 
