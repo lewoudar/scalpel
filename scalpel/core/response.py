@@ -5,6 +5,7 @@ import attr
 import httpx
 import parsel
 from rfc3986 import uri_reference
+from selenium.webdriver.remote.webdriver import WebDriver
 
 logger = logging.getLogger('scalpel')
 
@@ -78,18 +79,36 @@ class BaseStaticResponse:
 
     def _get_absolute_url(self, url: str) -> str:
         """
-        This method will help to get absolute url from local or http urls.
+        This method returns absolute url from local or http urls.
         """
-        if self._url:
-            absolute_uri = uri_reference(self._url)
-            given_uri = uri_reference(url)
-            if given_uri.is_absolute():
-                _url = url
-            else:
-                uri = given_uri.resolve_with(absolute_uri)
-                uri = uri.copy_with(fragment=None)
-                _url = uri.unsplit()
+        absolute_uri = uri_reference(self._url) if self._url else uri_reference(str(self._httpx_response.url))
+        given_uri = uri_reference(url)
+        if given_uri.is_absolute():
+            _url = url
         else:
-            _url = f'{self._httpx_response.url.join(url)}'
-        logger.debug('returning new joined url: %s', _url)
+            uri = given_uri.resolve_with(absolute_uri)
+            uri = uri.copy_with(fragment=None)
+            _url = uri.unsplit()
+        logger.debug('returning computed absolute url: %s', _url)
+        return _url
+
+
+@attr.s(slots=True)
+class BaseSeleniumResponse:
+    driver: WebDriver = attr.ib(validator=attr.validators.instance_of(WebDriver))
+    handle: int = attr.ib(validator=attr.validators.instance_of(int))
+
+    def _get_absolute_url(self, url: str) -> str:
+        """
+        This method returns absolute url from local or http urls.
+        """
+        uri = uri_reference(url)
+        if uri.is_absolute():
+            _url = url
+        else:
+            current_uri = uri_reference(self.driver.current_url)
+            uri = uri.resolve_with(current_uri)
+            uri = uri.copy_with(fragment=None)
+            _url = uri.unsplit()
+        logger.debug('returning computed absolute url: %s', _url)
         return _url

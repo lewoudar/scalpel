@@ -5,7 +5,7 @@ import httpx
 import parsel
 import pytest
 
-from scalpel.core.response import BaseStaticResponse
+from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
 from tests.helpers import assert_dicts
 
 
@@ -73,7 +73,7 @@ class TestBaseStaticResponse:
     @pytest.mark.parametrize(('given_url', 'absolute_url'), [
         ('hello', 'http://foobar.com/hello'),
         ('/hello', 'http://foobar.com/hello'),
-        ('#hello', 'http://foobar.com#hello'),
+        ('#hello', 'http://foobar.com'),
         ('http://example.com', 'http://example.com')
     ])
     def test_should_return_absolute_url_given_httpx_response(self, httpx_response, given_url, absolute_url):
@@ -89,4 +89,57 @@ class TestBaseStaticResponse:
     ])
     def test_should_return_absolute_url_given_url_and_text(self, dummy_data, given_url, absolute_url):
         response = BaseStaticResponse(url='file:/C/foo/bar.html', text=dummy_data.decode())
+        assert absolute_url == response._get_absolute_url(given_url)
+
+
+class TestBaseSeleniumResponse:
+    """Tests class BaseSeleniumResponse"""
+
+    # initialization
+
+    # noinspection PyTypeChecker
+    def test_should_raise_error_when_driver_does_not_have_the_correct_type(self):
+        with pytest.raises(TypeError):
+            BaseSeleniumResponse(driver='foo', handle=4)
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize('handle', ['4', 4.0])
+    def test_should_raise_error_when_handle_does_not_have_the_correct_type(self, firefox_driver, handle):
+        with pytest.raises(TypeError):
+            BaseSeleniumResponse(driver=firefox_driver, handle=handle)
+
+    def test_should_not_raise_error_when_parameters_are_correct(self, firefox_driver):
+        try:
+            BaseSeleniumResponse(driver=firefox_driver, handle=4)
+        except TypeError:
+            pytest.fail('unexpected error when initializing BaseSeleniumResponse')
+
+    # _get_absolute_url
+
+    @pytest.mark.parametrize(('given_url', 'absolute_url'), [
+        ('hello', 'http://foobar.com/hello'),
+        ('/hello', 'http://foobar.com/hello'),
+        ('#hello', 'http://foobar.com'),
+        ('https://example.com', 'https://example.com')
+    ])
+    def test_should_return_absolute_url_when_base_url_is_an_http_one(
+            self, mocker, firefox_driver, given_url, absolute_url
+    ):
+        mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'http://foobar.com')
+        response = BaseSeleniumResponse(driver=firefox_driver, handle=4)
+
+        assert absolute_url == response._get_absolute_url(given_url)
+
+    @pytest.mark.parametrize(('given_url', 'absolute_url'), [
+        ('page.html', 'file:/C/foo/page.html'),
+        ('/page.html', 'file:/page.html'),
+        ('#page', 'file:/C/foo/bar.html'),
+        ('http://foo.com', 'http://foo.com'),
+        ('file:///C:/path/to/file', 'file:///C:/path/to/file')
+    ])
+    def test_should_return_absolute_url_when_base_url_is_a_file_one(
+            self, mocker, firefox_driver, given_url, absolute_url):
+        mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'file:/C/foo/bar.html')
+        response = BaseSeleniumResponse(driver=firefox_driver, handle=4)
+
         assert absolute_url == response._get_absolute_url(given_url)

@@ -4,6 +4,8 @@ from typing import List, Any
 
 import msgpack
 import pytest
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 
 
 @pytest.fixture(scope='session')
@@ -76,3 +78,15 @@ def page_content():
         return p.read_text()
 
     return _page_content
+
+
+@pytest.fixture()
+def firefox_driver():
+    """Returns an instance of a selenium firefox driver"""
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
+    try:
+        yield driver
+    finally:
+        driver.quit()
