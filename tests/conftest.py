@@ -5,7 +5,8 @@ from typing import List, Any
 import msgpack
 import pytest
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 
 @pytest.fixture(scope='session')
@@ -83,9 +84,21 @@ def page_content():
 @pytest.fixture()
 def firefox_driver():
     """Returns an instance of a selenium firefox driver"""
-    options = Options()
+    options = FirefoxOptions()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Firefox(options=options, service_log_path=None)
+    try:
+        yield driver
+    finally:
+        driver.quit()
+
+
+@pytest.fixture()
+def chrome_driver():
+    """Returns an instance of a selenium chrome driver"""
+    options = ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(options=options)
     try:
         yield driver
     finally:

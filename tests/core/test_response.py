@@ -104,13 +104,13 @@ class TestBaseSeleniumResponse:
 
     # noinspection PyTypeChecker
     @pytest.mark.parametrize('handle', ['4', 4.0])
-    def test_should_raise_error_when_handle_does_not_have_the_correct_type(self, firefox_driver, handle):
+    def test_should_raise_error_when_handle_does_not_have_the_correct_type(self, chrome_driver, handle):
         with pytest.raises(TypeError):
-            BaseSeleniumResponse(driver=firefox_driver, handle=handle)
+            BaseSeleniumResponse(driver=chrome_driver, handle=handle)
 
-    def test_should_not_raise_error_when_parameters_are_correct(self, firefox_driver):
+    def test_should_not_raise_error_when_parameters_are_correct(self, chrome_driver):
         try:
-            BaseSeleniumResponse(driver=firefox_driver, handle=4)
+            BaseSeleniumResponse(driver=chrome_driver, handle=4)
         except TypeError:
             pytest.fail('unexpected error when initializing BaseSeleniumResponse')
 
@@ -123,10 +123,10 @@ class TestBaseSeleniumResponse:
         ('https://example.com', 'https://example.com')
     ])
     def test_should_return_absolute_url_when_base_url_is_an_http_one(
-            self, mocker, firefox_driver, given_url, absolute_url
+            self, mocker, chrome_driver, given_url, absolute_url
     ):
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'http://foobar.com')
-        response = BaseSeleniumResponse(driver=firefox_driver, handle=4)
+        response = BaseSeleniumResponse(driver=chrome_driver, handle=4)
 
         assert absolute_url == response._get_absolute_url(given_url)
 
@@ -138,8 +138,8 @@ class TestBaseSeleniumResponse:
         ('file:///C:/path/to/file', 'file:///C:/path/to/file')
     ])
     def test_should_return_absolute_url_when_base_url_is_a_file_one(
-            self, mocker, firefox_driver, given_url, absolute_url):
+            self, mocker, chrome_driver, given_url, absolute_url):
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'file:/C/foo/bar.html')
-        response = BaseSeleniumResponse(driver=firefox_driver, handle=4)
+        response = BaseSeleniumResponse(driver=chrome_driver, handle=4)
 
         assert absolute_url == response._get_absolute_url(given_url)
