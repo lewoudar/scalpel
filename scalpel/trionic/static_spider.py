@@ -157,4 +157,5 @@ class StaticSpider(Spider):
             # at this point, all the urls were handled, so the only remaining task is the worker
             nursery.cancel_scope.cancel()
 
+        await self._http_client.aclose()
         self._duration = trio.current_time() - self._start_time

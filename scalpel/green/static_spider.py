@@ -165,4 +165,5 @@ class StaticSpider(Spider):
         self._queue.join()
         # at this point all urls were handled, so the only remaining task in the pool is the worker
         self._pool.killone(worker_task)
+        self._http_client.close()
         self._duration = time() - self._start_time
