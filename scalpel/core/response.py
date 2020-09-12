@@ -93,7 +93,7 @@ class BaseStaticResponse:
         return _url
 
 
-@attr.s(slots=True)
+@attr.s(kw_only=True)
 class BaseSeleniumResponse:
     driver: WebDriver = attr.ib(validator=attr.validators.instance_of(WebDriver))
     handle: int = attr.ib(validator=attr.validators.instance_of(int))

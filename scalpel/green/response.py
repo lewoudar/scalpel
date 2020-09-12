@@ -4,17 +4,12 @@ from typing import Set
 import attr
 from gevent.queue import JoinableQueue
 
-from scalpel.core.response import BaseStaticResponse
+from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
 
 logger = logging.getLogger('scalpel')
 
 
-@attr.s(slots=True)
-class StaticResponse(BaseStaticResponse):
-    _reachable_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
-    _followed_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
-    _queue: JoinableQueue = attr.ib(validator=attr.validators.instance_of(JoinableQueue))
-
+class FollowMixin:
     def follow(self, url: str) -> None:
         """
         Follows given url if it hasn't be fetched yet.
@@ -28,3 +23,20 @@ class StaticResponse(BaseStaticResponse):
         url = self._get_absolute_url(url)
         self._followed_urls.add(url)
         self._queue.put_nowait(url)
+
+
+@attr.s
+class CommonAttributes:
+    _reachable_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
+    _followed_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
+    _queue: JoinableQueue = attr.ib(validator=attr.validators.instance_of(JoinableQueue))
+
+
+@attr.s(slots=True)
+class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
+    pass
+
+
+@attr.s(slots=True)
+class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
+    pass
