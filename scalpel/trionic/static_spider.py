@@ -158,4 +158,5 @@ class StaticSpider(Spider):
             nursery.cancel_scope.cancel()
 
         await self._http_client.aclose()
+        await self._queue.close()
         self._duration = trio.current_time() - self._start_time
