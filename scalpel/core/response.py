@@ -81,12 +81,12 @@ class BaseStaticResponse:
         """
         This method returns absolute url from local or http urls.
         """
-        absolute_uri = uri_reference(self._url) if self._url else uri_reference(str(self._httpx_response.url))
+        current_uri = uri_reference(self._url) if self._url else uri_reference(str(self._httpx_response.url))
         given_uri = uri_reference(url)
         if given_uri.is_absolute():
             _url = url
         else:
-            uri = given_uri.resolve_with(absolute_uri)
+            uri = given_uri.resolve_with(current_uri)
             uri = uri.copy_with(fragment=None)
             _url = uri.unsplit()
         logger.debug('returning computed absolute url: %s', _url)
@@ -97,6 +97,9 @@ class BaseStaticResponse:
 class BaseSeleniumResponse:
     driver: WebDriver = attr.ib(validator=attr.validators.instance_of(WebDriver))
     handle: str = attr.ib(validator=attr.validators.instance_of(str))
+    file_url: Optional[str] = attr.ib(
+        default=None, validator=attr.validators.optional(attr.validators.instance_of(str))
+    )
 
     def _get_absolute_url(self, url: str) -> str:
         """
@@ -106,7 +109,10 @@ class BaseSeleniumResponse:
         if uri.is_absolute():
             _url = url
         else:
-            current_uri = uri_reference(self.driver.current_url)
+            if self.file_url is not None:
+                current_uri = uri_reference(self.file_url)
+            else:
+                current_uri = uri_reference(self.driver.current_url)
             uri = uri.resolve_with(current_uri)
             uri = uri.copy_with(fragment=None)
             _url = uri.unsplit()
