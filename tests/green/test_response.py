@@ -55,7 +55,7 @@ class TestSeleniumResponse:
         url = 'http://foo.com'
         response = SeleniumResponse(
             driver=chrome_driver,
-            handle=4,
+            handle='4',
             reachable_urls=reachable_urls,
             followed_urls=followed_urls,
             queue=JoinableQueue(),
@@ -67,7 +67,7 @@ class TestSeleniumResponse:
         url = 'http://foo.com'
         response = SeleniumResponse(
             driver=chrome_driver,
-            handle=4,
+            handle='4',
             reachable_urls={'http://bar.com'},
             followed_urls=set(),
             queue=JoinableQueue()

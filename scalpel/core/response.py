@@ -96,7 +96,7 @@ class BaseStaticResponse:
 @attr.s(kw_only=True)
 class BaseSeleniumResponse:
     driver: WebDriver = attr.ib(validator=attr.validators.instance_of(WebDriver))
-    handle: int = attr.ib(validator=attr.validators.instance_of(int))
+    handle: str = attr.ib(validator=attr.validators.instance_of(str))
 
     def _get_absolute_url(self, url: str) -> str:
         """
