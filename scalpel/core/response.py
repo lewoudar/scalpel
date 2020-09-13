@@ -97,9 +97,6 @@ class BaseStaticResponse:
 class BaseSeleniumResponse:
     driver: WebDriver = attr.ib(validator=attr.validators.instance_of(WebDriver))
     handle: str = attr.ib(validator=attr.validators.instance_of(str))
-    file_url: Optional[str] = attr.ib(
-        default=None, validator=attr.validators.optional(attr.validators.instance_of(str))
-    )
 
     def _get_absolute_url(self, url: str) -> str:
         """
@@ -109,10 +106,7 @@ class BaseSeleniumResponse:
         if uri.is_absolute():
             _url = url
         else:
-            if self.file_url is not None:
-                current_uri = uri_reference(self.file_url)
-            else:
-                current_uri = uri_reference(self.driver.current_url)
+            current_uri = uri_reference(self.driver.current_url)
             uri = uri.resolve_with(current_uri)
             uri = uri.copy_with(fragment=None)
             _url = uri.unsplit()

@@ -100,17 +100,17 @@ class TestBaseSeleniumResponse:
     # noinspection PyTypeChecker
     def test_should_raise_error_when_driver_does_not_have_the_correct_type(self):
         with pytest.raises(TypeError):
-            BaseSeleniumResponse(driver='foo', handle='4', file_url=None)
+            BaseSeleniumResponse(driver='foo', handle='4', )
 
     # noinspection PyTypeChecker
     @pytest.mark.parametrize('handle', [4, 4.0])
     def test_should_raise_error_when_handle_does_not_have_the_correct_type(self, chrome_driver, handle):
         with pytest.raises(TypeError):
-            BaseSeleniumResponse(driver=chrome_driver, handle=handle, file_url=None)
+            BaseSeleniumResponse(driver=chrome_driver, handle=handle)
 
     def test_should_not_raise_error_when_parameters_are_correct(self, chrome_driver):
         try:
-            BaseSeleniumResponse(driver=chrome_driver, handle='4', file_url=None)
+            BaseSeleniumResponse(driver=chrome_driver, handle='4')
         except TypeError:
             pytest.fail('unexpected error when initializing BaseSeleniumResponse')
 
@@ -126,7 +126,7 @@ class TestBaseSeleniumResponse:
             self, mocker, chrome_driver, given_url, absolute_url
     ):
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'http://foobar.com')
-        response = BaseSeleniumResponse(driver=chrome_driver, handle='4', file_url=None)
+        response = BaseSeleniumResponse(driver=chrome_driver, handle='4')
 
         assert absolute_url == response._get_absolute_url(given_url)
 
@@ -137,7 +137,10 @@ class TestBaseSeleniumResponse:
         ('http://foo.com', 'http://foo.com'),
         ('file:///C:/path/to/file', 'file:///C:/path/to/file')
     ])
-    def test_should_return_absolute_url_when_base_url_is_a_file_one(self, chrome_driver, given_url, absolute_url):
-        response = BaseSeleniumResponse(driver=chrome_driver, handle='4', file_url='file:/C/foo/bar.html')
+    def test_should_return_absolute_url_when_base_url_is_a_file_one(
+            self, mocker, chrome_driver, given_url, absolute_url
+    ):
+        mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_url', 'file:/C/foo/bar.html')
+        response = BaseSeleniumResponse(driver=chrome_driver, handle='4')
 
         assert absolute_url == response._get_absolute_url(given_url)
