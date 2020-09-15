@@ -145,6 +145,7 @@ class TestStaticSpider:
         assert [] == parse_args
         logger_mock.assert_any_call('unable to open file %s', file_url)
         assert {file_url} == static_spider.unreachable_urls
+        assert set() == static_spider.reachable_urls
 
     @respx.mock
     @pytest.mark.parametrize('status_code', [404, 500])
@@ -177,6 +178,7 @@ class TestStaticSpider:
         static_spider._handle_url(url)
 
         assert [] == parse_args
+        assert {url} == static_spider.robots_excluded_urls
         logger_mock.assert_any_call(
             'robots.txt rule has forbidden the processing of url %s or the url is not reachable', url
         )
@@ -204,7 +206,7 @@ class TestStaticSpider:
         assert static_spider._total_fetch_time > 0
 
     @respx.mock
-    def test_should_raise_errors_if_parse_function_raises_error_and_ignore_errors_is_false(self):
+    def test_should_raise_error_if_parse_function_raises_error_and_ignore_errors_is_false(self):
         def parse(*_):
             raise ValueError('just a test')
 
@@ -229,7 +231,7 @@ class TestStaticSpider:
         try:
             static_spider._handle_url(url)
         except ValueError:
-            pytest.fail('ValueError was raised and it should not happen')
+            pytest.fail('unexpected ValueError raised when ignore_errors is set to true')
 
     # test _error_callback
 
@@ -397,5 +399,5 @@ class TestIntegrationStaticSpider:
         assert stats.reachable_urls == {url} | followed_urls
         assert stats.followed_urls == followed_urls
         assert stats.request_counter == 3
-        assert stats.average_fetch_time > 0
+        assert stats.average_fetch_time == static_spider._total_fetch_time / stats.request_counter
         self.common_assert(stats, backup_path)
