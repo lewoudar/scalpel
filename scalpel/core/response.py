@@ -106,6 +106,8 @@ class BaseSeleniumResponse:
         if uri.is_absolute():
             _url = url
         else:
+            # this is probably useless because I checked with firefox and chrome and both
+            # computes absolute urls when they encounter a relative one, but to remove any doubt, let's do this
             current_uri = uri_reference(self.driver.current_url)
             uri = uri.resolve_with(current_uri)
             uri = uri.copy_with(fragment=None)

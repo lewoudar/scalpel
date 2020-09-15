@@ -84,7 +84,7 @@ class Spider:
     robots_excluded_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)
     request_counter: int = attr.ib(default=0, init=False, repr=False)
     _duration: float = attr.ib(init=False, default=0.0, repr=False)
-    _total_fetch_time: float = attr.ib(default=0.0)
+    _total_fetch_time: float = attr.ib(init=False, default=0.0)
     _state: State = attr.ib(factory=State, init=False, repr=False)
 
     @_name.default
