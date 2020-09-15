@@ -83,23 +83,26 @@ class StaticSpider(Spider):
             logger.debug('url %s is a file url so we attempt to read its content')
             file_path = ur.path[1:] if platform.system() == 'Windows' else ur.path
             try:
+                before = trio.current_time()
                 async with await trio.open_file(file_path) as f:
                     text = await f.read()
+                fetch_time = trio.current_time() - before
             except OSError:
                 logger.exception('unable to open file %s', url)
                 self.unreachable_urls.add(url)
                 return
-            self.reachable_urls.add(url)
         else:
             response: httpx.Response = await self._fetch(url)
             if response.is_error:
                 logger.info('fetching url %s returns an error with status code %s', url, response.status_code)
                 self.unreachable_urls.add(url)
                 return
-            # we update some variables for statistics
-            self.request_counter += 1
-            self.reachable_urls.add(url)
-            self._total_fetch_time += response.elapsed.total_seconds()
+            fetch_time = response.elapsed.total_seconds()
+
+        # we update some variables for statistics
+        self.request_counter += 1
+        self.reachable_urls.add(url)
+        self._total_fetch_time += fetch_time
 
         try:
             await self.parse(self, self._get_static_response(static_url, text, response))

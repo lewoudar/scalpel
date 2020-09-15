@@ -366,8 +366,8 @@ class TestIntegrationStaticSpider:
 
         assert stats.reachable_urls == {page_1_file_url} | followed_urls
         assert stats.followed_urls == followed_urls
-        assert stats.request_counter == 0
-        assert stats.average_fetch_time == 0.0
+        assert 3 == stats.request_counter
+        assert stats.average_fetch_time == static_spider._total_fetch_time / stats.request_counter
         await self.common_assert(stats, backup_path)
 
     @respx.mock

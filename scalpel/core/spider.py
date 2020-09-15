@@ -116,7 +116,6 @@ class Spider:
             robot_excluded_urls=self.robots_excluded_urls,
             followed_urls=self.followed_urls,
             request_counter=self.request_counter,
-            # for file urls there are no http requests involved, so request_counter can be equal to 0
             average_fetch_time=self._total_fetch_time / self.request_counter if self.request_counter else 0.0,
             total_time=self._duration
         )
