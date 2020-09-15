@@ -69,10 +69,25 @@ class StaticSpider(Spider):
             self.reachable_urls, self.followed_urls, self._queue, url=url, text=text, httpx_response=httpx_response
         )
 
-    # noinspection PyBroadException
-    def _handle_url(self, url: str) -> None:
+    def _is_url_already_processed(self, url: str) -> bool:
+        processed = False
         if url in self.reachable_urls or url in self.unreachable_urls or url in self.robots_excluded_urls:
             logger.debug('url %s has already been processed', url)
+            processed = True
+        return processed
+
+    def _is_url_excluded_for_spider(self, url: str) -> bool:
+        excluded = False
+        if self.config.follow_robots_txt:
+            if not self._robots_analyser.can_fetch(url):
+                logger.info('robots.txt rule has forbidden the processing of url %s or the url is not reachable', url)
+                self.robots_excluded_urls.add(url)
+                excluded = True
+        return excluded
+
+    # noinspection PyBroadException
+    def _handle_url(self, url: str) -> None:
+        if self._is_url_already_processed(url):
             return
 
         static_url = text = ''
@@ -91,13 +106,8 @@ class StaticSpider(Spider):
                 return
             self.reachable_urls.add(url)
         else:
-            if self.config.follow_robots_txt:
-                if not self._robots_analyser.can_fetch(url):
-                    logger.info(
-                        'robots.txt rule has forbidden the processing of url %s or the url is not reachable', url
-                    )
-                    self.robots_excluded_urls.add(url)
-                    return
+            if self._is_url_excluded_for_spider(url):
+                return
 
             response: httpx.Response = self._fetch(url)
             if response.is_error:
@@ -155,6 +165,10 @@ class StaticSpider(Spider):
             task.link(self._done_callback)
             gevent.sleep(self.config.request_delay)
 
+    def _cleanup(self):
+        """This method helps to cleanup resources. It should be override by SeleniumSpider."""
+        self._http_client.close()
+
     def run(self) -> None:
         """
         The spider main loop where all downloads, parsing happens.
@@ -165,5 +179,5 @@ class StaticSpider(Spider):
         self._queue.join()
         # at this point all urls were handled, so the only remaining task in the pool is the worker
         self._pool.killone(worker_task)
-        self._http_client.close()
+        self._cleanup()
         self._duration = time() - self._start_time

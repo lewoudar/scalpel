@@ -6,7 +6,6 @@ import msgpack
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 
 @pytest.fixture(scope='session')
@@ -79,18 +78,6 @@ def page_content():
         return p.read_text()
 
     return _page_content
-
-
-@pytest.fixture()
-def firefox_driver():
-    """Returns an instance of a selenium firefox driver"""
-    options = FirefoxOptions()
-    options.headless = True
-    driver = webdriver.Firefox(options=options, service_log_path=None)
-    try:
-        yield driver
-    finally:
-        driver.quit()
 
 
 @pytest.fixture()
