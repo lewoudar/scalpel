@@ -304,8 +304,8 @@ class TestSeleniumBrowser:
     """Checks attribute selenium_browser"""
 
     # noinspection PyTypeChecker
-    @pytest.mark.parametrize('value', ['firefox', 'CHROME', 1])
-    def test_should_raise_error_when_value_is_not_a_browser_enum_member(self, value):
+    @pytest.mark.parametrize('value', ['Safari', 1])
+    def test_should_raise_error_when_value_is_not_correct(self, value):
         with pytest.raises(ValueError):
             Configuration(selenium_browser=value)
 
@@ -314,6 +314,20 @@ class TestSeleniumBrowser:
         try:
             config = Configuration(selenium_browser=value)
             assert value is config.selenium_browser
+        except ValueError:
+            pytest.fail('unexpected error when setting selenium browser attribute')
+
+    # noinspection PyTypeChecker
+    @pytest.mark.parametrize(('str_browser', 'browser'), [
+        ('firefox', Browser.FIREFOX),
+        ('Chrome', Browser.CHROME),
+        ('FIREFOX', Browser.FIREFOX),
+        ('chrome', Browser.CHROME)
+    ])
+    def test_should_not_raise_error_when_value_is_a_compatible_string(self, str_browser, browser):
+        try:
+            config = Configuration(selenium_browser=str_browser)
+            assert browser is config.selenium_browser
         except ValueError:
             pytest.fail('unexpected error when setting selenium browser attribute')
 

@@ -142,6 +142,16 @@ class Browser(Enum):
     CHROME = auto()
 
 
+def browser_converter(value: Any) -> Any:
+    if isinstance(value, str):
+        upper_value = value.upper()
+        if upper_value == Browser.FIREFOX.name:
+            return Browser.FIREFOX
+        if upper_value == Browser.CHROME.name:
+            return Browser.CHROME
+    return value
+
+
 positive_int_validators = [attr.validators.instance_of(int), check_value_greater_or_equal_than_0]
 max_delay_validators = [*positive_int_validators, check_max_delay_greater_or_equal_than_min_delay]
 positive_float_validators = [attr.validators.instance_of(float), check_value_greater_or_equal_than_0]
@@ -162,7 +172,9 @@ class Configuration:
     selenium_driver_log_file: Optional[str] = attr.ib(
         converter=str_converter, default='driver.log', validator=selenium_path_validators
     )
-    selenium_browser: Browser = attr.ib(default=Browser.FIREFOX, validator=attr.validators.in_(Browser))
+    selenium_browser: Browser = attr.ib(
+        default=Browser.FIREFOX, converter=browser_converter, validator=attr.validators.in_(Browser)
+    )
     # default value of this attribute depends if selenium browser, so the order is important here
     selenium_driver_executable_path: str = attr.ib(
         converter=str_converter, validator=[attr.validators.instance_of(str), check_driver_presence]
