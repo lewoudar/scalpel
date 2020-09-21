@@ -3,17 +3,13 @@ from typing import Set
 
 import attr
 
-from scalpel.core.response import BaseStaticResponse
+from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
 from .utils.queue import Queue
 
 logger = logging.getLogger('scalpel')
 
 
-@attr.s(slots=True)
-class StaticResponse(BaseStaticResponse):
-    _reachable_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
-    _followed_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
-    _queue: Queue = attr.ib(validator=attr.validators.instance_of(Queue))
+class FollowMixin:
 
     async def follow(self, url: str) -> None:
         """
@@ -28,3 +24,20 @@ class StaticResponse(BaseStaticResponse):
         url = self._get_absolute_url(url)
         self._followed_urls.add(url)
         await self._queue.put(url)
+
+
+@attr.s
+class CommonAttributes:
+    _reachable_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
+    _followed_urls: Set[str] = attr.ib(validator=attr.validators.instance_of(set))
+    _queue: Queue = attr.ib(validator=attr.validators.instance_of(Queue))
+
+
+@attr.s(slots=True)
+class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
+    pass
+
+
+@attr.s(slots=True)
+class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
+    pass
