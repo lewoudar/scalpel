@@ -30,12 +30,12 @@ class TestStaticSpider:
         config = Configuration(user_agent='mozilla/5.0')
         spider = StaticSpider(urls=['http://foo.com'], parse=lambda x, y: None, config=config)
 
-        assert isinstance(spider._start_time, float)
-        assert isinstance(spider._http_client, httpx.AsyncClient)
-        assert isinstance(spider._robots_analyser, RobotsAnalyzer)
         assert config == spider._config
         assert isinstance(spider._lock, trio.Lock)
         assert isinstance(spider._queue, Queue)
+        assert isinstance(spider._start_time, float)
+        assert isinstance(spider._http_client, httpx.AsyncClient)
+        assert isinstance(spider._robots_analyser, RobotsAnalyzer)
 
     # _fetch tests
 

@@ -68,11 +68,17 @@ class StaticSpider(Spider):
             httpx_response=httpx_response
         )
 
-    # noinspection PyBroadException
-    async def _handle_url(self, url: str) -> None:
+    def _is_url_already_processed(self, url: str) -> False:
+        processed = False
         if url in self.reachable_urls or url in self.unreachable_urls or url in self.robots_excluded_urls:
             logger.debug('url %s has already been processed', url)
             self._queue.task_done()
+            processed = True
+        return processed
+
+    # noinspection PyBroadException
+    async def _handle_url(self, url: str) -> None:
+        if self._is_url_already_processed(url):
             return
 
         static_url = text = ''
@@ -150,6 +156,10 @@ class StaticSpider(Spider):
             nursery.start_soon(self._handle_url, url)
             await trio.sleep(request_delay)
 
+    async def _cleanup(self) -> None:
+        await self._http_client.aclose()
+        await self._queue.close()
+
     async def run(self):
         """
         The spider main loop where all downloads, parsing happens.
@@ -160,6 +170,5 @@ class StaticSpider(Spider):
             # at this point, all the urls were handled, so the only remaining task is the worker
             nursery.cancel_scope.cancel()
 
-        await self._http_client.aclose()
-        await self._queue.close()
+        await self._cleanup()
         self._duration = trio.current_time() - self._start_time
