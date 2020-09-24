@@ -3,7 +3,7 @@ import logging
 import attr
 from rfc3986 import uri_reference
 
-from scalpel.core.mixins import SeleniumDriverMixin
+from scalpel.core.selenium import SeleniumDriverMixin
 from .mixins import SeleniumGetMixin
 from .response import SeleniumResponse
 from .static_spider import StaticSpider

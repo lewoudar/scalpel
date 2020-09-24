@@ -3,7 +3,7 @@ import pytest
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from scalpel.core.config import Browser, Configuration
-from scalpel.core.mixins import SeleniumDriverMixin
+from scalpel.core.selenium import SeleniumDriverMixin
 from scalpel.core.spider import Spider
 
 
