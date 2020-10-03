@@ -160,7 +160,7 @@ class StaticSpider(Spider):
         await self._http_client.aclose()
         await self._queue.close()
 
-    async def run(self):
+    async def run(self) -> None:
         """
         The spider main loop where all downloads, parsing happens.
         """

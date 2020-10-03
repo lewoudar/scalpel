@@ -158,7 +158,7 @@ class StaticSpider(Spider):
         logger.debug('running greenlet done callback')
         self._queue.task_done()
 
-    def _worker(self):
+    def _worker(self) -> None:
         # TODO: I had a weird LoopExit issue (while testing) when I tried to get the delay between requests
         #  and skip some urls in the while loop, so to avoid it, I don't relay on robots.txt delay but on the one
         #  provided by config object.
@@ -168,7 +168,7 @@ class StaticSpider(Spider):
             task.link(self._done_callback)
             gevent.sleep(self.config.request_delay)
 
-    def _cleanup(self):
+    def _cleanup(self) -> None:
         """This method helps to cleanup resources. It should be override by SeleniumSpider."""
         self._http_client.close()
 

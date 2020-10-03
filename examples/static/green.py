@@ -32,5 +32,5 @@ if __name__ == '__main__':
     spider.run()
     print(spider.statistics())
     # you can do whatever you want with the results
-    for item in read_mp(filename=backup, decoder=datetime_decoder):
-        print(item)
+    for quote_data in read_mp(filename=backup, decoder=datetime_decoder):
+        print(quote_data)

@@ -25,7 +25,7 @@ class SeleniumSpider(SeleniumGetMixin, StaticSpider, SeleniumDriverMixin):
             self.reachable_urls, self.followed_urls, self._queue, driver=self._driver, handle=handle
         )
 
-    def _cleanup(self):
+    def _cleanup(self) -> None:
         self._http_client.close()
         self._driver.quit()
 
