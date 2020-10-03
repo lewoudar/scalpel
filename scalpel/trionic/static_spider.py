@@ -41,7 +41,7 @@ class StaticSpider(Spider):
     def _get_http_client(self) -> httpx.AsyncClient:
         headers = {'User-Agent': self.config.user_agent}
         logger.debug('getting a default httpx client with user agent: %s', self.config.user_agent)
-        return httpx.AsyncClient(headers=headers)
+        return httpx.AsyncClient(headers=headers, timeout=self.config.fetch_timeout)
 
     @_robots_analyser.default
     def _get_robots_analyzer(self) -> RobotsAnalyzer:
