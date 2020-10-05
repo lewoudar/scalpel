@@ -160,7 +160,7 @@ class StaticSpider(Spider):
 
     def _worker(self) -> None:
         # TODO: I had a weird LoopExit issue (while testing) when I tried to get the delay between requests
-        #  and skip some urls in the while loop, so to avoid it, I don't relay on robots.txt delay but on the one
+        #  and skipped some urls in the while loop, so to avoid it, I don't relay on robots.txt delay but on the one
         #  provided by config object.
         while True:
             task = self._pool.spawn(self._handle_url, self._queue.get())

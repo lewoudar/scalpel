@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "scalpel"
 version = "0.1.0"
-description = "Your easy-to-use and powerful web scraping library"
+description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
 
 [tool.poetry.dependencies]

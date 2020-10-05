@@ -1,0 +1,3 @@
+# Scalpel documentation
+
+Hello!

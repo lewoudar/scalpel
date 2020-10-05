@@ -4,7 +4,7 @@ from pathlib import Path
 
 import trio
 
-from scalpel import Configuration, datetime_decoder
+from scalpel import Configuration
 from scalpel.trionic import StaticResponse, StaticSpider, read_mp
 
 
@@ -34,7 +34,7 @@ async def main():
     await spider.run()
     print(spider.statistics())
     # you can do whatever you want with the results
-    async for item in read_mp(backup, decoder=datetime_decoder):
+    async for item in read_mp(backup, decoder=spider.config.msgpack_decoder):
         print(item)
 
 

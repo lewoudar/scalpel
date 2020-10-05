@@ -2,7 +2,7 @@
 from datetime import datetime
 from pathlib import Path
 
-from scalpel import Configuration, datetime_decoder
+from scalpel import Configuration
 from scalpel.green import StaticSpider, StaticResponse, read_mp
 
 
@@ -32,5 +32,5 @@ if __name__ == '__main__':
     spider.run()
     print(spider.statistics())
     # you can do whatever you want with the results
-    for quote_data in read_mp(filename=backup, decoder=datetime_decoder):
+    for quote_data in read_mp(filename=backup, decoder=spider.config.msgpack_decoder):
         print(quote_data)

@@ -1,0 +1,20 @@
+site_name: Scalpel
+site_description: scalpel package documentation
+site_author: Kevin Tewouda
+site_url: https://scalpel.readthedocs.io
+
+repo_url: https://github.com/lewoudar/scalpel/
+edit_uri: tree/master/docs
+
+nav:
+  - Home: index.md
+  - API: api.md
+
+
+theme: readthedocs
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - mkautodoc

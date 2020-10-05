@@ -55,7 +55,7 @@ def url_validator(_, attribute: attr.Attribute, urls: URLS):
 
 @attr.s
 class State:
-    """An empty class used to store arbitrary data"""
+    """An empty class used to store arbitrary data."""
     pass
 
 

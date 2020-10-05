@@ -138,6 +138,7 @@ def str_converter(value: Any) -> Optional[str]:
 
 
 class Browser(Enum):
+    """An enum with different browser values."""
     FIREFOX = auto()
     CHROME = auto()
 
@@ -165,6 +166,48 @@ selenium_path_validators = [attr.validators.optional(attr.validators.instance_of
 
 @attr.s(frozen=True)
 class Configuration:
+    """
+    Configure variables for your spider.
+
+    **Parameters:**
+
+    * **min_request_delay:** The minimum delay to wait between two http requests. Defaults to 0s.
+    * **max_request_delay:** The maximum delay to wait between two http requests. Defaults to 0s.
+    * **fetch_timeout:** The timeout to fetch http resources using the inner
+    [httpx](https://www.python-httpx.org/) client. Defaults to 5s.
+    * **selenium_find_timeout:** The timeout for selenium driver to find an element in a page. Defaults to 10s.
+    * **selenium_driver_log_file:** The file where the browser log debug messages. Defaults to *driver.log*.
+    If you want to not create one, just pass `None`.
+    * **selenium_browser:** The browser to use with the selenium spider. You can use the `Browser` enum to specify the
+    value. Possible values are `Browser.FIREFOX` and `Browser.CHROME`. Defaults to `Browser.FIREFOX`.
+    * **selenium_driver_executable_path:** The path to the browser driver. Defaults to *geckodriver* if
+    `Browser.FIREFOX` is selected as *selenium_browser*, otherwise defaults to *chromedriver*.
+    * **user_agent:** The user agent to fake. Mainly useful for the static spider. Defaults to a random value provided
+    by [fake-useragent](https://pypi.org/project/fake-useragent/) and if it does not work, fallback to
+    *Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36*
+    * **follow_robots_txt:** Decide whether or not the spider should follow robots.txt rules on the website you are
+    scraping. Defaults to `False`.
+    * **robots_cache_folder:** A folder to cache content of different website robots.txt file to avoid retrieving
+    it each time you want to analyze an html page. Default to the system temporary directory.
+    * **backup_filename:** The filename were scraped items will be written. If you don't want one, simple pass `None`.
+    Defaults to *backup-{uuid}.mp* where uuid is a `uuid.uuid4` string value.
+    * **response_middlewares:** A list of callables that will be called with the callable that fetch the http resource.
+    This parameter is only useful for the **static spider**. Defaults to an empty list.
+    * **item_processors:** A list of callables that will be called with a scraped item. Defaults to an empty list.
+    * **msgpack_encoder:** A callable that will be called when `msgpack` serializes an item.
+    Defaults to `scalpel.datetime_encoder`.
+    * **msgpack_decoder:** A callable that will be called when `msgpack` deserializes an item.
+    Defaults to `scalpel.datetime_decoder`.
+
+    Usage:
+
+    ```
+    from scalpel import Configuration, Browser
+    config = Configuration(
+        min_request_delay=1, max_request_delay=3, follow_robots_txt=True, selenium_browser=Browser.CHROME
+    )
+    ```
+    """
     min_request_delay: int = attr.ib(default=0, converter=int, validator=positive_int_validators)
     max_request_delay: int = attr.ib(default=0, converter=int, validator=max_delay_validators)
     fetch_timeout: float = attr.ib(default=5.0, converter=float, validator=positive_float_validators)
@@ -238,6 +281,10 @@ class Configuration:
 
     @property
     def request_delay(self) -> int:
+        """
+        A read-only property which is a random value between `min_request_delay` and `max_request_delay`
+        (both sides included) and used to wait between two http requests.
+        """
         # for bandit, using random module to generate pseudo-random values is not a good
         # idea for cryptography / security purposes, but since we are not in this case, we just
         # ignore this warning.
@@ -283,6 +330,27 @@ class Configuration:
 
     @classmethod
     def load_from_yaml(cls, yaml_file: Union[Path, str]) -> 'Configuration':
+        """
+        Loads configuration from a yaml file.
+
+        **Returns:** `Configuration`
+
+        example:
+
+        ```yaml
+        # conf.yaml
+        scalpel:
+          fetch_timeout: 4.0
+          user_agent: Mozilla/5.0
+          follow_robots_txt: true
+        ```
+
+        ```
+        from scalpel import Configuration
+        conf = Configuration.load_from_yaml('conf.yaml')
+        conf.fetch_timeout  # equals to 4
+        ```
+        """
         cls._check_file(yaml_file, 'yaml')
 
         configuror = Config(mapping_files={'yaml': [f'{yaml_file}']})
@@ -291,6 +359,27 @@ class Configuration:
 
     @classmethod
     def load_from_toml(cls, toml_file: Union[Path, str]) -> 'Configuration':
+        """
+        Loads configuration from a toml file.
+
+        **Returns:** `Configuration`
+
+        example:
+
+        ```toml
+        # conf.toml
+        [scalpel]
+        user_agent = "Mozilla/5.0"
+        fetch_timeout = 4.0
+        follow_robots_txt = true
+        ```
+
+        ```
+        from scalpel import Configuration
+        conf = Configuration.load_from_toml('conf.toml')
+        conf.fetch_timeout  # equals to 4
+        ```
+        """
         cls._check_file(toml_file, 'toml')
 
         configuror = Config(mapping_files={'toml': [f'{toml_file}']})
@@ -299,6 +388,26 @@ class Configuration:
 
     @classmethod
     def load_from_dotenv(cls, env_file: Union[Path, str]) -> 'Configuration':
+        """
+        Loads configuration from a .env file.
+
+        **Returns:** `Configuration`
+
+        example:
+
+        ```bash
+        # .env
+        SCALPEL_USER_AGENT = Mozilla/5.0
+        SCALPEL_FETCH_TIMEOUT = 4.0
+        SCALPEL_FOLLOW_ROBOTS_TXT = yes
+        ```
+
+        ```
+        from scalpel import Configuration
+        conf = Configuration.load_from_dotenv('.env')
+        conf.follow_robots_txt  # equals to True
+        ```
+        """
         cls._check_file(env_file, 'env')
 
         configuror = Config(mapping_files={'env': [f'{env_file}']})
