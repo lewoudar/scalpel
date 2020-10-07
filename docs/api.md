@@ -1,17 +1,17 @@
 # API
 
-## Configuration
+## `Configuration`
 
 ::: scalpel.Configuration
     :docstring:
     :members:
 
-## State
+## `State`
 
 ::: scalpel.State
     :docstring:
 
-## Browser
+## `Browser`
 
 ::: scalpel.Browser
     :docstring:
