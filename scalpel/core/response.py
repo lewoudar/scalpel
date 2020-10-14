@@ -21,6 +21,7 @@ class BaseStaticResponse:
 
     @property
     def url(self) -> str:
+        """The url associated to the response object."""
         if self._url:
             _url = self._url
         else:
@@ -30,6 +31,7 @@ class BaseStaticResponse:
 
     @property
     def headers(self) -> Dict[str, str]:
+        """A `dict` of http headers in case of an HTTP url. Empty `dict` otherwise."""
         if self._url:
             _headers = {}
         else:
@@ -39,6 +41,7 @@ class BaseStaticResponse:
 
     @property
     def text(self) -> str:
+        """The string content associated to the url."""
         if self._text:
             _text = self._text
         else:
@@ -48,6 +51,7 @@ class BaseStaticResponse:
 
     @property
     def content(self) -> bytes:
+        """The bytes content associated to the url."""
         if self._text:
             _content = self._text.encode(errors='replace')
         else:
@@ -57,6 +61,7 @@ class BaseStaticResponse:
 
     @property
     def cookies(self) -> Dict[str, str]:
+        """A `dict` of cookies associated to the response in case of an HTTP url. Empty `dict` otherwise."""
         if self._url:
             _cookies = {}
         else:
@@ -70,10 +75,28 @@ class BaseStaticResponse:
         return parsel.Selector(self.text)
 
     def css(self, query: str) -> parsel.SelectorList:
+        """
+        Applies CSS rules to select DOM elements.
+
+        **Parameters:**
+
+        * **query:** The CSS rule used to select DOM elements.
+
+        **Returns:** `parsel.SelectorList`
+        """
         logger.debug('selecting content using css selector: %s', query)
         return self._selector.css(query)
 
     def xpath(self, query: str) -> parsel.SelectorList:
+        """
+        Applies XPath rules to select DOM elements.
+
+        **Parameters:**
+
+        * **query:** The XPath rule used to select DOM elements.
+
+        **Returns:** `parsel.SelectorList`
+        """
         logger.debug('selecting content using xpath selector: %s', query)
         return self._selector.xpath(query)
 

@@ -9,12 +9,17 @@ edit_uri: tree/master/docs
 nav:
   - Home: index.md
   - API: api.md
+  - Installation: installation.md
 
 
-theme: readthedocs
+theme: material
 
 markdown_extensions:
   - toc:
       permalink: true
   - admonition
   - mkautodoc
+  - codehilite
+
+extra_css:
+  - css/custom.css

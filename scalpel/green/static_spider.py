@@ -22,6 +22,33 @@ logger = logging.getLogger('scalpel')
 
 @attr.s(slots=True)
 class StaticSpider(Spider):
+    """
+    A spider suitable to parse files or static HTML files.
+
+    **Parameters:**
+
+    * **urls:** Urls to parse. Allowed schemes are `http`, `https` and `file`. It can be a `list`, a `tuple` or a `set`.
+    * **parse:** A callback used to parse url content. It takes two arguments: the current spider and a
+    `StaticResponse` object.
+    * **reachable_urls:** `set` of urls that are already fetched or read.
+    * **unreachable_urls:** `set` of urls that were impossible to fetch or read.
+    * **robot_excluded_urls:** `set` of urls that were excluded to fetch because of *robots.txt* file rules.
+    * **followed_urls:** `set` of urls that were followed during the process of parsing url content. You will find these
+    urls scattered in the first three sets.
+    * **request_counter:** The number of urls already fetched or read.
+
+    Usage:
+
+    ```
+    from scalpel.green import StaticSpider, StaticResponse
+
+    def parse(spider: StaticSpider, response: StaticResponse) -> None:
+        ...
+
+    spider = StaticSpider(urls=['http://example.com'], parse=parse)
+    spider.run()
+    ```
+    """
     # order is important here, http_client must come before robots_analyzer since the latter used the former
     _start_time: float = attr.ib(init=False, factory=time, repr=False)
     _http_client: httpx.Client = attr.ib(init=False, repr=False)
@@ -131,6 +158,7 @@ class StaticSpider(Spider):
         logger.info('content at url %s has been processed', url)
 
     def save_item(self, item: Any) -> None:
+        """Saves a scrapped item in the backup filename specified in `Configuration.backup_filename` attribute."""
         item_rejected = False
         original_item = item
         for processor in self.config.item_processors:
@@ -173,9 +201,7 @@ class StaticSpider(Spider):
         self._http_client.close()
 
     def run(self) -> None:
-        """
-        The spider main loop where all downloads, parsing happens.
-        """
+        """Runs the spider."""
         worker_task = self._pool.spawn(self._worker)
         worker_task.name = 'worker'
         worker_task.link_exception(self._error_callback)

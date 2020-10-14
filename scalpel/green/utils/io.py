@@ -11,6 +11,10 @@ File = TypeVar('File')
 
 @attr.s
 class AsyncFile:
+    """
+    A wrapper around builtins io objects like `io.StringIO` or `io.BufferedReader` running blocking operations like
+    `read` or `write` in a threadpool to make it gevent cooperative.
+    """
     _wrapper: Union[IO, BufferedReader] = attr.ib()
     _pool: ThreadPool = attr.ib(init=False)
 
@@ -83,10 +87,26 @@ def _has(file: Union[IO, BufferedReader], attribute: str) -> bool:
 
 def wrap_file(file: Union[IO, BufferedReader]) -> AsyncFile:
     """
-    This wraps any file object in a wrapper that provides an asynchronous
+    This function wraps any file object in a wrapper that provides an asynchronous (or gevent cooperative)
     file object interface.
-    :param file: a file-like object
-    :returns: an async file object
+
+    **Parameters:**
+
+    * **file:** A file-like object.
+
+    **Returns:** An `AsyncFile` object.
+
+    Usage:
+
+    ```
+    from io import StringIO
+    from scalpel.green import wrap_file
+
+    s = StringIO()
+    async_s = wrap_file(s)
+    assert 5 == async_s.write('hello')
+    assert 'hello' == async_s.getvalue()
+    ```
     """
     if not _has(file, 'close'):
         raise TypeError(f'{file} does not implement close method which is mandatory for a file-like object')
@@ -108,8 +128,25 @@ def open_file(
         opener: Callable = None
 ) -> AsyncFile:
     """
-    An asynchronous version of the builtin open function running blocking
-    operation in a threadpool.
+    An asynchronous version of the builtin `open` function running blocking operation in a threadpool.
+
+    **Parameters:**
+    The parameters are exactly the same as those passed to the builtin `open` function. You can check the official
+    documentation to understand their meaning.
+
+    **Returns:** An `AsyncFile` object.
+
+    Usage:
+
+    ```
+    from scalpel.green import open_file
+
+    with open_file('hello.txt', 'w') as f:
+        f.write('hello world')
+
+    with open_file('hello.txt') as f:
+        print(f.read())  # 'hello world'
+    ```
     """
     threadpool = get_hub().threadpool
     file = threadpool.spawn(open, file, mode, buffering, encoding, errors, newline, closefd, opener).get()

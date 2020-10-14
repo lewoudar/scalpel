@@ -15,13 +15,13 @@ on its own.
  After having made this observation I decided to create scalpel. And let's be honest, I also want to have my own web
  scraping library, and it is fun to write one ;)
  
- ## Features
+## Features
  
- - Ability to parse documents using `gevent` or `trio` asynchronous frameworks.
- - Ability to parse SPA (Single Page Applications) using `selenium`.
- - Fast serialization for scrapped items with `msgpack`.
+- Ability to parse documents using `gevent` or `trio` asynchronous frameworks.
+- Ability to parse SPA (Single Page Applications) using `selenium`.
+- Fast serialization for scrapped items with `msgpack`.
  
- ## Contents:
+## Contents
  
- - [Installation](installation.md)
- - [API](api.md)
+- [Installation](installation.md)
+- [API](api.md)

@@ -13,8 +13,8 @@ URLS = Union[List[str], Tuple[str], Set[str]]
 
 
 def url_validator(_, attribute: attr.Attribute, urls: URLS):
-    if not isinstance(urls, (Set, list, tuple)):
-        message = f'{attribute.name} is not a typing.Set, list or tuple instance: {urls}'
+    if not isinstance(urls, (set, list, tuple)):
+        message = f'{attribute.name} is not a set, list or tuple instance: {urls}'
         logger.exception(message)
         raise TypeError(message)
 
@@ -61,6 +61,20 @@ class State:
 
 @attr.s(frozen=True)
 class SpiderStatistics:
+    """
+    Provides some statistics about a ran spider.
+
+    **Parameters:**
+
+    * **reachable_urls:** `set` of urls that were fetched (or read in case of file urls) and parsed.
+    * **unreachable_urls:** `set` that were impossible to fetch (or read in case of file urls).
+    * **robot_excluded_urls:** `set` of urls that were excluded to fetch because of *robots.txt* file rules.
+    * **followed_urls:** `set` of urls that were followed during the process of parsing url content. You will find these
+    urls scattered in the first three sets.
+    * **request_counter:** The number of urls fetched and read (in case of file urls).
+    * **average_fetch_time:** The average time to fetch an url (or read a file in case of file urls).
+    * **total_time:** The total execution time of the spider.
+    """
     reachable_urls: Set[str] = attr.ib()
     unreachable_urls: Set[str] = attr.ib()
     robot_excluded_urls: Set[str] = attr.ib()
@@ -96,20 +110,28 @@ class Spider:
 
     @property
     def name(self) -> str:
+        """Returns the name given to the spider."""
         logger.debug('returning name property: %s', self._name)
         return self._name
 
     @property
     def config(self) -> Configuration:
+        """Returns the `Configuration` related to the spider."""
         logger.debug('returning config property: %s', self._config)
         return self._config
 
     @property
     def state(self) -> State:
+        """Returns the `State` related to the spider. You can add custom information on this object."""
         logger.debug('returning state property: %s', self._state)
         return self._state
 
     def statistics(self) -> SpiderStatistics:
+        """
+        Provides some statistics related to the ran spider.
+
+        **Returns:** `SpiderStatistics`
+        """
         return SpiderStatistics(
             reachable_urls=self.reachable_urls,
             unreachable_urls=self.unreachable_urls,

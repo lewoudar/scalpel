@@ -190,7 +190,8 @@ class Configuration:
     * **robots_cache_folder:** A folder to cache content of different website robots.txt file to avoid retrieving
     it each time you want to analyze an html page. Default to the system temporary directory.
     * **backup_filename:** The filename were scraped items will be written. If you don't want one, simple pass `None`.
-    Defaults to *backup-{uuid}.mp* where uuid is a `uuid.uuid4` string value.
+    Defaults to *backup-{uuid}.mp* where uuid is a `uuid.uuid4` string value. Note that values inserted in this file
+    are streamed using `msgpack`. Look at the documentation to see how to use it.
     * **response_middlewares:** A list of callables that will be called with the callable that fetch the http resource.
     This parameter is only useful for the **static spider**. Defaults to an empty list.
     * **item_processors:** A list of callables that will be called with a scraped item. Defaults to an empty list.
@@ -335,7 +336,7 @@ class Configuration:
 
         **Returns:** `Configuration`
 
-        example:
+        Usage:
 
         ```yaml
         # conf.yaml
@@ -364,7 +365,7 @@ class Configuration:
 
         **Returns:** `Configuration`
 
-        example:
+        Usage:
 
         ```toml
         # conf.toml
@@ -393,7 +394,7 @@ class Configuration:
 
         **Returns:** `Configuration`
 
-        example:
+        Usage:
 
         ```bash
         # .env

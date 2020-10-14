@@ -26,7 +26,7 @@ class TestUrlsValidator:
         with pytest.raises(TypeError) as exc_info:
             Spider(urls, self.dummy_parse)
 
-        assert f'urls is not a typing.Set, list or tuple instance: {urls}' == str(exc_info.value)
+        assert f'urls is not a set, list or tuple instance: {urls}' == str(exc_info.value)
 
     @pytest.mark.parametrize('urls', [
         ['http://foo.com', b'http://bar.com'],

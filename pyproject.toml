@@ -30,6 +30,7 @@ mock = "^4.0.2"
 coverage = "^5.1"
 mkdocs = "^1.1.2"
 mkautodoc = "^0.1.0"
+mkdocs-material = "^6.0.2"
 
 [build-system]
 requires = ["poetry>=0.12"]
