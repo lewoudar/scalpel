@@ -20,6 +20,33 @@ logger = logging.getLogger('scalpel')
 
 @attr.s(slots=True)
 class StaticSpider(Spider):
+    """
+    A spider suitable to parse files or static HTML files.
+
+    **Parameters:**
+
+    * **urls:** Urls to parse. Allowed schemes are `http`, `https` and `file`. It can be a `list`, a `tuple` or a `set`.
+    * **parse:** An async function used to parse url content. It takes two arguments: the current spider and a
+    `StaticResponse` object.
+    * **reachable_urls:** `set` of urls that are already fetched or read.
+    * **unreachable_urls:** `set` of urls that were impossible to fetch or read.
+    * **robot_excluded_urls:** `set` of urls that were excluded to fetch because of *robots.txt* file rules.
+    * **followed_urls:** `set` of urls that were followed during the process of parsing url content. You will find these
+    urls scattered in the first three sets.
+    * **request_counter:** The number of urls already fetched or read.
+
+    Usage:
+
+    ```
+    from scalpel.trionic import StaticSpider, StaticResponse
+
+    async def parse(spider: StaticSpider, response: StaticResponse) -> None:
+        ...
+
+    spider = StaticSpider(urls=['http://example.com'], parse=parse)
+    await spider.run()
+    ```
+    """
     # order is important here, http_client must come before robots_analyzer since the latter used the former
     _start_time: float = attr.ib(init=False, repr=False, factory=trio.current_time)
     _http_client: httpx.AsyncClient = attr.ib(init=False, repr=False)
@@ -161,9 +188,7 @@ class StaticSpider(Spider):
         await self._queue.close()
 
     async def run(self) -> None:
-        """
-        The spider main loop where all downloads, parsing happens.
-        """
+        """Runs the spider."""
         async with trio.open_nursery() as nursery:
             nursery.start_soon(self.worker, nursery)
             await self._queue.join()

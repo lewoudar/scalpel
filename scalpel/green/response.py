@@ -38,7 +38,7 @@ class CommonAttributes:
 @attr.s(slots=True)
 class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
     """
-    A response class used in combination with a `StaticSpider` object in the `parse` callback.
+    A response class used in combination with a `StaticSpider` object in the `parse` callback of a spider.
 
     **N.B:** You probably don't need to instantiate this class directly unless for some kind of testing. It is mainly
     exposed for annotation purpose.
@@ -56,7 +56,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
 
     Usage:
 
-    ```python
+    ```
     from scalpel.green import StaticResponse
 
     response = StaticResponse(..., url='http://foo.com', text='<p>Hello world!</p>')
@@ -70,7 +70,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
 @attr.s(slots=True)
 class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
     """
-    A response class used in combination with a `SeleniumSpider` object in the `parse` callback.
+    A response class used in combination with a `SeleniumSpider` object in the `parse` callback of a spider.
 
     **N.B:** You probably don't need to instantiate this class directly unless for some kind of testing. It is mainly
     exposed for annotation purpose.
@@ -90,7 +90,7 @@ class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
 
     response = SeleniumResponse(...)
     # We assume we have a page source like '<p>Hello world!</p>'
-    print(response.driver.find_element_by_xpath("//p").text)  # Hello world!
+    print(response.driver.find_element_by_xpath('//p').text)  # Hello world!
     ```
     """
     pass

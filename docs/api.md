@@ -31,6 +31,13 @@
 ::: scalpel.green.write_mp
     :docstring:
 
+<!-- there is a problem with mkdocs when parsing trio code, so for now we comment it
+::: scalpel.trionic.read_mp
+    :docstring:
+
+::: scalpel.trionic.write_mp
+    :docstring: -->
+
 ## `SpiderStatistics`
 
 ::: scalpel.SpiderStatistics
@@ -71,3 +78,34 @@
 ::: scalpel.green.SeleniumResponse
     :docstring:
     :members:
+
+<!-- mkdocs does not support trio for now, so we comment this section
+## `trionic.StaticSpider`
+
+::: scalpel.trionic.StaticSpider
+    :docstring:
+    :members:
+
+## `trionic.SeleniumSpider`
+
+::: scalpel.trionic.SeleniumSpider
+    :docstring:
+    :members:
+
+## `trionic.StaticResponse`
+ 
+::: scalpel.trionic.StaticResponse
+    :docstring:
+    :members:
+
+## `trionic.SeleniumResponse`
+
+::: scalpel.trionic.SeleniumResponse
+    :docstring:
+    :members:
+
+## `trionic.Queue`
+
+::: scalpel.trionic.Queue
+    :docstring:
+    :members: -->

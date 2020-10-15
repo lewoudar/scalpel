@@ -10,6 +10,63 @@ logger = logging.getLogger('scalpel')
 
 @attr.s
 class Queue:
+    """
+    An implementation of a trio queue with the capacity to tell of a task is done.
+
+    **Parameters:**
+
+    * **size:** The size of the queue, defaults to 0.
+    * **items:** A list of values used to initialize the queue.
+
+    Usage:
+
+    ```
+    import math
+    import random
+
+    import trio
+    from scalpel.trionic import Queue
+
+    async def worker(name: str, queue: Queue) -> None:
+        while True:
+            # Get a "work item" out of the queue.
+            time_to_sleep = await queue.get()
+
+            await trio.sleep(time_to_sleep)
+            # Notify the queue that the "work item" has been processed.
+            queue.task_done()
+            print(f'{name} has slept for {time_to_sleep:.2f} seconds')
+
+
+    async def main():
+        async with Queue(math.inf) as queue:
+            # Generate random timings and put them into the queue.
+            total_sleep_time = 0
+            for _ in range(20):
+                sleep_for = random.uniform(0.05, 1.0)
+                total_sleep_time += sleep_for
+                queue.put_nowait(sleep_for)
+
+            # Create three worker tasks to process the queue concurrently.
+            async with trio.open_nursery() as nursery:
+                for i in range(3):
+                    nursery.start_soon(worker, f'worker-{i}', queue)
+
+                # Wait until the queue is fully processed.
+                before = trio.current_time()
+                await queue.join()
+                total_slept_for = trio.current_time() - before
+                print('====')
+                print(f'3 workers slept in parallel for {total_slept_for:.2f} seconds')
+                print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
+
+                # We can end the nursery which will in turn end the tasks.
+                nursery.cancel_scope.cancel()
+
+
+    trio.run(main)
+    ```
+    """
     _size: Union[int, float] = attr.ib(default=1, validator=attr.validators.instance_of((int, float)))
     _items: List[Any] = attr.ib(factory=list, validator=attr.validators.instance_of((list, set, tuple)))
     _send_channel: trio.MemorySendChannel = attr.ib(init=False)

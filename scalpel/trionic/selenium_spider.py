@@ -15,6 +15,34 @@ logger = logging.getLogger('scalpel')
 # it depends on _config property defined in StaticSpider, so it has to be put at the end
 @attr.s
 class SeleniumSpider(SeleniumGetMixin, StaticSpider, SeleniumDriverMixin):
+    """
+    A spider suitable to parse dynamic websites i.e where Javascript is heavily used. You will sometimes encounter the
+    term Single-Page Application (SPA) for this type of website. It relies on `selenium` package and a browser.
+
+    **Parameters:**
+
+    * **urls:** Urls to parse. Allowed schemes are `http`, `https` and `file`. It can be a `list`, a `tuple` or a `set`.
+    * **parse:** An async function used to parse url content. It takes two arguments: the current spider and a
+    `StaticResponse` object.
+    * **reachable_urls:** `set` of urls that are already fetched or read.
+    * **unreachable_urls:** `set` of urls that were impossible to fetch or read.
+    * **robot_excluded_urls:** `set` of urls that were excluded to fetch because of *robots.txt* file rules.
+    * **followed_urls:** `set` of urls that were followed during the process of parsing url content. You will find these
+    urls scattered in the first three sets.
+    * **request_counter:** The number of urls already fetched or read.
+
+    Usage:
+
+    ```
+    from scalpel.trionic import SeleniumSpider, SeleniumResponse
+
+    async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
+        ...
+
+    spider = SeleniumSpider(urls=['http://example.com'], parse=parse)
+    await spider.run()
+    ```
+    """
 
     def __attrs_post_init__(self):
         # this erases the content of StaticSpider.__attrs_post_init__ which is not useful here
