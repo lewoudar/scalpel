@@ -20,6 +20,8 @@ on its own.
 - Ability to parse documents using `gevent` or `trio` asynchronous frameworks.
 - Ability to parse SPA (Single Page Applications) using `selenium`.
 - Fast serialization for scrapped items with `msgpack`.
+- Ability to filter or updated scrapped items.
+- Middleware system to modify responses (only for static responses).
  
 ## Contents
  
