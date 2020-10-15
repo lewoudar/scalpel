@@ -10,7 +10,8 @@ class TestQueueInitialization:
 
     def test_should_work_with_default_initialization(self):
         queue = Queue()
-        assert 0 == queue._size == queue.length
+        assert 1 == queue.maxsize
+        assert 0 == queue.length
         assert [] == queue._items
         assert 0 == queue._tasks_in_progress
         assert isinstance(queue._send_channel, trio.MemorySendChannel)
@@ -19,25 +20,25 @@ class TestQueueInitialization:
 
     def test_should_work_when_initializing_buffer_size(self):
         queue = Queue(size=3)
-        assert 3 == queue._size
+        assert 3 == queue.maxsize
         assert 0 == queue.length
 
     def test_should_work_when_initializing_items(self):
         items = [2, 'foo']
-        queue = Queue(items=items)
-        assert 0 == queue._size
+        queue = Queue(3, items=items)
+        assert 3 == queue.maxsize
         assert items == queue._items
         assert len(items) == queue.length == queue._tasks_in_progress
 
     def test_length_property_works_with_infinity_size(self):
         queue = Queue(size=math.inf)
         assert 0 == queue.length
-        assert queue._size is math.inf
+        assert queue.maxsize is math.inf
 
     def test_should_work_when_initializing_with_size_and_items(self):
         items = [2, 'foo']
         queue = Queue(size=3, items=items)
-        assert 3 == queue._size
+        assert 3 == queue.maxsize
         assert 2 == queue.length
         assert items == queue._items
 
@@ -45,7 +46,7 @@ class TestQueueInitialization:
         with pytest.raises(ValueError) as exc_info:
             Queue(size=-1)
 
-        assert 'size must not be less than 0 but you provide: -1' == str(exc_info.value)
+        assert 'size must not be less than 1 but you provide: -1' == str(exc_info.value)
 
     def test_should_raise_error_when_size_is_less_than_items_length(self):
         with pytest.raises(trio.WouldBlock):
@@ -72,19 +73,20 @@ class TestPutMethods:
 
     async def test_should_raise_would_block_error_when_buffer_is_full_and_put_nowait_is_used(self):
         queue = Queue()
+        queue.put_nowait(1)
 
         with pytest.raises(trio.WouldBlock):
             queue.put_nowait(2)
 
     async def test_should_reset_event_when_event_is_set_and_put_method_is_called(self):
-        queue = Queue(size=1)
+        queue = Queue()
         queue._finished.set()
         await queue.put(2)
 
         assert not queue._finished.is_set()
 
     async def test_should_reset_event_when_event_is_set_and_put_nowait_is_called(self):
-        queue = Queue(size=1)
+        queue = Queue()
         queue._finished.set()
         queue.put_nowait(2)
 
@@ -95,13 +97,13 @@ class TestGetMethods:
     """Tests methods get and get_nowait"""
 
     async def test_should_work_when_using_get_method(self):
-        queue = Queue(items=[2, 'foo'])
+        queue = Queue(3, items=[2, 'foo'])
 
         assert 2 == await queue.get()
         assert 'foo' == await queue.get()
 
     async def test_should_work_when_using_get_nowait_method(self):
-        queue = Queue(items=[2, 'foo'])
+        queue = Queue(3, items=[2, 'foo'])
 
         assert 2 == queue.get_nowait()
         assert 'foo' == queue.get_nowait()

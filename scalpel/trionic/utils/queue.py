@@ -10,7 +10,7 @@ logger = logging.getLogger('scalpel')
 
 @attr.s
 class Queue:
-    _size: Union[int, float] = attr.ib(default=0, validator=attr.validators.instance_of((int, float)))
+    _size: Union[int, float] = attr.ib(default=1, validator=attr.validators.instance_of((int, float)))
     _items: List[Any] = attr.ib(factory=list, validator=attr.validators.instance_of((list, set, tuple)))
     _send_channel: trio.MemorySendChannel = attr.ib(init=False)
     _receive_channel: trio.MemoryReceiveChannel = attr.ib(init=False)
@@ -18,16 +18,9 @@ class Queue:
     _finished: trio.Event = attr.ib(factory=trio.Event, init=False)
 
     def __attrs_post_init__(self):
-        if self._size or (not self._size and not self._items):
-            logger.debug('initializing queue send and receive channels with a size of %s', self._size)
-            self._send_channel, self._receive_channel = trio.open_memory_channel(self._size)
+        logger.debug('initializing queue send and receive channels with a size of %s', self._size)
+        self._send_channel, self._receive_channel = trio.open_memory_channel(self._size)
         if self._items:
-            if not self._size:
-                items_length = len(self._items)
-                logger.debug(
-                    'initializing queue send and receive channels with self._items size of %s', items_length
-                )
-                self._send_channel, self._receive_channel = trio.open_memory_channel(items_length)
             logger.debug('trying to add items coming from list %s', self._items)
             for item in self._items:
                 self._tasks_in_progress += 1
@@ -35,16 +28,23 @@ class Queue:
 
     @_size.validator
     def _validate_size(self, _, value: int) -> None:
-        if value < 0:
-            message = f'size must not be less than 0 but you provide: {value}'
+        if value < 1:
+            message = f'size must not be less than 1 but you provide: {value}'
             logger.error(message)
             raise ValueError(message)
 
     @property
-    def length(self) -> Union[int, float]:
+    def length(self) -> int:
+        """Tne number of items currently present in the queue."""
         value = self._send_channel.statistics().current_buffer_used
         logger.debug('returning queue length: %s', value)
         return value
+
+    @property
+    def maxsize(self) -> Union[int, float]:
+        """The number of items allowed in the queue."""
+        logger.debug('returning queue max size: %s', self._size)
+        return self._size
 
     async def put(self, item: Any) -> None:
         logger.debug('adding item %s to queue', item)
