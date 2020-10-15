@@ -20,10 +20,13 @@ on its own.
 - Ability to parse documents using `gevent` or `trio` asynchronous frameworks.
 - Ability to parse SPA (Single Page Applications) using `selenium`.
 - Fast serialization for scrapped items with `msgpack`.
+- Ability to follow *robots.txt* rules.
 - Ability to filter or updated scrapped items.
 - Middleware system to modify responses (only for static responses).
  
 ## Contents
  
 - [Installation](installation.md)
+- [Configuration](configuration.md)
+- [Static spider](static_spider.md)
 - [API](api.md)

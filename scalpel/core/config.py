@@ -349,7 +349,7 @@ class Configuration:
         ```
         from scalpel import Configuration
         conf = Configuration.load_from_yaml('conf.yaml')
-        conf.fetch_timeout  # equals to 4
+        conf.fetch_timeout  # equals to 4.0
         ```
         """
         cls._check_file(yaml_file, 'yaml')
@@ -378,7 +378,7 @@ class Configuration:
         ```
         from scalpel import Configuration
         conf = Configuration.load_from_toml('conf.toml')
-        conf.fetch_timeout  # equals to 4
+        conf.fetch_timeout  # equals to 4.0
         ```
         """
         cls._check_file(toml_file, 'toml')

@@ -15,8 +15,11 @@ class Queue:
 
     **Parameters:**
 
-    * **size:** The size of the queue, defaults to 0.
+    * **size:** The size of the queue, defaults to 1 (this is the minimum value).
     * **items:** A list of values used to initialize the queue.
+
+    **N.B:** If you set `items`, be sure that the size of the queue is greater than `items` length, otherwise you will
+    have a `trio.WouldBlock` exception.
 
     Usage:
 

@@ -3,13 +3,16 @@ site_description: scalpel package documentation
 site_author: Kevin Tewouda
 site_url: https://scalpel.readthedocs.io
 
+repo_name: lewoudar/scalpel
 repo_url: https://github.com/lewoudar/scalpel/
 edit_uri: tree/master/docs
 
 nav:
   - Home: index.md
-  - API: api.md
   - Installation: installation.md
+  - Configuration: configuration.md
+  - Static spider: static_spider.md
+  - API: api.md
 
 
 theme: material
