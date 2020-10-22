@@ -71,7 +71,7 @@ class SpiderStatistics:
     * **robot_excluded_urls:** `set` of urls that were excluded to fetch because of *robots.txt* file rules.
     * **followed_urls:** `set` of urls that were followed during the process of parsing url content. You will find these
     urls scattered in the first three sets.
-    * **request_counter:** The number of urls fetched and read (in case of file urls).
+    * **request_counter:** The number of urls fetched or read (in case of file urls).
     * **average_fetch_time:** The average time to fetch an url (or read a file in case of file urls).
     * **total_time:** The total execution time of the spider.
     """

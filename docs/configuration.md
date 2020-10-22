@@ -22,6 +22,9 @@ For a reference of all the settings you can set, please refer to the relevant [a
 Keep in mind that you can access your configuration during spider execution through `spider.config` attribute and you can even
 set some values on the fly, but it is a good idea to only set your configuration before running your spider.
 
+!!! note
+    All the settings available have a default value.
+
 ## Setting configuration through the use of a .env file
 
 To follow the [12 factor app](https://12factor.net/config) principles, you need to store your configuration in your
