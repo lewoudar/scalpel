@@ -23,5 +23,8 @@ scraping library, and it is fun to write one ;)
 - Fast serialization for scrapped items with `msgpack`.
 - Ability to follow *robots.txt* rules.
 - Ability to filter or updated scrapped items.
-- Middleware system to modify responses (only for static responses).
+- Middleware system to perform some actions regarding to the response (only for static responses).
+
+!!! warning
+    If you are new to scalpel you should read the documentation in the order listed on the left menu.
  

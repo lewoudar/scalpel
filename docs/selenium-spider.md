@@ -62,7 +62,7 @@ environment, **you must set this attribute** with the right path.
 
 First of all, I will not teach how to use the `selenium` library, if you don't know it, you can read this
 [introduction](https://selenium-python.readthedocs.io/getting-started.html). Many concepts of the static spider can be
-used for the selenium spider. So if you don't read the static spider [guide](static_spider.md), it is a good idea to do
+used for the selenium spider. So if you don't read the static spider [guide](static-spider.md), it is a good idea to do
 so before continuing here.
 
 So if we come back to [httpbin](http://httpbin.org/), let's say we want to scrape the menu title plus a description

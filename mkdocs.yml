@@ -11,8 +11,9 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Configuration: configuration.md
-  - Static spider: static_spider.md
-  - Selenium spider: selenium_spider.md
+  - Static spider: static-spider.md
+  - Selenium spider: selenium-spider.md
+  - Item processing: item-processing.md
   - API: api.md
 
 
