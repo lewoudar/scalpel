@@ -12,6 +12,7 @@ nav:
   - Installation: installation.md
   - Configuration: configuration.md
   - Static spider: static_spider.md
+  - Selenium spider: selenium_spider.md
   - API: api.md
 
 

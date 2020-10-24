@@ -36,7 +36,7 @@ def date_processor(item: dict) -> dict:
     return item
 
 
-async def main():
+async def main() -> None:
     backup = Path(__file__).parent / 'backup.mp'
     config = Configuration(selenium_driver_log_file=None, backup_filename=f'{backup}', item_processors=[date_processor])
     sel_spider = SeleniumSpider(urls=['http://httpbin.org/'], parse=parse, config=config)
@@ -50,8 +50,7 @@ async def main():
         for operation in quote_data['operations']:
             print('\tmethod:', operation['method'])
             print('\tpath:', operation['path'])
-            print('\tdescription:', operation['description'])
-        print()
+            print('\tdescription:', operation['description'], end='\n\n')
 
 
 if __name__ == '__main__':

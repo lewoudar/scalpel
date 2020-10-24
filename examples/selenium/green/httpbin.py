@@ -48,5 +48,4 @@ if __name__ == '__main__':
         for operation in quote_data['operations']:
             print('\tmethod:', operation['method'])
             print('\tpath:', operation['path'])
-            print('\tdescription:', operation['description'])
-        print()
+            print('\tdescription:', operation['description'], end='\n\n')

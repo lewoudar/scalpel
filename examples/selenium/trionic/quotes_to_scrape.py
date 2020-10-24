@@ -33,7 +33,7 @@ def date_processor(item: dict) -> dict:
     return item
 
 
-async def main():
+async def main() -> None:
     backup = Path(__file__).parent / 'backup.mp'
     config = Configuration(selenium_driver_log_file=None, backup_filename=f'{backup}', item_processors=[date_processor])
     spider = SeleniumSpider(urls=['http://quotes.toscrape.com'], parse=parse, config=config)

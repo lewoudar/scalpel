@@ -433,8 +433,9 @@ async def main() -> None:
 trio.run(main)
 ```
 
-There we goo! So now, if you read the file created, *data.mp* in the example case you will get all quote information from
-the first page to the last page.
+There we goo! So now, if you read the file created, *data.mp* in the example case, you will get all quote information from
+the first page to the last page. Don't hesitate to look at the 
+[examples](https://github.com/lewoudar/scalpel/tree/master/examples) folder for more code snippets to view.
 
 Some important notes:
 
@@ -446,11 +447,11 @@ at some point in time.
 
 ## Good to know
 
-scalpel can also deals with file url instead of http ones. The url needs to start with `file:///` followed by the path
+scalpel can also deals with file urls instead of http ones. The url needs to start with `file:///` followed by the path
 of the file. You can use [Path.as_uri](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_uri) method
 to help you to create these urls.
 
-You will notice that the following spider attributes are public and therefore can be set in the *parse* callback:
+You will notice that the following spider attributes are public and therefore can be set in the *parse* function:
 
 * reachable_urls
 * unreachable_uls
@@ -459,5 +460,5 @@ You will notice that the following spider attributes are public and therefore ca
 * request_counter
 
 The reason is that when running (very) long crawlers, it can be useful to empty these sets to avoid running
-out of memory and set counter to O to be in sync with the sets. Please **do not abuse** of this possibility and only
+out of memory and set counter to 0 to be in sync with the sets. Please **do not abuse** of this possibility and only
 use it when appropriate.
