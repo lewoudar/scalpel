@@ -57,6 +57,9 @@ async def main() -> None:
 trio.run(main)
 ```
 
+!!! note
+    there is an icon at the top right of the code where you can click to copy and paste into your editor and test it.
+
 If you run this program, you will just see `hello spider` printed in your console. Nothing exciting right now, let's
 change that.
 
@@ -462,3 +465,41 @@ You will notice that the following spider attributes are public and therefore ca
 The reason is that when running (very) long crawlers, it can be useful to empty these sets to avoid running
 out of memory and set counter to 0 to be in sync with the sets. Please **do not abuse** of this possibility and only
 use it when appropriate.
+
+If you want a more object-oriented approach for your spider than a function, you can always use a class. Just remember
+that the parse attribute of the `StaticSpider` waits for a callable. An example:
+
+With gevent:
+
+```python
+from scalpel.green import StaticSpider, StaticResponse
+
+
+class Parser:
+
+    def __call__(self, spider: StaticSpider, response: StaticResponse) -> None:
+        print(response.text)
+
+
+spider = StaticSpider(urls=['http://quotes.toscrape.com'], parse=Parser())
+spider.run()
+```
+
+With trio:
+
+```python
+import trio
+from scalpel.trionic import StaticResponse, StaticSpider
+
+
+class Parser:
+    
+    async def __call__(self, spider: StaticSpider, response: StaticResponse) -> None:
+        print(response.text)
+
+async def main():
+    spider = StaticSpider(urls=['http://quotes.toscrape.com'], parse=Parser())
+    await spider.run()
+
+trio.run(main)
+```

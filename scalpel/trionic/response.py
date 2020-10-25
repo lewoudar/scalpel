@@ -39,7 +39,7 @@ class CommonAttributes:
 @attr.s(slots=True)
 class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
     """
-    A response class used in combination with a `StaticSpider` object in the `parse` async function of a spider.
+    A response class used in combination with a `StaticSpider` object in the `parse` async callable of a spider.
 
     **N.B:** You probably don't need to instantiate this class directly unless for some kind of testing. It is mainly
     exposed for annotation purpose.
@@ -71,7 +71,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
 @attr.s(slots=True)
 class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
     """
-    A response class used in combination with a `SeleniumSpider` object in the `parse` async function of a spider.
+    A response class used in combination with a `SeleniumSpider` object in the `parse` async callable of a spider.
 
     **N.B:** You probably don't need to instantiate this class directly unless for some kind of testing. It is mainly
     exposed for annotation purpose.

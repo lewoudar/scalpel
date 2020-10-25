@@ -28,7 +28,7 @@ class StaticSpider(Spider):
     **Parameters:**
 
     * **urls:** Urls to parse. Allowed schemes are `http`, `https` and `file`. It can be a `list`, a `tuple` or a `set`.
-    * **parse:** A callback used to parse url content. It takes two arguments: the current spider and a
+    * **parse:** A callable used to parse url content. It takes two arguments: the current spider and a
     `StaticResponse` object.
     * **reachable_urls:** `set` of urls that are already fetched or read.
     * **unreachable_urls:** `set` of urls that were impossible to fetch or read.
