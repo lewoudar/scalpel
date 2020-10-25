@@ -25,10 +25,10 @@
 ::: scalpel.datetime_decoder
     :docstring:
 
-::: scalpel.green.read_mp
-    :docstring:
-    
 ::: scalpel.green.write_mp
+    :docstring:
+
+::: scalpel.green.read_mp
     :docstring:
 
 <!-- there is a problem with mkdocs when parsing trio code, so for now we comment it

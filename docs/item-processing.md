@@ -71,3 +71,53 @@ spider = StaticSpider(urls=['https://quotes.toscrape.com/'], parse=parse, config
 
 So that is it! For the case you want to drop an item you just need to return `None` from the processor function. Worth
 to mention that if a processor returns `None` the following processors are not called.
+
+## Note on custom object serialization / deserialization
+
+If you know [msgpack](https://pypi.org/project/msgpack/), you know that it cannot serialize `datetime` objects by
+default. So if you called the `read_mp` function like we did in the static spider guide, it will raise an error.
+So how can we read `datetime` objects? Well, if you look at the scalpel [msgpack api](api.md#msgpack) you will noticed
+a `datetime_decoder` which is a helper to deserialize `datetime` objects. Also the [Configuration](api.md#configuration)
+object has a `msgpack_decoder` attribute which default value is `datetime_decoder`. So here is how you can read
+`datetime` objects.
+
+With gevent:
+
+```python
+from scalpel import Configuration
+from scalpel.green import read_mp, StaticSpider
+
+def parse(spider, response):
+    ...
+
+
+config = Configuration(backup_filename='toto.mp')
+spider = StaticSpider(urls=['http//foo.com'], parse=parse, config=config)
+spider.run()
+
+# read_mp accepts a callback where we can specify how to deserialize custom objects in msgpack
+for data in read_mp('toto.mp', decoder=config.msgpack_decoder):
+    print(data)
+```
+
+With trio:
+
+```python
+import trio
+from scalpel import Configuration
+from scalpel.trionic import StaticSpider, read_mp
+
+async def parse(spider, response):
+    ...
+
+async def main():
+    config = Configuration(backup_filename='toto.mp')
+    spider = StaticSpider(urls=['http//foo.com'], parse=parse, config=config)
+    await spider.run()
+
+    # read_mp accepts a callback where we can specify how to deserialize custom objects in msgpack
+    async for data in read_mp('toto.mp', decoder=config.msgpack_decoder):
+        print(data)
+
+trio.run(main)
+```
