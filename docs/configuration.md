@@ -34,15 +34,15 @@ To know what name you need to use in your `.env` file for a configuration variab
 attribute in **capital letters** and prefixed it with `SCALPEL_` i.e if you want to set the
 `Configuration.min_request_delay` property, you need to set the environment variable `SCALPEL_MIN_REQUEST_DELAY`.
 
-The value of the value is simple for string and numbers, but it is less obvious for other types, here are what you can
-expected for the following cases:
+The value of the attribute is simple for string and numbers, but it is less obvious for other types, here are what 
+you can expected for the following cases:
 
 - For boolean values like `Configuration.follow_robots_txt`, the values `true`, `yes`, `y` and `1` are evaluated to 
 `True` and values `false`, `no`, `n` and `0` are evaluated to `False`.
 - For `Enum` like [Browser](api.md#browser), just write the enum values like `FIREFOX` or `CHROME`.
 - For callables like `Configuration.msgpack_encoder` just write the path to the callable using dot notation. For example
 if you have a module named `my_module` and a callable `my_callable` in that module, you can refer to it with
-`my_module.my_callable`. You can resume this logic with the nesting of packages. Keep in mind that the module you
+`my_module.my_callable`. You can adopt this logic with modules nested in packages. Keep in mind that the module you
 specify must be in the python path for this to work.
 - For a list of callables like `Configuration.response_middlewares`, the logic is the same as before except that each
 callable is separated by a `;` or `:` or `,` or a whitespace. For example `my_module.callable_1:my_module.callable_2`.

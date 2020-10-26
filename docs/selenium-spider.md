@@ -11,7 +11,7 @@ useless.
 
 Let's see an example with [httpbin](http://httpbin.org/) to understand what the implications are. This website is a SPA
 created with [react](https://reactjs.org/). For information, this website provides a simple interface to play with
-HTTP requests (testing your http client). If you click on the *HTTP methods* menu, you will see four requests you can
+HTTP requests (testing your http client). If you click on the *HTTP methods* menu, you will see five requests you can
 make. Ok now look at the HTML source with `ctrl + u` and you will see... almost nothing if not weird information. 
 The reason is simple, the page is loaded via [javascript](https://en.wikipedia.org/wiki/JavaScript), in other words
 almost all content is loaded dynamically after the page is fetched. Now right click on the menu *HTTP methods* and click
@@ -20,11 +20,13 @@ almost all content is loaded dynamically after the page is fetched. Now right cl
 I will not do a course on browser dev tools, there are many resources on the web but this is basically how you can 
 inspect the HTML source of SPA applications.
 
-Like I said early static spiders is useless in the case of SPA applications because the inner 
-[httpx](https://www.python-httpx.org/) client used in these spiders do not know how to deal with javascript loading.
+Like I said early static spiders are useless in the case of SPA applications because the inner 
+[httpx](https://www.python-httpx.org/) client they rely on do not know how to deal with javascript loading.
 So how can we scrape data from SPA applications? There are not many choices here, we need a browser! And we don't only
-need a browser but also a tool able to handle a browser without human interaction commonly called a *driver*. Note
-that every browser has a specific driver so you need to install one for the browser you use.
+need a browser but also a tool able to handle a browser without human interaction commonly called a *driver*.
+
+!!! note
+    Every browser has a specific driver so you need to install one for the browser you use.
 
 This is where [selenium](https://selenium-python.readthedocs.io/) comes in. It is a python library able to control
 browser via the use of *drivers*. The [installation](https://selenium-python.readthedocs.io/installation.html) section
@@ -44,7 +46,7 @@ are using, unfortunately I can't give you an all-in-one solution. Nevertheless, 
 is a [forum question](https://askubuntu.com/questions/870530/how-to-install-geckodriver-in-ubuntu) with a way to install
 *geckodriver* (take care to update the version used in the example).
 
-## Notes on configuration
+## Configuration
 
 There are some [Configuration](api.md#configuration) attributes related to a selenium spider that you should be aware of:
 
@@ -61,13 +63,13 @@ environment, **you must set this attribute** with the right path.
 ## Our first selenium spider
 
 First of all, I will not teach how to use the `selenium` library, if you don't know it, you can read this
-[introduction](https://selenium-python.readthedocs.io/getting-started.html). Many concepts of the static spider can be
-used for the selenium spider. So if you don't read the static spider [guide](static-spider.md), it is a good idea to do
+[introduction](https://selenium-python.readthedocs.io/getting-started.html). Many concepts of the static spider will be
+reused for the selenium spider so if you don't read the static spider [guide](static-spider.md), it is a good idea to do
 so before continuing here.
 
 So if we come back to [httpbin](http://httpbin.org/), let's say we want to scrape the menu title plus a description
-of all the methods related to this title. If we look at the HTML source of a menu with a browser dev tool, we can see
-that the structure is like the following
+of all the methods related to this menu. If we look at the HTML source of a menu with a browser dev tool, we can see
+that the structure is like the following:
 
 ```html
 <div class="opblock-tag-section">
@@ -101,8 +103,9 @@ that the structure is like the following
 
 We see that the menu title is in a `h4` tag. The description of the methods is inside a 
 `<div class="opblock XXX">..</div>` and inside it we have: 
+
 * the method name in a `<span class="opblock-summary-method"..>..</span>`
-* the route path in a `span [class="opblock-summary-path]/a/span`
+* the route path in a `span[class="opblock-summary-path]/a/span`
 * the method description in `<span class="opblock-summary-description..>..</span>`
 
 So this is what we can write to scrape all menu information on the website.
@@ -216,12 +219,12 @@ this is because I don't use the spider object in the function body so I mark it 
 my opinion.
 * The `driver` attribute is a selenium webdriver object where we can apply a lot of methods like `find_elements_by_xpath`
 which look familiar to the `StaticResponse.xpath` method. You can look at the entire webdriver api 
-[here](https://www.selenium.dev/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webdriver.html)
+[here](https://www.selenium.dev/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webdriver.html).
 * Do not hesitate to look at the [examples](https://github.com/lewoudar/scalpel/tree/master/examples) 
-for more code snippets to look at.
+for more code snippets to view.
 
 !!! danger
-    Please do not called `close` or `quit` methods of the driver object because this will certainly crashed your
+    Please do not call `close` or `quit` methods of the driver object because this will certainly crashed your
     application. The resource closing is done by scalpel.
 
 
@@ -231,7 +234,7 @@ Integration of selenium in scalpel is not optimal because of the synchronous nat
 selenium does not have a notion of a *tab* object. You only handle one window tab at a time. All of this make it hard to
 combine selenium with asynchronous frameworks such as `gevent` or `trio`. The direct consequence of it is that
 **asynchronous operations** such as `follow`, `save_item` or whatever asynchronous api you use **must** be done at the
-end of your parse function. You can't mix them up anywhere in the code. For example:
+end of your parse callable. You can't mix them up anywhere in the code. For example:
 
 With gevent:
 
@@ -241,7 +244,8 @@ from scalpel.green import StaticResponse
 def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
     response.follow('/page/2')  # not good
-    # the reason is that for now scalpel cannot guaranteed that the next line will be completed on the page you expected
+    # the reason is that for now scalpel cannot guaranteed that the next line 
+    # will be executed on the page you expected
     response.xpath('//div')
 ```
 
@@ -253,7 +257,8 @@ from scalpel.trionic import StaticResponse
 async def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
     await response.follow('/page/2')  # not good
-    # the reason is that for now scalpel cannot guaranteed that the next line will be completed on the page you expected
+    # the reason is that for now scalpel cannot guaranteed that the next line 
+    # will be executed on the page you expected
     response.xpath('//div')
 ```
 
@@ -281,6 +286,6 @@ async def parse(_, response: StaticResponse) -> None:
     await response.follow('/page/2')  # good
 ```
 
-Another direct consequence of the bad asynchronous integration of selenium is that if you follow urls we will notice
+Another direct consequence of the bad asynchronous integration of selenium is that if you follow urls you will notice
 that the behaviour is more sequential than concurrent with regard to url handling. Nevertheless the selenium spider
 is still useful (if you respect the previous advice), just slow for now.

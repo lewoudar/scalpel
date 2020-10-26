@@ -2,11 +2,11 @@
 
 A cool feature about scalpel is that it lets you decouple item scraping from its analyzing through the *item processors*.
 Note that this require that you **save** your item using the `save_item` method of a response object. It can help
-you to reduce the amount of logic in your parse function.
+you to reduce the amount of logic in your parse callable.
 
 ## Configuration
 
-Item processors are just functions that are run one after the other on a scrapped item. The idea is that you can modify
+Item processors are just functions that are run one after the other on a scraped item. The idea is that you can modify
 an item to add or update some information or you can simply discard the item if it does not meet certain criteria.
 To register item processors, this is what you can do.
 
@@ -30,7 +30,7 @@ you can be sure your application will crash.
     The processors are run in the order there are listed when instantiating configuration. So put the most important
     ones at the beginning.
     
-## example
+## Example
 
 If we come back to our quotes example in the [static spider](static-spider.md) we have done something like that in the
 parse function:
@@ -121,3 +121,6 @@ async def main():
 
 trio.run(main)
 ```
+
+If you want to serialize / deserialize other custom objects, you need to implement your logic and set attributes
+`msgpack_encoder` and `msgpack_decoder` of the `Configuration` object with the appropriate functions.

@@ -41,3 +41,9 @@ loop.close()
 
 By the way, do you here about [anyio](https://anyio.readthedocs.io/en/stable/)? (yes I do a bit of advertising). It can
 help you write beautiful code as with trio for asyncio :)
+
+## How do I run my spider using gevent in asyncio code?
+
+**Don't do that!** scalpel instructs gevent to monkeypatch various standard library modules and some like socket are
+exploited by asyncio. This will probably result to weird errors. The only solution for you to integrate your spider in
+asyncio code is to use `trio` and follow the above procedure.

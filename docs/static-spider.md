@@ -1,13 +1,13 @@
 # Static spider
 
 Scalpel aims to provide a simple interface to write spiders. To demonstrate it, we will try to scrape quotes on
-[quotes.toscrape](https://quotes.toscrape.com/). We will assume you already installed scalpel following the
+[quotes.toscrape](https://quotes.toscrape.com/). I will assume you already installed scalpel following the
 [installation](installation.md) guide.
 
 ## Learning HTML, CSS and XPATH
 
 This guide will not be a course on HTML or CSS / XPATH selectors. If you are not familiar with these technologies, there
-are many resource on the web but I will give you a few that I know.
+are many resources on the web but I will give you a few that I know.
 
 For HTML:
 
@@ -97,19 +97,19 @@ async def main() -> None:
 trio.run(main)
 ```
 
-If you run the program you will print `<title>Quotes to Scrape</title>` twice. I deliberately wrote the instruction to
-select the title twice to demonstrate how to use css and xpath selector on the `StaticResponse` object.
+If you run the program, the content `<title>Quotes to Scrape</title>` will be printed twice. I deliberately wrote the 
+instruction to select the title twice to demonstrate how to use css and xpath selectors on the `StaticResponse` object.
 
 !!! note
     The css and xpath methods are shortcuts to the parsel 
-    [Selector](https://parsel.readthedocs.io/en/latest/parsel.html#module-parsel.selector) object. Moreover these methods
-    return [SelectorList](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) where you
+    [Selector](https://parsel.readthedocs.io/en/latest/parsel.html#module-parsel.selector) methods. Moreover these methods
+    return a [SelectorList](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) where you
     can apply further filters. To know more about parsel, you can read the 
     [documentation](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) but we will cover
     some features in this guide.
 
-Hum... So far we have the tag plus its content printed. What if we only want the content? Pretty easy, we just need to
-add an additional information to our selector.
+So far we have the tag plus its content printed. What if we only want the content? Pretty easy, we just need to
+add an additional information to our selectors.
 
 With gevent:
 
@@ -145,7 +145,7 @@ trio.run(main)
 Now we have `Quotes to Scrape` printed, yeah! You will notice the pseudo-selector `::text` for the css method and the
 property `/text()` for the xpath method which help to obtain the desired text.
 
-Now if we look carefully at the html source, we notice that all quote information have this skeleton:
+Now if we look carefully at the html source of the website, we notice that all quote information have this skeleton:
 
 ```html
 <div class="quote" itemscope itemtype="http://schema.org/CreativeWork">
@@ -216,7 +216,8 @@ If this seems unclear for you, don't hesitate to look at the
  [parsel tutorial](https://parsel.readthedocs.io/en/latest/usage.html) before continuing this guide.
  
 Ok now let's scrape the author of the quote and the related tags. The author is inside a `<small class="author"..>`
-and tags are inside `<a>` tags inside a `<div class='tags'..>`. So with this knowledge, we can write the following code.
+and tags are inside `<a>` tags which are also inside a `<div class='tags'..>`. So with this knowledge, we can write the
+following code.
  
 With gevent:
  
@@ -275,7 +276,7 @@ method which returns only the first element of the list.
 Now that we have all these items, you probably want to store them somewhere and do further processing after. You can
 choose whatever you want to store the data, a relational database, a NoSQL database, cloud services, etc.. scalpel
 does not bother you to do want you want with your data, but for our example we will store the scraped items in a file
-using some scalpel facilities.
+using some scalpel utilities.
 
 First of all, scalpel comes with a handy [Configuration](api.md#configuration) object to store many settings related to
 our spider. A particular interesting one is `backup_filename` which allows to declare a filename where the scraped
@@ -329,9 +330,13 @@ async def main() -> None:
 trio.run(main)
 ```
 
+!!! note
+    You don't necessarily have to specify a backup file. A default one is created for you in the form `backup-<uuid>.mp`
+    where `<uuid>` represents a random [UUID](https://tools.ietf.org/html/rfc4122.html) value. 
+
 Now we are done, but.. wait a minute! How will we read the file we just created? Since we use `msgpack` to serialize
-objects the builtin `open` function will be useless. This is where scalpel [msgpack facilities](api.md#msgpack) came in
-handy. This is how you can read a file created by your spider.
+objects the builtin `open` function will be useless. This is where scalpel [msgpack utilities](api.md#msgpack) come in
+handy. Here is how you can read a file created by your spider.
 
 With gevent:
 
@@ -362,7 +367,7 @@ Yeah! Now we have useful data that we can exploit.
 In the previous part we wrote a spider to scrape all quotes on the first page of 
 [quotes.toscrape](https://quotes.toscrape.com). This is already a good step but we might want to go further and 
 retrieved all quote information on the website. We need a way to *follow* the link on the next page and process it.
-For that the `StaticSpider.follow` method will help us. 
+For that the `StaticSpider.follow` method helps us. 
 
 So if we look closely at the HTML structure of the website, we notice that the link to the next page is referenced like
 this:
@@ -445,13 +450,13 @@ Some important notes:
 * In the previous code, we check if the link we want to follow exists, `if next_link is not None`, it is important because
 on the [last](https://quotes.toscrape.com/page/10/) page there is no next link 😛
 * On the last line I printed spider [statistics](api.md#spiderstatistics) which contains many information like the total
-time by the spider, urls scrapped, followed or rejected due to robots.txt rules. You will probably need these information
-at some point in time.
+time taken by the spider, urls scrapped, followed or rejected due to robots.txt rules. You will probably need these 
+information at some point in time.
 
 ## Good to know
 
-scalpel can also deals with file urls instead of http ones. The url needs to start with `file:///` followed by the path
-of the file. You can use [Path.as_uri](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_uri) method
+scalpel can also deals with file urls instead of http ones. The url needs to start with `file:///` followed by the
+file path. You can use [Path.as_uri](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_uri) method
 to help you to create these urls.
 
 You will notice that the following spider attributes are public and therefore can be set in the *parse* function:

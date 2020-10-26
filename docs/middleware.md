@@ -123,7 +123,7 @@ after processing
 after class processing
 ```
 
-With the output, you can have an idea in what order the the middleware code is executed.
+With the output, you can have an idea in what order the middleware code is executed.
 
 !!! note
     Keep in mind that the more middlewares you add, the more slower your spider will be.

@@ -1,6 +1,7 @@
 # Installation
 
-To install scalpel, you will need to have python and pip installed. After you can just enter the following command:
+To install scalpel, you will need to have python and pip installed. For python the minimal version supported is **3.6**.
+After you can just enter the following command:
 
 ```bash
 pip install scalpel
@@ -12,7 +13,7 @@ You can also have a look at the [poetry](https://python-poetry.org/docs/) projec
 poetry add scalpel
 ```
 
-This project works starting from **python3.6** and relies on robust packages:
+This project relies on robust packages:
 
 - [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit. 
 - [httpx](https://www.python-httpx.org/): A modern http client.
