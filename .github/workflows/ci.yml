@@ -33,6 +33,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
       - name: Tests
         run: nox -s tests-${{ matrix.python }}
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov_token }}
 #      - name: Build and deploy
 #        run: nox -s deploy
 #        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
