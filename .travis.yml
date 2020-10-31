@@ -1,0 +1,20 @@
+os: osx
+language: python
+
+matrix:
+  include:
+    - python: pypy3
+      env: NOXSESSION=tests-pypy3
+
+addons:
+  homebrew:
+    packages:
+      - geckodriver
+    casks:
+      - firefox-beta
+      - google-chrome-beta
+      - chromedriver
+
+install: pip install -U pip setuptools nox
+
+script: nox -s $NOXSESSION
