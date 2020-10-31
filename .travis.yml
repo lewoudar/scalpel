@@ -11,7 +11,7 @@ addons:
       - chromedriver
 
 before_install:
-  - pyenv install pypy3.6-7.3.1
+  - pyenv update && pyenv install pypy3.6-7.3.1
 
 install: pip3 install -U pip3 setuptools nox
 
