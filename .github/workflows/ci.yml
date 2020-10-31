@@ -42,3 +42,16 @@ jobs:
           matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.pypi_token }}
+
+  pypi build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install pyenv
+        run: brew install pyenv
+      - name: Install pypy3
+        run: pyenv install pypy3.6-7.3.1
+      - name: Tests
+        run: nox -s tests-pypy3
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov_token }}
