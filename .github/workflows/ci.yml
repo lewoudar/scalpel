@@ -15,11 +15,12 @@ jobs:
         # probably need to port pypy usage on travis (more appropriate)
         # python: [pypy3, 3.6, 3.7, 3.8]
         python: [ 3.6, 3.7, 3.8, 3.9 ]
-    #        exclude:
-    #          - os: windows-latest
-    #            python: pypy3
-    #          - os: macos-latest
-    #            python: 3.9
+        # windows and mac are slow to run python 3.9 so we skip these  jobs
+        exclude:
+          - os: windows-latest
+            python: 3.9
+          - os: macos-latest
+            python: 3.9
 
     steps:
       - uses: actions/checkout@v2
