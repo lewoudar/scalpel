@@ -26,12 +26,13 @@ def tests(session):
     """Runs the test suite."""
     session.install('poetry>=1.0.0,<2.0.0')
     session.run('poetry', 'install')
-    session.run('pytest', 'tests/core')
-    session.run('codecov')
-    session.run('pytest', 'tests/green')
-    session.run('codecov')
-    session.run('pytest', 'tests/trionic')
-    session.run('codecov')
+    for part in ['core', 'trionic', 'green']:
+        arguments = ['coverage', 'run', f'--source=scalpel/{part}', '-m', 'pytest', f'tests/{part}']
+        if part == 'green':
+            arguments.insert(3, '--concurrency=gevent')
+        session.run(*arguments)
+        session.run('coverage', 'xml')
+        session.run('codecov')
 
     if not CI_ENVIRONMENT:
         session.notify('clean-robots-cache')
