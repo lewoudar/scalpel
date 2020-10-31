@@ -7,7 +7,8 @@ import nox
 
 nox.options.reuse_existing_virtualenvs = True
 
-PYTHON_VERSIONS = ['pypy3', '3.6', '3.7', '3.8']
+# PYTHON_VERSIONS = ['pypy3', '3.6', '3.7', '3.8', '3.9']
+PYTHON_VERSIONS = ['3.6', '3.7', '3.8', '3.9']
 CI_ENVIRONMENT = 'GITHUB_ACTIONS' in os.environ
 
 
@@ -15,7 +16,7 @@ CI_ENVIRONMENT = 'GITHUB_ACTIONS' in os.environ
 def lint(session):
     """Performs pep8 and security checks."""
     source_code = 'scalpel'
-    session.install('flake8==3.7.9', 'bandit==1.6.2')
+    session.install('flake8==3.8.4', 'bandit==1.6.2')
     session.run('flake8', source_code)
     session.run('bandit', '-r', source_code)
 
