@@ -1,20 +1,18 @@
 os: osx
-language: python
-
-matrix:
-  include:
-    - python: pypy3
-      env: NOXSESSION=tests-pypy3
 
 addons:
   homebrew:
     packages:
+      - pyenv
       - geckodriver
     casks:
       - firefox-beta
       - google-chrome-beta
       - chromedriver
 
-install: pip install -U pip setuptools nox
+before_install:
+  - pyenv install pypy3.6-7.3.1
 
-script: nox -s $NOXSESSION
+install: pip3 install -U pip3 setuptools nox
+
+script: nox -s tests-pypy3

@@ -43,7 +43,7 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.pypi_token }}
 
-  pypi build:
+  pypi_build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
