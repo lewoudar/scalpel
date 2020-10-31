@@ -23,10 +23,20 @@ def lint(session):
 
 @nox.session(python=PYTHON_VERSIONS)
 def tests(session):
-    """Runs the test suite."""
+    """
+    Runs the test suite.
+    You can also run a part of the test suite by specifying the parts you want to test. The values "core", "green"
+    and "trionic" are accepted as extra arguments. They can be cumulated.
+    """
+    to_test = ['core', 'trionic', 'green']
+    for item in session.posargs:
+        if item not in to_test:
+            session.error(f'{item} is not part of {to_test}')
+    to_test = session.posargs if session.posargs else to_test
+
     session.install('poetry>=1.0.0,<2.0.0')
     session.run('poetry', 'install')
-    for part in ['core', 'trionic', 'green']:
+    for part in to_test:
         arguments = ['coverage', 'run', f'--source=scalpel/{part}', '-m', 'pytest', f'tests/{part}']
         if part == 'green':
             arguments.insert(3, '--concurrency=gevent')
