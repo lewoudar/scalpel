@@ -15,9 +15,12 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest' ,'windows-latest' ]
         python: [ 3.6, 3.7, 3.8, 3.9 ]
         # windows and mac are slow to run python 3.9 so we skip these jobs
+        # windows is also really slow on python 3.6 and sometimes produce weird errors so we skip it
         exclude:
           - os: windows-latest
             python: 3.9
+          - os: windows-latest
+            python: 3.6
           - os: macos-latest
             python: 3.9
 
