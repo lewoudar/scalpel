@@ -59,6 +59,7 @@ def deploy(session):
     """
     Deploys on pypi.
     """
+    session.install('poetry>=1.0.0,<2.0.0')
     if 'POETRY_PYPI_TOKEN_PYPI' not in os.environ:
         session.error('you must specify your pypi token api to deploy your package')
 

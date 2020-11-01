@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyscalpel"
-version = "0.1.0"
+version = "0.1.1"
 description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
 readme = "README.md"
@@ -35,11 +35,11 @@ selenium = "^3.141.0"
 configuror = "^0.2.0"
 rfc3986 = { extras = ["idna"], version = "^1.4.0" }
 msgpack = "^1.0.0"
-gevent = { extras = ["recommended"], version = "^20.9.0", optional = true }
+gevent = { version = "^20.9.0", optional = true }
 trio = { version = "^0.17.0", optional = true }
 
 [tool.poetry.extras]
-gevent = ["gevent[recommended]"]
+gevent = ["gevent"]
 trio = ["trio"]
 full = ["gevent", "trio"]
 
