@@ -78,35 +78,37 @@ that the structure is like the following:
         <small>
             <div class="markdown">Testing different HTTP verbs</div>
         </small>
-    <div style="height: auto; border: none; margin: 0px; padding: 0px;">
-        <!-- react-text: 451 --> <!-- /react-text -->
-        <div class="opblock opblock-delete" id="operations-HTTP Methods-delete_delete">
-            <div class="opblock-summary opblock-summary-delete">
-                <span class="opblock-summary-method">DELETE</span>
-                <span class="opblock-summary-path">
+        <div style="height: auto; border: none; margin: 0px; padding: 0px;">
+            <!-- react-text: 451 --> <!-- /react-text -->
+            <div class="opblock opblock-delete" id="operations-HTTP Methods-delete_delete">
+                <div class="opblock-summary opblock-summary-delete">
+                    <span class="opblock-summary-method">DELETE</span>
+                    <span class="opblock-summary-path">
                     <a class="nostyle" href="#/operations/HTTP Methods/delete_delete">
                         <span>/delete</span>
                     </a><!-- react-empty: 458 --><!-- react-text: 459 --> <!-- /react-text -->
                 </span>
-                <div class="opblock-summary-description">The request's DELETE parameters.</div>
+                    <div class="opblock-summary-description">The request's DELETE parameters.</div>
+                </div>
+                <noscript></noscript>
             </div>
-            <noscript></noscript>
-        </div>
-        ...
-    <button class="expand-operation" title="Expand operation">
-        <svg class="arrow" width="20" height="20"><use href="#large-arrow" xlink:href="#large-arrow"></use></svg>
-    </button>
+            ...
+            <button class="expand-operation" title="Expand operation">
+                <svg class="arrow" width="20" height="20">
+                    <use href="#large-arrow" xlink:href="#large-arrow"></use>
+                </svg>
+            </button>
+        </div>    
     </h4>
     <noscript></noscript>
 </div>
 ```
-
 We see that the menu title is in a `h4` tag. The description of the methods is inside a 
 `<div class="opblock XXX">..</div>` and inside it we have: 
 
 * the method name in a `<span class="opblock-summary-method"..>..</span>`
 * the route path in a `span[class="opblock-summary-path]/a/span`
-* the method description in `<span class="opblock-summary-description..>..</span>`
+* the method description in `<span class="opblock-summary-description">..</span>`
 
 So this is what we can write to scrape all menu information on the website.
 
