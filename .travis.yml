@@ -1,18 +1,18 @@
-os: osx
+os: linux
+dist: bionic
+arch: arm64-graviton2
+virt: lxd
+language: python
+python: [ pypy3 ]
 
 addons:
-  homebrew:
-    packages:
-      - pyenv
-      - geckodriver
-    casks:
-      - firefox-beta
-      - google-chrome-beta
-      - chromedriver
+  chrome: stable
+  firefox: latest
 
 before_install:
-  - pyenv install pypy3.6-7.2.0
+  - bash ./github/scripts/chromedriver.sh
+  - bash ./github/scripts/geckodriver.sh
 
-install: pip3 install -U pip3 setuptools nox
+install: pip install -U pip setuptools nox
 
 script: nox -s tests-pypy3
