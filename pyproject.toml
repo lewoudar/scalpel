@@ -11,10 +11,9 @@ documentation = "https://scalpel.readthedocs.io/en/stable"
 
 classifiers = [
     "Intended Audience :: Developers",
-    "Topic :: Webscraping",
+    "Topic :: Utilities",
     "Operating System :: OS Independent",
     "Framework :: Trio",
-    "Framework :: Gevent",
     "Framework :: Robot Framework :: Tool",
 ]
 
