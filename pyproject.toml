@@ -3,6 +3,27 @@ name = "scalpel"
 version = "0.1.0"
 description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
+keywords = ["trio", "gevent", "webscraping", "crawler"]
+
+homepage = "https://scalpel.readthedocs.io/en/stable"
+repository = "https://github.com/lewoudar/scalpel"
+documentation = "https://scalpel.readthedocs.io/en/stable"
+
+classifiers = [
+    "Intended Audience :: Developers",
+    "Topic :: Webscraping",
+    "Operating System :: OS Independent",
+    "Framework :: Trio",
+    "Framework :: Gevent",
+    "Framework :: Robot Framework :: Tool",
+]
+
+packages = [
+    { include = "scalpel" }
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/lewoudar/scalpel/issues"
 
 [tool.poetry.dependencies]
 python = "^3.6"

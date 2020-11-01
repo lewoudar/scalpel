@@ -1,5 +1,14 @@
 # Scalpel
 
+[![Pypi version](https://img.shields.io/pypi/v/scalpel.svg)](https://pypi.org/project/scalpel/)
+![](https://github.com/lewoudar/actions-tutorial/workflows/CI/badge.svg)
+<!--
+[![Build Status](https://travis-ci.com/lewoudar/scalpel.svg?branch=master)](https://travis-ci.com/lewoudar/scalpel)
+-->
+[![Coverage Status](https://codecov.io/gh/lewoudar/scalpel/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/lewoudar/scalpel)
+[![Documentation Status](https://readthedocs.org/projects/scalpel/badge/?version=latest)](https://scalpel.readthedocs.io/en/latest/?badge=latest)
+[![License Apache 2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 Your easy-to-use, fast and powerful web scraping library.
 
 ## Why?
