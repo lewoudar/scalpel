@@ -24,8 +24,6 @@ on its own.
 
 ## Installation
  
-** NOT WORKING YET! **
- 
 ```bash
 pip install pyscalpel[gevent] # to install the gevent backend
 pip install pyscalpel[trio] # to installl the trio backend
