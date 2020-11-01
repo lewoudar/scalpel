@@ -4,6 +4,17 @@
 
 set -ex -o pipefail
 
+echo "Install chrome"
+
+sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
+
+# shellcheck disable=SC2024
+sudo echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+
+sudo apt -y update
+
+sudo apt -y install google-chrome-stable
+
 echo "Install chromedriver"
 
 CHROME_DRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)
@@ -15,5 +26,7 @@ unzip ~/chromedriver_linux64.zip -d ~/
 rm ~/chromedriver_linux64.zip
 
 sudo mv -f ~/chromedriver /usr/local/bin/chromedriver
+
+sudo chown root:root /usr/local/bin/chromedriver
 
 sudo chmod 0755 /usr/local/bin/chromedriver
