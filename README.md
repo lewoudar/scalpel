@@ -15,7 +15,10 @@ on its own.
  After having made this observation I decided to create scalpel. And let's be honest, I also want to have my own web
  scraping library, and it is fun to write one ;)
  
- ## Installation
+
+## Installation
+ 
+** NOT WORKING YET! **
  
 ```bash
 pip install scalpel
