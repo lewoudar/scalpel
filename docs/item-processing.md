@@ -1,6 +1,6 @@
 # Item processing
 
-A cool feature about scalpel is that it lets you decouple item scraping from its analyzing through the *item processors*.
+A cool feature about pyscalpel is that it lets you decouple item scraping from its analyzing through the *item processors*.
 Note that this require that you **save** your item using the `save_item` method of a response object. It can help
 you to reduce the amount of logic in your parse callable.
 
@@ -76,7 +76,7 @@ to mention that if a processor returns `None` the following processors are not c
 
 If you know [msgpack](https://pypi.org/project/msgpack/), you know that it cannot serialize `datetime` objects by
 default. So if you called the `read_mp` function like we did in the static spider guide, it will raise an error.
-So how can we read `datetime` objects? Well, if you look at the scalpel [msgpack api](api.md#msgpack) you will noticed
+So how can we read `datetime` objects? Well, if you look at the pyscalpel [msgpack api](api.md#msgpack) you will noticed
 a `datetime_decoder` which is a helper to deserialize `datetime` objects. Also the [Configuration](api.md#configuration)
 object has a `msgpack_decoder` attribute which default value is `datetime_decoder`. So here is how you can read
 `datetime` objects.

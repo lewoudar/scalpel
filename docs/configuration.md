@@ -1,6 +1,6 @@
 # Configuration
  
-Scalpel allows you to configure various parameters for your spider using different flexible ways.
+Pyscalpel allows you to configure various parameters for your spider using different flexible ways.
  
 ## Instantiating directly the Configuration class
  

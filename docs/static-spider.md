@@ -1,7 +1,7 @@
 # Static spider
 
-Scalpel aims to provide a simple interface to write spiders. To demonstrate it, we will try to scrape quotes on
-[quotes.toscrape](https://quotes.toscrape.com/). I will assume you already installed scalpel following the
+Pyscalpel aims to provide a simple interface to write spiders. To demonstrate it, we will try to scrape quotes on
+[quotes.toscrape](https://quotes.toscrape.com/). I will assume you already installed Pyscalpel following the
 [installation](installation.md) guide.
 
 ## Learning HTML, CSS and XPATH
@@ -274,11 +274,11 @@ This is because we have many elements matching the selector and we want all the 
 method which returns only the first element of the list.
 
 Now that we have all these items, you probably want to store them somewhere and do further processing after. You can
-choose whatever you want to store the data, a relational database, a NoSQL database, cloud services, etc.. scalpel
+choose whatever you want to store the data, a relational database, a NoSQL database, cloud services, etc.. pyscalpel
 does not bother you to do want you want with your data, but for our example we will store the scraped items in a file
-using some scalpel utilities.
+using some pyscalpel utilities.
 
-First of all, scalpel comes with a handy [Configuration](api.md#configuration) object to store many settings related to
+First of all, pyscalpel comes with a handy [Configuration](api.md#configuration) object to store many settings related to
 our spider. A particular interesting one is `backup_filename` which allows to declare a filename where the scraped
 items will be written.
 
@@ -335,7 +335,7 @@ trio.run(main)
     where `<uuid>` represents a random [UUID](https://tools.ietf.org/html/rfc4122.html) value. 
 
 Now we are done, but.. wait a minute! How will we read the file we just created? Since we use `msgpack` to serialize
-objects the builtin `open` function will be useless. This is where scalpel [msgpack utilities](api.md#msgpack) come in
+objects the builtin `open` function will be useless. This is where pyscalpel [msgpack utilities](api.md#msgpack) come in
 handy. Here is how you can read a file created by your spider.
 
 With gevent:
@@ -455,7 +455,7 @@ information at some point in time.
 
 ## Good to know
 
-scalpel can also deals with file urls instead of http ones. The url needs to start with `file:///` followed by the
+pyscalpel can also deals with file urls instead of http ones. The url needs to start with `file:///` followed by the
 file path. You can use [Path.as_uri](https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.as_uri) method
 to help you to create these urls.
 

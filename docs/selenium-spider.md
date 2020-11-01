@@ -115,7 +115,7 @@ So this is what we can write to scrape all menu information on the website.
 With gevent:
 
 ```python
-from scalpel.green import SeleniumResponse, SeleniumSpider
+from ².green import SeleniumResponse, SeleniumSpider
 
 def parse(_, response: SeleniumResponse) -> None:
     for block in response.driver.find_elements_by_xpath('//div[@class="opblock-tag-section"]'):
@@ -227,12 +227,12 @@ for more code snippets to view.
 
 !!! danger
     Please do not call `close` or `quit` methods of the driver object because this will certainly crashed your
-    application. The resource closing is done by scalpel.
+    application. The resource closing is done by pyscalpel.
 
 
 ## Caveats
 
-Integration of selenium in scalpel is not optimal because of the synchronous nature of selenium and the fact that
+Integration of selenium in pyscalpel is not optimal because of the synchronous nature of selenium and the fact that
 selenium does not have a notion of a *tab* object. You only handle one window tab at a time. All of this make it hard to
 combine selenium with asynchronous frameworks such as `gevent` or `trio`. The direct consequence of it is that
 **asynchronous operations** such as `follow`, `save_item` or whatever asynchronous api you use **must** be done at the

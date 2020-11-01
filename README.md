@@ -1,10 +1,7 @@
-# Scalpel
+# Pyscalpel
 
-[![Pypi version](https://img.shields.io/pypi/v/scalpel.svg)](https://pypi.org/project/scalpel/)
+[![Pypi version](https://img.shields.io/pypi/v/pyscalpel.svg)](https://pypi.org/project/pyscalpel/)
 ![](https://github.com/lewoudar/actions-tutorial/workflows/CI/badge.svg)
-<!--
-[![Build Status](https://travis-ci.com/lewoudar/scalpel.svg?branch=master)](https://travis-ci.com/lewoudar/scalpel)
--->
 [![Coverage Status](https://codecov.io/gh/lewoudar/scalpel/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/lewoudar/scalpel)
 [![Documentation Status](https://readthedocs.org/projects/scalpel/badge/?version=latest)](https://scalpel.readthedocs.io/en/latest/?badge=latest)
 [![License Apache 2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -21,7 +18,7 @@ on its own.
  that there are better asynchronous frameworks today. Note that this second point is not true anymore as I'm writing
  the document since scrapy adds support for [asyncio](https://docs.scrapy.org/en/latest/topics/asyncio.html)
  
- After having made this observation I decided to create scalpel. And let's be honest, I also want to have my own web
+ After having made this observation I decided to create pyscalpel. And let's be honest, I also want to have my own web
  scraping library, and it is fun to write one ;)
  
 
@@ -30,20 +27,20 @@ on its own.
 ** NOT WORKING YET! **
  
 ```bash
-pip install scalpel[gevent] # to install the gevent backend
-pip install scalpel[trio] # to installl the trio backend
-pip install scalpel[full] # to install all the backends
+pip install pyscalpel[gevent] # to install the gevent backend
+pip install pyscalpel[trio] # to installl the trio backend
+pip install pyscalpel[full] # to install all the backends
 ```
 
 If you know about [poetry](https://python-poetry.org/) you can use it instead of pip.
 
 ```bash
-poetry add scalpel[gevent] # to install the gevent backend
-poetry add scalpel[trio] # to install the trio backend
-poetry add scalpel[full] # to install all the backends
+poetry add pyscalpel[gevent] # to install the gevent backend
+poetry add pyscalpel[trio] # to install the trio backend
+poetry add pyscalpel[full] # to install all the backends
 ```
 
-scalpel works starting from **python 3.6**, it relies on robust packages:
+pyscalpel works starting from **python 3.6**, it relies on robust packages:
 - [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit. 
 - [httpx](https://www.python-httpx.org/): A modern http client.
 - [selenium](https://pypi.org/project/selenium/): A library for controlling a browser.
@@ -137,11 +134,11 @@ if __name__ == '__main__':
 
 ## Known limitations
 
-scalpel aims to handle SPA (single page application) through the use of selenium. However due to the synchronous nature
+pyscalpel aims to handle SPA (single page application) through the use of selenium. However due to the synchronous nature
 of selenium, it is hard to leverage trio and gevent asynchronous feature. You will notice that the *selenium spider* is
 slower than the *static spider*. For more information look at the documentation.
 
 ## Warning
 
-scalpel is a young project so it is expected to have breaking changes in the api without respecting the 
+pyscalpel is a young project so it is expected to have breaking changes in the api without respecting the 
 [semver](https://semver.org/) principle. It is recommended to pin the version you are using for now.

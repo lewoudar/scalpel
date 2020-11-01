@@ -1,20 +1,20 @@
 # Installation
 
-To install scalpel, you will need to have python and pip installed. For python the minimal version supported is **3.6**.
+To install pyscalpel, you will need to have python and pip installed. For python the minimal version supported is **3.6**.
 After you can just enter the following command:
 
 ```bash
-pip install scalpel[gevent] # to install the gevent backend
-pip install scalpel[trio] # to installl the trio backend
-pip install scalpel[full] # to install all the backends
+pip install pyscalpel[gevent] # to install the gevent backend
+pip install pyscalpel[trio] # to installl the trio backend
+pip install pyscalpel[full] # to install all the backends
 ```
 
 You can also have a look at the [poetry](https://python-poetry.org/docs/) project to manage your dependencies.
 
 ```bash
-poetry add scalpel[gevent] # to install the gevent backend
-poetry add scalpel[trio] # to install the trio backend
-poetry add scalpel[full] # to install all the backends
+poetry add pyscalpel[gevent] # to install the gevent backend
+poetry add pyscalpel[trio] # to install the trio backend
+poetry add pyscalpel[full] # to install all the backends
 ```
 
 This project relies on robust packages:

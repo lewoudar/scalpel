@@ -1,14 +1,14 @@
 # Response middlewares
 
-scalpel comes with the ability to intercept responses produced by httpx when fetching urls. This is a feature only
+pyscalpel comes with the ability to intercept responses produced by httpx when fetching urls. This is a feature only
 available for **static spiders**. The reason is that for selenium we can't determine exactly when the request to fetch
 url resource is done.
 
 ## Usage
 
 It is really simple to use the middleware system. If you know how to use decorators in python, you already know how to
-use middlewares in scalpel. Something important to mention, you **must** return the
-[httpx response](https://www.python-httpx.org/api/#response) object since scalpel relies on it. You are only allowed to
+use middlewares in pyscalpel. Something important to mention, you **must** return the
+[httpx response](https://www.python-httpx.org/api/#response) object since pyscalpel relies on it. You are only allowed to
 perform operations before the response object is created, inspect the created object, not discard it or return another
 object. Here is an example.
 

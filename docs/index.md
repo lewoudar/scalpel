@@ -1,8 +1,8 @@
-# Scalpel documentation
+# Pyscalpel documentation
 
-Everything you need to know about scalpel.
+Everything you need to know about pyscalpel.
 
-## Why scalpel?
+## Why pyscalpel?
 
 I already known [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
 two things bothered me.
@@ -13,7 +13,7 @@ on its own.
 that there are better asynchronous frameworks today. Note that this second point is no longer true anymore as I'm writing
 the documentation because scrapy added support for [asyncio](https://docs.scrapy.org/en/latest/topics/asyncio.html).
  
-After having made these observation I decided to create scalpel. And let's be honest, I also want to have my own web
+After having made these observation I decided to create pyscalpel. And let's be honest, I also want to have my own web
 scraping library, and it is fun to write one ;)
  
 ## Features
@@ -26,5 +26,5 @@ scraping library, and it is fun to write one ;)
 - Middleware system to perform some actions regarding to the response (only for static responses).
 
 !!! warning
-    If you are new to scalpel you should read the documentation in the order listed on the left menu.
+    If you are new to pyscalpel you should read the documentation in the order listed on the left menu.
  
