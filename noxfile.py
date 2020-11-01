@@ -34,7 +34,7 @@ def tests(session):
     to_test = session.posargs if session.posargs else to_test
 
     session.install('poetry>=1.0.0,<2.0.0')
-    session.run('poetry', 'install')
+    session.run('poetry', 'install', '-E', 'full')
     for part in to_test:
         arguments = ['coverage', 'run', f'--source=scalpel/{part}', '-m', 'pytest', f'tests/{part}']
         if part == 'green':
