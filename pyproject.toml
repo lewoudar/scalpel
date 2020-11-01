@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "scalpel"
+name = "pyscalpel"
 version = "0.1.0"
 description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
