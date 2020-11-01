@@ -9,7 +9,7 @@ echo "Install chrome"
 sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
 
 # shellcheck disable=SC2024
-sudo echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+sudo echo "deb https://dl.google.com/linux/chrome/deb/ stable main" >>/etc/apt/sources.list.d/google-chrome.list
 
 sudo apt -y update
 
