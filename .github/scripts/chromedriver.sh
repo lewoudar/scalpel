@@ -4,16 +4,6 @@
 
 set -ex -o pipefail
 
-echo "Install chrome"
-
-wget -N https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
-
-sudo echo "deb https://dl.google.com/linux/chrome/deb/ stable main" | sudo tee -a /etc/apt/sources.list.d/google-chrome.list
-
-sudo apt -y update
-
-sudo apt -y install google-chrome-stable
-
 echo "Install chromedriver"
 
 CHROME_DRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)

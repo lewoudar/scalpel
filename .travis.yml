@@ -3,6 +3,7 @@ language: python
 python: [ pypy3 ]
 
 addons:
+  chrome: stable
   firefox: latest
 
 before_install:
