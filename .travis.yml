@@ -7,8 +7,8 @@ addons:
   firefox: latest
 
 before_install:
-  - bash ./github/scripts/chromedriver.sh
-  - bash ./github/scripts/geckodriver.sh
+  - bash .github/scripts/chromedriver.sh
+  - bash .github/scripts/geckodriver.sh
 
 install: pip install -U pip setuptools nox
 
