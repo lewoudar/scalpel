@@ -53,7 +53,7 @@ structures.
 
 ## Documentation
 
-The documentation is in progress.
+The documentation is available at https://scalpel.readthedocs.io/en/latest/.
 
 
 ## Usage
