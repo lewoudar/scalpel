@@ -471,8 +471,13 @@ The reason is that when running (very) long crawlers, it can be useful to empty 
 out of memory and set counter to 0 to be in sync with the sets. Please **do not abuse** of this possibility and only
 use it when appropriate.
 
-If you want a more object-oriented approach for your spider than a function, you can always use a class. Just remember
-that the parse attribute of the `StaticSpider` waits for a callable. An example:
+Also, if you choose the follow *robots.txt* rules, keep in mind that for gevent spiders, the delay specified in this file
+will not be taken in account due to a technical limitation I don't explain for now in gevent. It is always the property
+`Configuration.request_delay` which is used for the delay between requests. The trio spiders do not suffer from this
+limitation.
+
+Furthermore, if you want a more object-oriented approach for your spider than a function, you can always use a class.
+Just remember that the parse attribute of the `StaticSpider` waits for a callable. An example:
 
 With gevent:
 
