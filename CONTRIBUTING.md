@@ -10,10 +10,11 @@ To submit a bug report, please use the [issue tracker](https://github.com/lewoud
 
 Before trying to submit an issue, make sure that there is not already a similar one reported.
 
-Your message should contains as much information as possible such as:
-- the environment in which you worked (OS name and version, python version, etc..)
+Your message should contain as much information as possible such as:
+
+- the environment in which you worked (OS name and version, python version, etc...)
 - Guidance on how to reproduce the issue. For example a small piece of code that can be run immediately.
-- Tell me **what you mean by failure** i.e what are you expecting to happen.
+- Tell me **what you mean by failure** i.e. what are you expecting to happen.
 
 # Fix a bug
 
@@ -22,7 +23,8 @@ correct it. Look at [code contribution](#code-contribution) section before submi
 
 ## Submit feedback
 
-To submit feedback, again use the [issue tracker](https://github.com/lewoudar/configuror/issues).
+To submit feedback, use the [discussions](https://github.com/lewoudar/scalpel/discussions) forum. Please **do not use
+the issue tracker**, I will just close it.
 
 If you want to propose a new feature:
 - explain in detail how it would work.
@@ -33,14 +35,15 @@ If you want to propose a new feature:
 
 The documentation is never a simple part to write, if you feel that it can be improved, feel free to propose a pull
 request. Just a few things to be aware of:
+
 - The documentation is built with [mkdocs](https://www.mkdocs.org/) using the markdown syntax.
 - Try to follow the style of the documentation, for example do not have lines longer than 120 characters, use
-single-quotes strings ('hello' instead of "hello") when presenting python code.
-- Look at the [code contribution](#code-contribution) section for how to setup the project and commit convention.
+  single-quotes strings ('hello' instead of "hello") when presenting python code.
+- Look at the [code contribution](#code-contribution) section for how to set up the project and commit convention.
 
 ## Code contribution
 
-Ready to contribute? Here is how to setup the project for local development.
+Ready to contribute? Here is how to set up the project for local development.
 1. Fork the configuror repo on Github.
 
 2. Clone your fork locally. If you don't know how to proceed, 
@@ -62,16 +65,15 @@ Ready to contribute? Here is how to setup the project for local development.
     nox -s lint tests
     ```
 
-6. Commit your changes and push your branch to GitHub.
-    For the commit message, you should use the convention described [here](https://medium.com/@menuka/writing-meaningful-git-commit-messages-a62756b65c81).
-    It is the convention developed by the angular project. There is  just one notable difference I'm adding.
-    The verb must be conjugated **in the past tense** because I believe we are talking about a done action and not an
-    action to be performed.
-    Also for the scope, there is no particular set of scopes, so feel free to add what you thinks suits well your
-    changes. If you don't have one in mind, don't put anything.
+6. Commit your changes and push your branch to GitHub. For the commit message, you should use the convention
+   described [here](https://medium.com/@menuka/writing-meaningful-git-commit-messages-a62756b65c81). It is the
+   convention developed by the angular project. There is just one notable difference I'm adding. The verb must be
+   conjugated **in the past tense** because I believe we are talking about a done action and not an action to be
+   performed. Also, for the scope, there is no particular set of scopes, so feel free to add what you think suits well
+   your changes. If you don't have one in mind, don't put anything.
 
 7. Before submitting the pull request, you should verify that you include tests. There is also a code coverage
-   configured with the project. You can check the pull request status to know if your tests cover all the code you wrote.
-   If your pull request add functionality, please update the documentation.
+   configured with the project. You can check the pull request status to know if your tests cover all the code you
+   wrote. If your pull request add functionality, please update the documentation.
  
 8. Submit your pull request through the GitHub website.

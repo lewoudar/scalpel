@@ -115,7 +115,8 @@ So this is what we can write to scrape all menu information on the website.
 With gevent:
 
 ```python
-from ².green import SeleniumResponse, SeleniumSpider
+from scalpel.green import SeleniumResponse, SeleniumSpider
+
 
 def parse(_, response: SeleniumResponse) -> None:
     for block in response.driver.find_elements_by_xpath('//div[@class="opblock-tag-section"]'):
