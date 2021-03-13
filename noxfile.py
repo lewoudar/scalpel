@@ -50,7 +50,8 @@ def tests(session):
 @nox.session(python=PYTHON_VERSIONS[-1])
 def docs(session):
     """Builds the documentation."""
-    session.install('mkdocs==1.0.4')
+    session.install('poetry>=1.0.0,<2.0.0')
+    session.run('poetry', 'install')
     session.run('mkdocs', 'build', '--clean')
 
 
