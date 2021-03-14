@@ -42,7 +42,7 @@ class TestStaticSpider:
     @respx.mock
     async def test_fetch_method_returns_httpx_response(self, trio_spider):
         url = 'http://foo.com'
-        respx.get('http://foo.com', content='content')
+        respx.get('http://foo.com') % {'text': 'content'}
         response = await trio_spider._fetch(url)
 
         assert 'content' == response.text
@@ -153,7 +153,7 @@ class TestStaticSpider:
         def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=status_code)
+        respx.get(url) % status_code
         logger_mock = mocker.patch('logging.Logger.info')
         static_spider = StaticSpider(urls=[url], parse=parse)
         await static_spider._handle_url(url)
@@ -169,7 +169,7 @@ class TestStaticSpider:
         async def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=200, content='http content')
+        respx.get(url) % {'text': 'http content'}
         static_spider = StaticSpider(urls=[url], parse=parse)
         await static_spider._handle_url(url)
 
@@ -262,7 +262,7 @@ class TestStaticSpider:
     ])
     async def test_should_return_robots_txt_value_when_follow_robots_txt_is_true(self, robots_content, value):
         url = 'http://foo.com'
-        respx.get(f'{url}/robots.txt', content=f'User-agent:*\n{robots_content}')
+        respx.get(f'{url}/robots.txt') % {'text': f'User-agent:*\n{robots_content}'}
         static_spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=Configuration(follow_robots_txt=True))
 
         assert value == await static_spider._get_request_delay(url)
@@ -270,7 +270,7 @@ class TestStaticSpider:
     @respx.mock
     async def test_should_return_config_delay_when_follow_robots_txt_is_false(self):
         url = 'http://foo.com'
-        request = respx.get(f'{url}/robots.txt', content='User-agent:*\nDisallow: ')
+        request = respx.get(f'{url}/robots.txt') % {'text': 'User-agent:*\nDisallow: '}
         config = Configuration(min_request_delay=3, max_request_delay=3)
         static_spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=config)
 
@@ -285,7 +285,7 @@ class TestStaticSpider:
     # to check the rest of the logic
     async def test_should_exclude_url_when_robots_txt_excludes_it(self):
         url = 'http://foo.com'
-        respx.get(f'{url}/robots.txt', status_code=401)
+        respx.get(f'{url}/robots.txt') % 401
 
         async def parse(*_) -> None:
             pass
@@ -298,8 +298,8 @@ class TestStaticSpider:
     @respx.mock
     async def test_should_return_correct_statistics_after_running_spider(self):
         url1 = 'http://foo.com'
-        respx.get(url1)
-        respx.get(f'{url1}/robots.txt', status_code=404)
+        respx.get(url1, path='/')
+        respx.get(f'{url1}', path='/robots.txt') % 404
 
         async def parse(*_) -> None:
             pass
@@ -373,10 +373,10 @@ class TestIntegrationStaticSpider:
     @respx.mock
     async def test_should_work_with_http_url(self, page_content, tmp_path):
         url = 'http://quotes.com'
-        respx.get(f'{url}/robots.txt', status_code=404)
-        respx.get(url, content=page_content('page1.html'))
+        respx.get(url, path='/robots.txt') % 404
+        respx.get(url, path='/') % {'html': page_content('page1.html')}
         for i in range(2, 4):
-            respx.get(f'{url}/page{i}.html', content=page_content(f'page{i}.html'))
+            respx.get(url, path=f'/page{i}.html') % {'html': page_content(f'page{i}.html')}
 
         backup_path = tmp_path / 'backup.mp'
         config = Configuration(
