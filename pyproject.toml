@@ -37,7 +37,7 @@ msgpack = "^1.0.0"
 gevent = { version = "^20.9.0", optional = true }
 trio = { version = "^0.17.0", optional = true }
 httpx = "^0.17.0"
-anyio = "^2.2.0"
+anyio = {git = "https://github.com/agronholm/anyio"}
 
 [tool.poetry.extras]
 gevent = ["gevent"]
