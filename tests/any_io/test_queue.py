@@ -1,13 +1,11 @@
 import math
 
 import anyio
+import pytest
 from anyio.abc import Event
 from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
-import pytest
 
 from scalpel.any_io.queue import Queue
-
-pytestmark = pytest.mark.anyio
 
 
 # since in the __init__ method we call anyio.create_event function which tries to guess
