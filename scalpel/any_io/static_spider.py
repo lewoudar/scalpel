@@ -8,8 +8,6 @@ from typing import Callable, Optional, Any, Union
 import anyio
 import attr
 import httpx
-# noinspection PyProtectedMember
-from anyio._core._synchronization import Lock
 from anyio.abc import TaskGroup
 from rfc3986 import uri_reference
 
@@ -56,7 +54,7 @@ class StaticSpider(Spider):
     _http_client: httpx.AsyncClient = attr.ib(init=False, repr=False)
     _robots_analyser: RobotsAnalyzer = attr.ib(init=False, repr=False)
     _fetch: Callable = attr.ib(init=False, repr=False)
-    _lock: Lock = attr.ib(init=False, repr=False, factory=anyio.create_lock)
+    _lock: anyio.Lock = attr.ib(init=False, repr=False, factory=anyio.Lock)
     _queue: Queue = attr.ib(init=False, repr=False)
 
     def __attrs_post_init__(self):

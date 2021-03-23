@@ -4,7 +4,6 @@ from typing import Iterable, Any, Union
 
 import anyio
 import attr
-from anyio.abc import Event
 from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
 
 logger = logging.getLogger('scalpel')
@@ -75,7 +74,7 @@ class Queue:
     _send_channel: MemoryObjectSendStream = attr.ib(init=False)
     _receive_channel: MemoryObjectReceiveStream = attr.ib(init=False)
     _tasks_in_progress: int = attr.ib(default=0, init=False)
-    _finished: Event = attr.ib(factory=anyio.create_event, init=False)
+    _finished: anyio.Event = attr.ib(factory=anyio.Event, init=False)
 
     def __attrs_post_init__(self):
         logger.debug('initializing queue send and receive channels with a size of %s', self._size)
@@ -112,7 +111,7 @@ class Queue:
         self._tasks_in_progress += 1
         logger.debug('number of tasks in progress is now: %s', self._tasks_in_progress)
         if self._finished.is_set():
-            self._finished = anyio.create_event()
+            self._finished = anyio.Event()
 
     def put_nowait(self, item: Any) -> None:
         logger.debug('trying to add %s to queue', item)
@@ -120,7 +119,7 @@ class Queue:
         self._tasks_in_progress += 1
         logger.debug('number of tasks in progress is now: %s', self._tasks_in_progress)
         if self._finished.is_set():
-            self._finished = anyio.create_event()
+            self._finished = anyio.Event()
 
     async def get(self) -> Any:
         item = await self._receive_channel.receive()

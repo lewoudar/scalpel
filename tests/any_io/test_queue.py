@@ -2,7 +2,6 @@ import math
 
 import anyio
 import pytest
-from anyio.abc import Event
 from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
 
 from scalpel.any_io.queue import Queue
@@ -20,7 +19,7 @@ class TestQueueInitialization:
         assert 0 == queue._tasks_in_progress
         assert isinstance(queue._send_channel, MemoryObjectSendStream)
         assert isinstance(queue._receive_channel, MemoryObjectReceiveStream)
-        assert isinstance(queue._finished, Event)
+        assert isinstance(queue._finished, anyio.Event)
 
     async def test_should_work_when_initializing_buffer_size(self):
         queue = Queue(size=3)

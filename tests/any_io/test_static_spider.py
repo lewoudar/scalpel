@@ -5,17 +5,15 @@ import anyio
 import httpx
 import pytest
 import respx
-# noinspection PyProtectedMember
-from anyio._core._synchronization import Lock
 
-from scalpel.core.config import Configuration
-from scalpel.core.message_pack import datetime_decoder
-from scalpel.core.spider import SpiderStatistics
 from scalpel.any_io.files import read_mp
+from scalpel.any_io.queue import Queue
 from scalpel.any_io.response import StaticResponse
 from scalpel.any_io.robots import RobotsAnalyzer
 from scalpel.any_io.static_spider import StaticSpider
-from scalpel.any_io.queue import Queue
+from scalpel.core.config import Configuration
+from scalpel.core.message_pack import datetime_decoder
+from scalpel.core.spider import SpiderStatistics
 
 
 @pytest.fixture()
@@ -33,7 +31,7 @@ class TestStaticSpider:
         spider = StaticSpider(urls=['http://foo.com'], parse=lambda x, y: None, config=config)
 
         assert config == spider._config
-        assert isinstance(spider._lock, Lock)
+        assert isinstance(spider._lock, anyio.Lock)
         assert isinstance(spider._queue, Queue)
         assert isinstance(spider._start_time, float)
         assert isinstance(spider._http_client, httpx.AsyncClient)
