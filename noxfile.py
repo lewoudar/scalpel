@@ -25,9 +25,9 @@ def tests(session):
     """
     Runs the test suite.
     You can also run a part of the test suite by specifying the parts you want to test. The values "core", "green"
-    and "trionic" are accepted as extra arguments. They can be cumulated.
+    and "any_io" are accepted as extra arguments. They can be cumulated.
     """
-    to_test = ['core', 'trionic', 'green']
+    to_test = ['core', 'any_io', 'green']
     for item in session.posargs:
         if item not in to_test:
             session.error(f'{item} is not part of {to_test}')

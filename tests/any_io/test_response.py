@@ -4,6 +4,8 @@ import pytest
 from scalpel.any_io.response import StaticResponse, SeleniumResponse
 from scalpel.any_io.queue import Queue
 
+pytestmark = pytest.mark.anyio
+
 
 class TestStaticResponse:
     """Tests StaticResponse.follow method"""

@@ -15,6 +15,8 @@ from scalpel.core.config import Configuration
 from scalpel.core.message_pack import datetime_decoder
 from scalpel.core.spider import SpiderStatistics
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture()
 async def anyio_spider():

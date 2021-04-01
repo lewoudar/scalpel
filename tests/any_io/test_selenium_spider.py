@@ -16,6 +16,8 @@ from scalpel.any_io.robots import RobotsAnalyzer
 from scalpel.any_io.selenium_spider import SeleniumSpider, StaticSpider
 from scalpel.any_io.queue import Queue
 
+pytestmark = pytest.mark.anyio
+
 
 class TestSeleniumSpider:
     """Tests class SeleniumSpider"""

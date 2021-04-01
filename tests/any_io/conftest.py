@@ -1,8 +1,6 @@
 import pytest
 import respx
 
-pytestmark = pytest.mark.anyio
-
 
 @pytest.fixture()
 async def httpx_mock():

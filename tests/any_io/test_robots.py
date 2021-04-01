@@ -9,6 +9,8 @@ import respx
 from scalpel.any_io.robots import RobotsAnalyzer
 from tests.helpers import assert_dicts
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture()
 def anyio_analyzer(tmp_path):
@@ -124,7 +126,7 @@ class TestGetRequestDelay:
 
     async def test_should_return_delay_if_it_is_in_internal_delay_mapping(self, mocker, tmp_path):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay')
-        can_fetch_mock = mocker.patch('scalpel.trionic.robots.RobotsAnalyzer.can_fetch')
+        can_fetch_mock = mocker.patch('scalpel.any_io.robots.RobotsAnalyzer.can_fetch')
         delay = 2
         analyzer = RobotsAnalyzer(robots_cache=tmp_path, user_agent='Mozilla/5.0')
         analyzer._delay_mapping['example.com'] = delay

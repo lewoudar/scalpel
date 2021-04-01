@@ -6,6 +6,8 @@ from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStre
 
 from scalpel.any_io.queue import Queue
 
+pytestmark = pytest.mark.anyio
+
 
 # since in the __init__ method we call anyio.create_event function which tries to guess
 # the async library, we must use async test functions even if we don't have async call in them

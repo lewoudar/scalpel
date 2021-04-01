@@ -4,6 +4,8 @@ import pytest
 
 from scalpel.any_io.files import read_mp, write_mp
 
+pytestmark = pytest.mark.anyio
+
 
 class TestReadMp:
     """Tests function read_mp"""
