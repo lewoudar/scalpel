@@ -1,6 +1,6 @@
 [[package]]
 name = "anyio"
-version = "2.1.0.post52"
+version = "3.0.0rc3"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
 category = "main"
 optional = false
@@ -23,7 +23,7 @@ trio = ["trio (>=0.16)"]
 type = "git"
 url = "https://github.com/agronholm/anyio"
 reference = "master"
-resolved_reference = "b5c21d040b9286921fdf5e0a6c723ce4ab5aa7e3"
+resolved_reference = "a4816a82870725638b8b3f40ebcc93a74c9d9cbd"
 
 [[package]]
 name = "appdirs"
@@ -105,7 +105,7 @@ name = "cffi"
 version = "1.14.5"
 description = "Foreign Function Interface for Python calling C code."
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [package.dependencies]
@@ -617,7 +617,7 @@ name = "outcome"
 version = "1.1.0"
 description = "Capture the outcome of Python function calls."
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -691,7 +691,7 @@ name = "pycparser"
 version = "2.20"
 description = "C parser in Python"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
@@ -765,20 +765,6 @@ pytest = ">=2.7"
 
 [package.extras]
 dev = ["pre-commit", "tox"]
-
-[[package]]
-name = "pytest-trio"
-version = "0.6.0"
-description = "Pytest plugin for trio"
-category = "dev"
-optional = false
-python-versions = ">=3.5"
-
-[package.dependencies]
-async-generator = ">=1.9"
-outcome = "*"
-pytest = ">=3.6"
-trio = ">=0.15.0"
 
 [[package]]
 name = "pyyaml"
@@ -882,7 +868,7 @@ name = "sortedcontainers"
 version = "2.3.0"
 description = "Sorted Containers -- Sorted List, Sorted Dict, Sorted Set"
 category = "main"
-optional = false
+optional = true
 python-versions = "*"
 
 [[package]]
@@ -931,7 +917,7 @@ name = "trio"
 version = "0.17.0"
 description = "A friendly Python library for async concurrency and I/O"
 category = "main"
-optional = false
+optional = true
 python-versions = ">=3.6"
 
 [package.dependencies]
@@ -1049,7 +1035,7 @@ trio = ["trio"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6.2"
-content-hash = "49107ddf96a80187ebc065b6ef544cb9e6762735bb7503340569b70e28cae45a"
+content-hash = "902900e5e342b253a0e1d5a0cf920e22077c14c7f2740e0f66ba70d9f6779b05"
 
 [metadata.files]
 anyio = []
@@ -1557,10 +1543,6 @@ pytest = [
 pytest-mock = [
     {file = "pytest-mock-2.0.0.tar.gz", hash = "sha256:b35eb281e93aafed138db25c8772b95d3756108b601947f89af503f8c629413f"},
     {file = "pytest_mock-2.0.0-py2.py3-none-any.whl", hash = "sha256:cb67402d87d5f53c579263d37971a164743dc33c159dfb4fb4a86f37c5552307"},
-]
-pytest-trio = [
-    {file = "pytest-trio-0.6.0.tar.gz", hash = "sha256:9bf0a490fd177a33617e8709242293fae47934de2b51f8209eb2c0545b6ca8fe"},
-    {file = "pytest_trio-0.6.0-py3-none-any.whl", hash = "sha256:3f48cc1df66d279d705af38ad38d1639c2e2380ddffcdc3a45bb81758de61f03"},
 ]
 pyyaml = [
     {file = "PyYAML-5.4.1-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:3b2b1824fe7112845700f815ff6a489360226a5609b96ec2190a45e62a9fc922"},
