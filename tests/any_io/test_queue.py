@@ -1,55 +1,60 @@
 import math
 
+import anyio
 import pytest
-import trio
+from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
 
-from scalpel.trionic.utils.queue import Queue
+from scalpel.any_io.queue import Queue
+
+pytestmark = pytest.mark.anyio
 
 
+# since in the __init__ method we call anyio.create_event function which tries to guess
+# the async library, we must use async test functions even if we don't have async call in them
 class TestQueueInitialization:
 
-    def test_should_work_with_default_initialization(self):
+    async def test_should_work_with_default_initialization(self):
         queue = Queue()
         assert 1 == queue.maxsize
         assert 0 == queue.length
         assert [] == queue._items
         assert 0 == queue._tasks_in_progress
-        assert isinstance(queue._send_channel, trio.MemorySendChannel)
-        assert isinstance(queue._receive_channel, trio.MemoryReceiveChannel)
-        assert isinstance(queue._finished, trio.Event)
+        assert isinstance(queue._send_channel, MemoryObjectSendStream)
+        assert isinstance(queue._receive_channel, MemoryObjectReceiveStream)
+        assert isinstance(queue._finished, anyio.Event)
 
-    def test_should_work_when_initializing_buffer_size(self):
+    async def test_should_work_when_initializing_buffer_size(self):
         queue = Queue(size=3)
         assert 3 == queue.maxsize
         assert 0 == queue.length
 
-    def test_should_work_when_initializing_items(self):
+    async def test_should_work_when_initializing_items(self):
         items = [2, 'foo']
         queue = Queue(3, items=items)
         assert 3 == queue.maxsize
         assert items == queue._items
         assert len(items) == queue.length == queue._tasks_in_progress
 
-    def test_length_property_works_with_infinity_size(self):
+    async def test_length_property_works_with_infinity_size(self):
         queue = Queue(size=math.inf)
         assert 0 == queue.length
         assert queue.maxsize is math.inf
 
-    def test_should_work_when_initializing_with_size_and_items(self):
+    async def test_should_work_when_initializing_with_size_and_items(self):
         items = [2, 'foo']
         queue = Queue(size=3, items=items)
         assert 3 == queue.maxsize
         assert 2 == queue.length
         assert items == queue._items
 
-    def test_should_raise_error_when_size_is_negative(self):
+    async def test_should_raise_error_when_size_is_negative(self):
         with pytest.raises(ValueError) as exc_info:
             Queue(size=-1)
 
         assert 'size must not be less than 1 but you provide: -1' == str(exc_info.value)
 
-    def test_should_raise_error_when_size_is_less_than_items_length(self):
-        with pytest.raises(trio.WouldBlock):
+    async def test_should_raise_error_when_size_is_less_than_items_length(self):
+        with pytest.raises(anyio.WouldBlock):
             Queue(size=1, items=[2, 'foo'])
 
 
@@ -75,9 +80,10 @@ class TestPutMethods:
         queue = Queue()
         queue.put_nowait(1)
 
-        with pytest.raises(trio.WouldBlock):
+        with pytest.raises(anyio.WouldBlock):
             queue.put_nowait(2)
 
+    # noinspection PyAsyncCall
     async def test_should_reset_event_when_event_is_set_and_put_method_is_called(self):
         queue = Queue()
         queue._finished.set()
@@ -85,6 +91,7 @@ class TestPutMethods:
 
         assert not queue._finished.is_set()
 
+    # noinspection PyAsyncCall
     async def test_should_reset_event_when_event_is_set_and_put_nowait_is_called(self):
         queue = Queue()
         queue._finished.set()
@@ -111,7 +118,7 @@ class TestGetMethods:
     async def test_should_raise_would_block_error_when_using_get_nowait_on_empty_buffer(self):
         queue = Queue()
 
-        with pytest.raises(trio.WouldBlock):
+        with pytest.raises(anyio.WouldBlock):
             queue.get_nowait()
 
 
@@ -122,20 +129,20 @@ class TestCloseMethod:
         queue = Queue()
         await queue.close()
 
-        with pytest.raises(trio.ClosedResourceError):
+        with pytest.raises(anyio.ClosedResourceError):
             await queue.put(2)
 
-        with pytest.raises(trio.ClosedResourceError):
+        with pytest.raises(anyio.ClosedResourceError):
             await queue.get()
 
     async def test_should_work_when_using_context_manager(self):
         async with Queue(size=1) as queue:
             queue.put_nowait(2)
 
-        with pytest.raises(trio.ClosedResourceError):
+        with pytest.raises(anyio.ClosedResourceError):
             queue.put_nowait(3)
 
-        with pytest.raises(trio.ClosedResourceError):
+        with pytest.raises(anyio.ClosedResourceError):
             queue.get_nowait()
 
 
@@ -155,14 +162,14 @@ class TestTaskDoneAndJoinMethods:
             await queue.get()
             assert 1 == queue._tasks_in_progress
 
-            with trio.move_on_after(1) as cancel_scope:
+            with anyio.move_on_after(1) as cancel_scope:
                 await queue.join()
 
-            assert cancel_scope.cancelled_caught
+            assert cancel_scope.cancel_called
             queue.task_done()
             assert 0 == queue._tasks_in_progress
 
-            with trio.move_on_after(1) as cancel_scope:
+            with anyio.move_on_after(1) as cancel_scope:
                 await queue.join()
 
-            assert not cancel_scope.cancelled_caught
+            assert not cancel_scope.cancel_called

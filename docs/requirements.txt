@@ -4,6 +4,7 @@ attrs==19.3.0
 configuror==0.2.0
 trio==0.17.0
 gevent==20.9.0
+anyio
 selenium==3.141.0
 idna>=2.0.0,<3.0.0
 rfc3986==1.4.0

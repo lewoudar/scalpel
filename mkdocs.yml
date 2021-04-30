@@ -26,7 +26,8 @@ markdown_extensions:
       permalink: true
   - admonition
   - mkautodoc
-  - codehilite
+  - codehilite:
+      css_class: highlight
 
 extra_css:
   - css/custom.css

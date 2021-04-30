@@ -1,10 +1,11 @@
 import logging
+from pathlib import Path
 from typing import Dict, Union, List
 from urllib.robotparser import RobotFileParser
 
+import anyio
 import attr
 import httpx
-import trio
 
 from scalpel.core.robots import RobotsMixin
 
@@ -15,8 +16,8 @@ logger = logging.getLogger('scalpel')
 class RobotsAnalyzer(RobotsMixin):
     # order is important, _http_client can use the _user_agent info to instantiate itself
     _user_agent: str = attr.ib()
-    _robots_cache: trio.Path = attr.ib()
-    _robots_mapping: Dict[str, trio.Path] = attr.ib(factory=dict)
+    _robots_cache: Path = attr.ib()
+    _robots_mapping: Dict[str, Path] = attr.ib(factory=dict)
     _http_client: httpx.AsyncClient = attr.ib()
     _robots_parser: RobotFileParser = attr.ib(init=False, factory=RobotFileParser)
     _delay_mapping: Dict[str, Union[int, float]] = attr.ib(init=False, factory=dict)
@@ -28,14 +29,15 @@ class RobotsAnalyzer(RobotsMixin):
         return httpx.AsyncClient(headers=headers)
 
     @staticmethod
-    async def _create_robots_file(robots_path: trio.Path, content: str) -> None:
+    async def _create_robots_file(robots_path: Path, content: str) -> None:
         logger.debug('creating robots file at path: %s', robots_path)
-        await robots_path.write_text(content)
+        async with await anyio.open_file(robots_path, 'w') as f:
+            await f.write(content)
 
     @staticmethod
-    async def _get_robots_lines(path: trio.Path) -> List[str]:
+    async def _get_robots_lines(path: Path) -> List[str]:
         logger.debug('getting robots file lines at path: %s', path)
-        async with await path.open() as f:
+        async with await anyio.open_file(path) as f:
             return await f.readlines()
 
     async def can_fetch(self, url: str) -> bool:
@@ -64,7 +66,7 @@ class RobotsAnalyzer(RobotsMixin):
             else:
                 robot_path = self._robots_cache / host
                 await self._create_robots_file(robot_path, response.text)
-                self._robots_mapping[host] = await robot_path.absolute()
+                self._robots_mapping[host] = robot_path.absolute()
 
         robot_lines = await self._get_robots_lines(self._robots_mapping[host])
         self._robots_parser.parse(robot_lines)

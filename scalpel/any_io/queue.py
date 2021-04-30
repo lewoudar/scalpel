@@ -1,9 +1,10 @@
-"""Implementation of a trio queue"""
+"""Implementation of an anyio queue."""
 import logging
-from typing import Union, List, Any
+from typing import Iterable, Any, Union
 
+import anyio
 import attr
-import trio
+from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
 
 logger = logging.getLogger('scalpel')
 
@@ -11,7 +12,7 @@ logger = logging.getLogger('scalpel')
 @attr.s
 class Queue:
     """
-    An implementation of a trio queue with the capacity to tell of a task is done.
+    An implementation of an anyio queue with the capacity to tell that a task is done.
 
     **Parameters:**
 
@@ -19,16 +20,14 @@ class Queue:
     * **items:** A list of values used to initialize the queue.
 
     **N.B:** If you set `items`, be sure that the size of the queue is greater than `items` length, otherwise you will
-    have a `trio.WouldBlock` exception.
+    have a `anyio.WouldBlock` exception.
 
-    Usage:
-
-    ```
+    ```python
     import math
     import random
 
-    import trio
-    from scalpel.trionic import Queue
+    import anyio
+    from scalpel.any_io import Queue
 
     async def worker(name: str, queue: Queue) -> None:
         while True:
@@ -51,12 +50,12 @@ class Queue:
                 queue.put_nowait(sleep_for)
 
             # Create three worker tasks to process the queue concurrently.
-            async with trio.open_nursery() as nursery:
+            async with anyio.create_task_group() as tg:
                 for i in range(3):
-                    nursery.start_soon(worker, f'worker-{i}', queue)
+                    tg.spawn(worker, f'worker-{i}', queue)
 
                 # Wait until the queue is fully processed.
-                before = trio.current_time()
+                before = anyio.current_time()
                 await queue.join()
                 total_slept_for = trio.current_time() - before
                 print('====')
@@ -64,22 +63,22 @@ class Queue:
                 print(f'total expected sleep time: {total_sleep_time:.2f} seconds')
 
                 # We can end the nursery which will in turn end the tasks.
-                nursery.cancel_scope.cancel()
+                tg.cancel_scope.cancel()
 
 
-    trio.run(main)
+    anyio.run(main)
     ```
     """
     _size: Union[int, float] = attr.ib(default=1, validator=attr.validators.instance_of((int, float)))
-    _items: List[Any] = attr.ib(factory=list, validator=attr.validators.instance_of((list, set, tuple)))
-    _send_channel: trio.MemorySendChannel = attr.ib(init=False)
-    _receive_channel: trio.MemoryReceiveChannel = attr.ib(init=False)
+    _items: Iterable[Any] = attr.ib(factory=list, validator=attr.validators.instance_of((list, set, tuple)))
+    _send_channel: MemoryObjectSendStream = attr.ib(init=False)
+    _receive_channel: MemoryObjectReceiveStream = attr.ib(init=False)
     _tasks_in_progress: int = attr.ib(default=0, init=False)
-    _finished: trio.Event = attr.ib(factory=trio.Event, init=False)
+    _finished: anyio.Event = attr.ib(factory=anyio.Event, init=False)
 
     def __attrs_post_init__(self):
         logger.debug('initializing queue send and receive channels with a size of %s', self._size)
-        self._send_channel, self._receive_channel = trio.open_memory_channel(self._size)
+        self._send_channel, self._receive_channel = anyio.create_memory_object_stream(self._size)
         if self._items:
             logger.debug('trying to add items coming from list %s', self._items)
             for item in self._items:
@@ -112,7 +111,7 @@ class Queue:
         self._tasks_in_progress += 1
         logger.debug('number of tasks in progress is now: %s', self._tasks_in_progress)
         if self._finished.is_set():
-            self._finished = trio.Event()
+            self._finished = anyio.Event()
 
     def put_nowait(self, item: Any) -> None:
         logger.debug('trying to add %s to queue', item)
@@ -120,7 +119,7 @@ class Queue:
         self._tasks_in_progress += 1
         logger.debug('number of tasks in progress is now: %s', self._tasks_in_progress)
         if self._finished.is_set():
-            self._finished = trio.Event()
+            self._finished = anyio.Event()
 
     async def get(self) -> Any:
         item = await self._receive_channel.receive()

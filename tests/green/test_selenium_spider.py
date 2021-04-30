@@ -136,7 +136,7 @@ class TestSeleniumSpider:
         def parse(sel_spider, response):
             parse_args.extend([sel_spider, response])
 
-        respx.get(f'{url}/robots.txt', status_code=401)
+        respx.get(f'{url}/robots.txt') % 401
         logger_mock = mocker.patch('logging.Logger.info')
         config = Configuration(follow_robots_txt=True, selenium_driver_log_file=None)
         spider = SeleniumSpider(urls=[url], parse=parse, config=config)
@@ -159,7 +159,7 @@ class TestSeleniumSpider:
         def parse(sel_spider, response):
             parse_args.extend([sel_spider, response])
 
-        respx.get(f'{url}/robots.txt', status_code=404)
+        respx.get(f'{url}/robots.txt') % 404
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.get', side_effect=WebDriverException)
         config = Configuration(follow_robots_txt=True, selenium_driver_log_file=None)
         spider = SeleniumSpider(urls=[url], parse=parse, config=config)
@@ -181,7 +181,7 @@ class TestSeleniumSpider:
         def parse(sel_spider, response):
             parse_args.extend([sel_spider, response])
 
-        respx.get(f'{url}/robots.txt', status_code=404)
+        respx.get(f'{url}/robots.txt') % 404
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.get')
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.current_window_handle', 'handle')
         config = Configuration(follow_robots_txt=True, selenium_driver_log_file=None)

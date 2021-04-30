@@ -46,7 +46,7 @@ class TestStaticSpider:
     @respx.mock
     def test_fetch_method_returns_httpx_response(self, green_spider):
         url = 'http://foo.com'
-        respx.get('http://foo.com', content='content')
+        respx.get('http://foo.com') % {'text': 'content'}
         response = green_spider._fetch(url)
 
         assert 'content' == response.text
@@ -156,7 +156,7 @@ class TestStaticSpider:
         def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=status_code)
+        respx.get(url) % status_code
         logger_mock = mocker.patch('logging.Logger.info')
         static_spider = StaticSpider(urls=[url], parse=parse)
         static_spider._handle_url(url)
@@ -172,7 +172,7 @@ class TestStaticSpider:
         def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(f'{url}/robots.txt', status_code=401)
+        respx.get(f'{url}/robots.txt') % 401
         logger_mock = mocker.patch('logging.Logger.info')
         static_spider = StaticSpider(urls=[url], parse=parse, config=Configuration(follow_robots_txt=True))
         static_spider._handle_url(url)
@@ -191,7 +191,7 @@ class TestStaticSpider:
         def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=200, content='http content')
+        respx.get(url) % {'status_code': 200, 'text': 'http content'}
         static_spider = StaticSpider(urls=[url], parse=parse)
         static_spider._handle_url(url)
 
@@ -306,9 +306,9 @@ class TestStaticSpider:
     def test_should_return_correct_statistics_after_running_spider(self):
         url1 = 'http://foo.com'
         url2 = 'http://bar.com'
-        respx.get(url1)
-        respx.get(f'{url1}/robots.txt', status_code=404)
-        respx.get(f'{url2}/robots.txt', status_code=401)
+        respx.get(url1, path='/')
+        respx.get(url1, path='/robots.txt') % 404
+        respx.get(f'{url2}/robots.txt') % 401
 
         config = Configuration(follow_robots_txt=True)
         static_spider = StaticSpider(urls=[url1, url2], parse=lambda x, y: None, config=config)
@@ -380,10 +380,10 @@ class TestIntegrationStaticSpider:
     @respx.mock
     def test_should_work_with_http_url(self, page_content, tmp_path):
         url = 'http://quotes.com'
-        respx.get(f'{url}/robots.txt', status_code=404)
-        respx.get(url, content=page_content('page1.html'))
+        respx.get(url, path='/robots.txt') % 404
+        respx.get(url, path='/') % {'html': page_content('page1.html')}
         for i in range(2, 4):
-            respx.get(f'{url}/page{i}.html', content=page_content(f'page{i}.html'))
+            respx.get(url, path=f'/page{i}.html') % {'html': page_content(f'page{i}.html')}
 
         backup_path = tmp_path / 'backup.mp'
         config = Configuration(

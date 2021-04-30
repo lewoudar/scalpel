@@ -115,7 +115,8 @@ So this is what we can write to scrape all menu information on the website.
 With gevent:
 
 ```python
-from ².green import SeleniumResponse, SeleniumSpider
+from scalpel.green import SeleniumResponse, SeleniumSpider
+
 
 def parse(_, response: SeleniumResponse) -> None:
     for block in response.driver.find_elements_by_xpath('//div[@class="opblock-tag-section"]'):
@@ -144,11 +145,11 @@ spider = SeleniumSpider(urls=['http://httpbin.org/'], parse=parse)
 spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import SeleniumSpider, SeleniumResponse
+import anyio
+from scalpel.any_io import SeleniumSpider, SeleniumResponse
 
 async def parse(_, response: SeleniumResponse) -> None:
     for block in response.driver.find_elements_by_xpath('//div[@class="opblock-tag-section"]'):
@@ -176,7 +177,7 @@ async def main() -> None:
     spider = SeleniumSpider(urls=['http://httpbin.org/'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)   # with trio: anyio.run(main, backend='trio')
 ```
 
 You will have an output similar to the following:
@@ -251,10 +252,10 @@ def parse(_, response: StaticResponse) -> None:
     response.xpath('//div')
 ```
 
-With trio:
+With anyio:
 
 ```python
-from scalpel.trionic import StaticResponse
+from scalpel.any_io import StaticResponse
 
 async def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
@@ -264,7 +265,7 @@ async def parse(_, response: StaticResponse) -> None:
     response.xpath('//div')
 ```
 
-Instead you should perform all your code scraping, parsing before running asynchronous operations.
+Instead, you should perform all your code scraping, parsing before running asynchronous operations.
 
 With gevent:
 
@@ -277,10 +278,10 @@ def parse(_, response: StaticResponse) -> None:
     response.follow('/page/2')  # good
 ```
 
-With trio:
+With anyio:
 
 ```python
-from scalpel.trionic import StaticResponse
+from scalpel.any_io import StaticResponse
 
 async def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
@@ -289,5 +290,5 @@ async def parse(_, response: StaticResponse) -> None:
 ```
 
 Another direct consequence of the bad asynchronous integration of selenium is that if you follow urls you will notice
-that the behaviour is more sequential than concurrent with regard to url handling. Nevertheless the selenium spider
+that the behaviour is more sequential than concurrent with regard to url handling. Nevertheless, the selenium spider
 is still useful (if you respect the previous advice), just slow for now.

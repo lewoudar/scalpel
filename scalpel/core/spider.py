@@ -89,8 +89,9 @@ class Spider:
     urls: URLS = attr.ib(validator=url_validator)
     parse: Callable = attr.ib(validator=attr.validators.is_callable())
     _name: str = attr.ib(validator=attr.validators.instance_of(str))
-    _config: Configuration = attr.ib(factory=Configuration, validator=attr.validators.instance_of(Configuration),
-                                     repr=False)
+    _config: Configuration = attr.ib(
+        factory=Configuration, validator=attr.validators.instance_of(Configuration), repr=False
+    )
     _ignore_errors: bool = attr.ib(default=False, validator=attr.validators.instance_of(bool))
     reachable_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)
     unreachable_urls: Set[str] = attr.ib(factory=set, init=False, repr=False)

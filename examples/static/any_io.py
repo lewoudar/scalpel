@@ -1,11 +1,11 @@
-"""Simple example to show how to use the trio StaticSpider class"""
+"""Simple example to show how to use the anyio StaticSpider class"""
 from datetime import datetime
 from pathlib import Path
 
-import trio
+import anyio
 
 from scalpel import Configuration
-from scalpel.trionic import StaticResponse, StaticSpider, read_mp
+from scalpel.any_io import StaticResponse, StaticSpider, read_mp
 
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
@@ -39,4 +39,4 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
-    trio.run(main)
+    anyio.run(main)

@@ -98,7 +98,7 @@ class StaticSpider(Spider):
 
     def _is_url_already_processed(self, url: str) -> bool:
         processed = False
-        if url in self.reachable_urls or url in self.unreachable_urls or url in self.robots_excluded_urls:
+        if url in [*self.reachable_urls, *self.unreachable_urls, *self.robots_excluded_urls]:
             logger.debug('url %s has already been processed', url)
             processed = True
         return processed

@@ -41,11 +41,11 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
 static_spider.run()
 ```
 
-if you prefer `trio` over `gevent`, this is the equivalent:
+if you prefer `anyio` over `gevent`, this is the equivalent:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     print('hello spider')
@@ -54,11 +54,19 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 !!! note
     there is an icon at the top right of the code where you can click to copy and paste into your editor and test it.
+
+!!! note
+    `anyio` by defaults, run the `asyncio` backend. If you want to use the `trio` backend, you **must** first install
+    `trio` and slightly changed the last sentence to `anyio.run(main, backend='trio')`.
+
+!!! note
+    To improve execution speed on asyncio backend, you can leverage the [uvloop](https://uvloop.readthedocs.io/) package.
+    Note that it does not work on **Windows** and performed badly on *Pypy* because it used [cython](https://cython.org/).
 
 If you run this program, you will just see `hello spider` printed in your console. Nothing exciting right now, let's
 change that.
@@ -80,11 +88,11 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
 static_spider.run()
 ```
 
-with trio:
+with anyio:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     print(response.css('title').get())
@@ -94,7 +102,7 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 If you run the program, the content `<title>Quotes to Scrape</title>` will be printed twice. I deliberately wrote the 
@@ -125,11 +133,11 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
 static_spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     print(response.css('title::text').get())
@@ -139,7 +147,7 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 Now we have `Quotes to Scrape` printed, yeah! You will notice the pseudo-selector `::text` for the css method and the
@@ -181,11 +189,11 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
 static_spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     for quote in response.xpath('//div[@class="quote"]'):
@@ -195,7 +203,7 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 We will see an output like the following (I truncated it here):
@@ -235,11 +243,11 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
 static_spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     for quote in response.xpath('//div[@class="quote"]'):
@@ -252,7 +260,7 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 We have the following output (I truncated it here):
@@ -306,12 +314,12 @@ static_spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse, 
 static_spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
+import anyio
 from scalpel import Configuration
-from scalpel.trionic import StaticResponse, StaticSpider
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     for quote in response.xpath('//div[@class="quote"]'):
@@ -327,7 +335,7 @@ async def main() -> None:
     spider = StaticSpider(urls=['https://quotes.toscrape.com'], parse=parse, config=config)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```
 
 !!! note
@@ -347,17 +355,17 @@ for quote in read_mp('/path/to/file.mp'):
     print(quote)
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import read_mp
+import anyio
+from scalpel.any_io import read_mp
 
 async def main() -> None:
     async for quote in read_mp('/path/to/file.mp'):
         print(quote)
 
-trio.run(main)
+anyio.run(main)
 ```
 
 Yeah! Now we have useful data that we can exploit.
@@ -410,12 +418,12 @@ static_spider.run()
 print(static_spider.statistics())
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
+import anyio
 from scalpel import Configuration
-from scalpel.trionic import StaticResponse, StaticSpider
+from scalpel.any_io import StaticResponse, StaticSpider
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
     for quote in response.xpath('//div[@class="quote"]'):
@@ -438,10 +446,10 @@ async def main() -> None:
     # we print some statistics about the crawl operation
     print(spider.statistics())
 
-trio.run(main)
+anyio.run(main)
 ```
 
-There we goo! So now, if you read the file created, *data.mp* in the example case, you will get all quote information from
+There we go! So now, if you read the file created, *data.mp* in the example case, you will get all quote information from
 the first page to the last page. Don't hesitate to look at the 
 [examples](https://github.com/lewoudar/scalpel/tree/master/examples) folder for more code snippets to view.
 
@@ -473,7 +481,7 @@ use it when appropriate.
 
 Also, if you choose the follow *robots.txt* rules, keep in mind that for gevent spiders, the delay specified in this file
 will not be taken in account due to a technical limitation I don't explain for now in gevent. It is always the property
-`Configuration.request_delay` which is used for the delay between requests. The trio spiders do not suffer from this
+`Configuration.request_delay` which is used for the delay between requests. The anyio spiders do not suffer from this
 limitation.
 
 Furthermore, if you want a more object-oriented approach for your spider than a function, you can always use a class.
@@ -495,11 +503,11 @@ spider = StaticSpider(urls=['http://quotes.toscrape.com'], parse=Parser())
 spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
-from scalpel.trionic import StaticResponse, StaticSpider
+import anyio
+from scalpel.any_io import StaticResponse, StaticSpider
 
 
 class Parser:
@@ -511,5 +519,5 @@ async def main():
     spider = StaticSpider(urls=['http://quotes.toscrape.com'], parse=Parser())
     await spider.run()
 
-trio.run(main)
+anyio.run(main)
 ```

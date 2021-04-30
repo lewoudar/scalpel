@@ -23,8 +23,8 @@ config = Configuration(item_processors=[processor_1, processor_2])
 ```
 
 As you will have noticed in the example, item processors can be synchronous or asynchronous. Obviously the asynchronous
-version is only valid if you are dealing with a `trio` spider. If you use an asynchronous function inside a green spider,
-you can be sure your application will crash.
+version is only valid if you are dealing with an `asyncio` or `trio` spider. If you use an asynchronous function inside 
+a green spider, you can be sure your application will crash.
 
 !!! note
     The processors are run in the order there are listed when instantiating configuration. So put the most important
@@ -44,10 +44,10 @@ data = {
 spider.save_item(data)
 ```
 
-So we save an item with three properties `message`,`author` and `tags`. Now lets add a date. And let's say we don't like
+So we save an item with three properties `message`,`author` and `tags`. Now let's add a date and let's say we don't like
 Marylin Monroe, so we want to remove her quotes from the result 😆
 
-I will show an example with gevent, but you should now know how to use trio at this point of the documentation.
+I will show an example with gevent, but you should now know how to use anyio at this point of the documentation.
 
 ```python
 from datetime import datetime
@@ -76,8 +76,8 @@ to mention that if a processor returns `None` the following processors are not c
 
 If you know [msgpack](https://pypi.org/project/msgpack/), you know that it cannot serialize `datetime` objects by
 default. So if you called the `read_mp` function like we did in the static spider guide, it will raise an error.
-So how can we read `datetime` objects? Well, if you look at the pyscalpel [msgpack api](api.md#msgpack) you will noticed
-a `datetime_decoder` which is a helper to deserialize `datetime` objects. Also the [Configuration](api.md#configuration)
+So how can we read `datetime` objects? Well, if you look at the pyscalpel [msgpack api](api.md#msgpack) you will notice
+a `datetime_decoder` which is a helper to deserialize `datetime` objects. Also, the [Configuration](api.md#configuration)
 object has a `msgpack_decoder` attribute which default value is `datetime_decoder`. So here is how you can read
 `datetime` objects.
 
@@ -100,12 +100,12 @@ for data in read_mp('toto.mp', decoder=config.msgpack_decoder):
     print(data)
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
+import anyio
 from scalpel import Configuration
-from scalpel.trionic import StaticSpider, read_mp
+from scalpel.any_io import StaticSpider, read_mp
 
 async def parse(spider, response):
     ...
@@ -119,7 +119,7 @@ async def main():
     async for data in read_mp('toto.mp', decoder=config.msgpack_decoder):
         print(data)
 
-trio.run(main)
+anyio.run(main)  # with trio: anyio.run(main, backend='trio')
 ```
 
 If you want to serialize / deserialize other custom objects, you need to implement your logic and set attributes

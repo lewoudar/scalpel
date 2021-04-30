@@ -172,31 +172,45 @@ class Configuration:
     **Parameters:**
 
     * **min_request_delay:** The minimum delay to wait between two http requests. Defaults to 0s.
+
     * **max_request_delay:** The maximum delay to wait between two http requests. Defaults to 0s.
+
     * **fetch_timeout:** The timeout to fetch http resources using the inner
     [httpx](https://www.python-httpx.org/) client. Defaults to 5s.
+
     * **selenium_find_timeout:** The timeout for selenium driver to find an element in a page. Defaults to 10s.
+
     * **selenium_driver_log_file:** The file where the browser log debug messages. Defaults to *driver.log*.
     If you want to not create one, just pass `None`.
+
     * **selenium_browser:** The browser to use with the selenium spider. You can use the `Browser` enum to specify the
     value. Possible values are `Browser.FIREFOX` and `Browser.CHROME`. Defaults to `Browser.FIREFOX`.
+
     * **selenium_driver_executable_path:** The path to the browser driver. Defaults to *geckodriver* if
     `Browser.FIREFOX` is selected as *selenium_browser*, otherwise defaults to *chromedriver*.
+
     * **user_agent:** The user agent to fake. Mainly useful for the static spider. Defaults to a random value provided
     by [fake-useragent](https://pypi.org/project/fake-useragent/) and if it does not work, fallback to
     *Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36*
+
     * **follow_robots_txt:** Decide whether or not the spider should follow robots.txt rules on the website you are
     scraping. Defaults to `False`.
+
     * **robots_cache_folder:** A folder to cache content of different website robots.txt file to avoid retrieving
     it each time you want to analyze an html page. Default to the system temporary directory.
+
     * **backup_filename:** The filename were scraped items will be written. If you don't want one, simple pass `None`.
     Defaults to *backup-{uuid}.mp* where uuid is a `uuid.uuid4` string value. Note that values inserted in this file
     are streamed using `msgpack`. Look at the documentation to see how to use it.
+
     * **response_middlewares:** A list of callables that will be called with the callable that fetch the http resource.
     This parameter is only useful for the **static spider**. Defaults to an empty list.
+
     * **item_processors:** A list of callables that will be called with a scraped item. Defaults to an empty list.
+
     * **msgpack_encoder:** A callable that will be called when `msgpack` serializes an item.
     Defaults to `scalpel.datetime_encoder`.
+
     * **msgpack_decoder:** A callable that will be called when `msgpack` deserializes an item.
     Defaults to `scalpel.datetime_decoder`.
 
