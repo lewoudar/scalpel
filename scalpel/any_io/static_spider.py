@@ -182,7 +182,7 @@ class StaticSpider(Spider):
                 self.robots_excluded_urls.add(url)
                 self._queue.task_done()
                 continue
-            # noinspection PyAsyncCall
+
             task_group.start_soon(self._handle_url, url)
             await anyio.sleep(request_delay)
 
