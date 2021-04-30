@@ -45,7 +45,7 @@ class StaticSpider(Spider):
     async def parse(spider: StaticSpider, response: StaticResponse) -> None:
         ...
 
-    spider = StaticSpider(urls=['http://example.com'], parse=parse)
+    spider = StaticSpider(urls=['https://example.com'], parse=parse)
     await spider.run()
     ```
     """
@@ -183,7 +183,7 @@ class StaticSpider(Spider):
                 self._queue.task_done()
                 continue
             # noinspection PyAsyncCall
-            task_group.spawn(self._handle_url, url)
+            task_group.start_soon(self._handle_url, url)
             await anyio.sleep(request_delay)
 
     async def _cleanup(self) -> None:
@@ -194,7 +194,7 @@ class StaticSpider(Spider):
     async def run(self) -> None:
         """Runs the spider."""
         async with anyio.create_task_group() as tg:
-            tg.spawn(self.worker, tg)
+            tg.start_soon(self.worker, tg)
             await self._queue.join()
             # at this point, all the urls were handled, so the only remaining task is the worker
             tg.cancel_scope.cancel()

@@ -269,7 +269,6 @@ class TestIntegrationSeleniumSpider:
         async for item in read_mp(backup_path, decoder=datetime_decoder):
             assert isinstance(item['date'], datetime)
             if item['author'] == 'Albert Einstein':
-                print(item)
                 albert_count += 1
 
         assert albert_count == 3

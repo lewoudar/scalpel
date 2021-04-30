@@ -39,7 +39,7 @@ class SeleniumSpider(SeleniumGetMixin, StaticSpider, SeleniumDriverMixin):
     async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
         ...
 
-    spider = SeleniumSpider(urls=['http://example.com'], parse=parse)
+    spider = SeleniumSpider(urls=['https://example.com'], parse=parse)
     await spider.run()
     ```
     """
