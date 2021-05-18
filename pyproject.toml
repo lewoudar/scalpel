@@ -4,7 +4,7 @@ version = "0.1.2"
 description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
 readme = "README.md"
-keywords = ["trio", "gevent", "webscraping", "crawler"]
+keywords = ["trio", "gevent", "webscraping", "crawler", "asyncio"]
 
 homepage = "https://scalpel.readthedocs.io/en/stable"
 repository = "https://github.com/lewoudar/scalpel"
@@ -15,6 +15,7 @@ classifiers = [
     "Topic :: Utilities",
     "Operating System :: OS Independent",
     "Framework :: Trio",
+    "Framework :: AsyncIO",
     "Framework :: Robot Framework :: Tool",
 ]
 
