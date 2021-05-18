@@ -1,23 +1,25 @@
 from datetime import datetime
 from pathlib import Path
 
+import anyio
 import httpx
 import pytest
 import respx
-import trio
 
+from scalpel.any_io.files import read_mp
+from scalpel.any_io.queue import Queue
+from scalpel.any_io.response import StaticResponse
+from scalpel.any_io.robots import RobotsAnalyzer
+from scalpel.any_io.static_spider import StaticSpider
 from scalpel.core.config import Configuration
 from scalpel.core.message_pack import datetime_decoder
 from scalpel.core.spider import SpiderStatistics
-from scalpel.trionic import read_mp
-from scalpel.trionic.response import StaticResponse
-from scalpel.trionic.robots import RobotsAnalyzer
-from scalpel.trionic.static_spider import StaticSpider
-from scalpel.trionic.utils.queue import Queue
+
+pytestmark = pytest.mark.anyio
 
 
 @pytest.fixture()
-async def trio_spider():
+async def anyio_spider():
     return StaticSpider(
         urls=['http://foo.com', 'http://bar.com', 'file:///home/kevin/page.html'], parse=lambda x, y: None
     )
@@ -31,7 +33,7 @@ class TestStaticSpider:
         spider = StaticSpider(urls=['http://foo.com'], parse=lambda x, y: None, config=config)
 
         assert config == spider._config
-        assert isinstance(spider._lock, trio.Lock)
+        assert isinstance(spider._lock, anyio.Lock)
         assert isinstance(spider._queue, Queue)
         assert isinstance(spider._start_time, float)
         assert isinstance(spider._http_client, httpx.AsyncClient)
@@ -40,10 +42,10 @@ class TestStaticSpider:
     # _fetch tests
 
     @respx.mock
-    async def test_fetch_method_returns_httpx_response(self, trio_spider):
+    async def test_fetch_method_returns_httpx_response(self, anyio_spider):
         url = 'http://foo.com'
-        respx.get('http://foo.com', content='content')
-        response = await trio_spider._fetch(url)
+        respx.get('http://foo.com') % {'text': 'content'}
+        response = await anyio_spider._fetch(url)
 
         assert 'content' == response.text
         assert 200 == response.status_code
@@ -77,14 +79,14 @@ class TestStaticSpider:
         ('', '', httpx.Response(200, request=httpx.Request('GET', 'http://foo.com')))
     ])
     async def test_should_return_static_response_when_giving_correct_input(
-            self, url, text, httpx_response, trio_spider
+            self, url, text, httpx_response, anyio_spider
     ):
-        static_response = trio_spider._get_static_response(url, text, httpx_response)
+        static_response = anyio_spider._get_static_response(url, text, httpx_response)
 
         assert isinstance(static_response, StaticResponse)
-        assert static_response._reachable_urls is trio_spider.reachable_urls
-        assert static_response._followed_urls is trio_spider.followed_urls
-        assert static_response._queue is trio_spider._queue
+        assert static_response._reachable_urls is anyio_spider.reachable_urls
+        assert static_response._followed_urls is anyio_spider.followed_urls
+        assert static_response._queue is anyio_spider._queue
         assert url == static_response._url
         assert text == static_response._text
         assert static_response._httpx_response is httpx_response
@@ -97,14 +99,14 @@ class TestStaticSpider:
         ({'http://foo.com'}, set(), set())
     ])
     async def test_should_do_nothing_if_url_is_already_present_in_one_url_set(
-            self, mocker, trio_spider, reachable_urls, unreachable_urls, robots_excluded_urls
+            self, mocker, anyio_spider, reachable_urls, unreachable_urls, robots_excluded_urls
     ):
         url = 'http://foo.com'
         logger_mock = mocker.patch('logging.Logger.debug')
-        trio_spider.reachable_urls = reachable_urls
-        trio_spider.unreachable_urls = unreachable_urls
-        trio_spider.robots_excluded_urls = robots_excluded_urls
-        await trio_spider._handle_url(url)
+        anyio_spider.reachable_urls = reachable_urls
+        anyio_spider.unreachable_urls = unreachable_urls
+        anyio_spider.robots_excluded_urls = robots_excluded_urls
+        await anyio_spider._handle_url(url)
 
         logger_mock.assert_any_call('url %s has already been processed', url)
 
@@ -153,7 +155,7 @@ class TestStaticSpider:
         def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=status_code)
+        respx.get(url) % status_code
         logger_mock = mocker.patch('logging.Logger.info')
         static_spider = StaticSpider(urls=[url], parse=parse)
         await static_spider._handle_url(url)
@@ -161,15 +163,19 @@ class TestStaticSpider:
         assert [] == parse_args
         logger_mock.assert_any_call('fetching url %s returns an error with status code %s', url, status_code)
 
+    # for an unknown reason asyncio timer on Windows does not work correctly which makes
+    # static_spider._total_fetch_time to be equal to 0.0 and therefore the test fails
+    # this si why the test is only run on trio backend
     @respx.mock
-    async def test_should_fetch_content_when_giving_http_url(self):
+    @pytest.mark.parametrize('anyio_backend', ['trio'])
+    async def test_should_fetch_content_when_giving_http_url(self, anyio_backend):
         parse_args = []
         url = 'http://foo.com'
 
         async def parse(spider, response):
             parse_args.extend([spider, response])
 
-        respx.get(url, status_code=200, content='http content')
+        respx.get(url) % {'text': 'http content'}
         static_spider = StaticSpider(urls=[url], parse=parse)
         await static_spider._handle_url(url)
 
@@ -222,7 +228,7 @@ class TestStaticSpider:
             return item
 
         async def processor_2(item):
-            await trio.sleep(0)
+            await anyio.sleep(0)
             if 'banana' in item:
                 return
             return item
@@ -262,7 +268,7 @@ class TestStaticSpider:
     ])
     async def test_should_return_robots_txt_value_when_follow_robots_txt_is_true(self, robots_content, value):
         url = 'http://foo.com'
-        respx.get(f'{url}/robots.txt', content=f'User-agent:*\n{robots_content}')
+        respx.get(f'{url}/robots.txt') % {'text': f'User-agent:*\n{robots_content}'}
         static_spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=Configuration(follow_robots_txt=True))
 
         assert value == await static_spider._get_request_delay(url)
@@ -270,7 +276,7 @@ class TestStaticSpider:
     @respx.mock
     async def test_should_return_config_delay_when_follow_robots_txt_is_false(self):
         url = 'http://foo.com'
-        request = respx.get(f'{url}/robots.txt', content='User-agent:*\nDisallow: ')
+        request = respx.get(f'{url}/robots.txt') % {'text': 'User-agent:*\nDisallow: '}
         config = Configuration(min_request_delay=3, max_request_delay=3)
         static_spider = StaticSpider(urls=[url], parse=lambda x, y: None, config=config)
 
@@ -285,7 +291,7 @@ class TestStaticSpider:
     # to check the rest of the logic
     async def test_should_exclude_url_when_robots_txt_excludes_it(self):
         url = 'http://foo.com'
-        respx.get(f'{url}/robots.txt', status_code=401)
+        respx.get(f'{url}/robots.txt') % 401
 
         async def parse(*_) -> None:
             pass
@@ -295,11 +301,14 @@ class TestStaticSpider:
         assert static_spider.reachable_urls == set()
         assert static_spider.robots_excluded_urls == {url}
 
+    # trio is the only backend checked for the same reason explained above for the test
+    # test_should_fetch_content_when_giving_http_url
     @respx.mock
-    async def test_should_return_correct_statistics_after_running_spider(self):
+    @pytest.mark.parametrize('anyio_backend', ['trio'])
+    async def test_should_return_correct_statistics_after_running_spider(self, anyio_backend):
         url1 = 'http://foo.com'
-        respx.get(url1)
-        respx.get(f'{url1}/robots.txt', status_code=404)
+        respx.get(url1, path='/')
+        respx.get(f'{url1}', path='/robots.txt') % 404
 
         async def parse(*_) -> None:
             pass
@@ -370,13 +379,16 @@ class TestIntegrationStaticSpider:
         assert stats.average_fetch_time == static_spider._total_fetch_time / stats.request_counter
         await self.common_assert(stats, backup_path)
 
+    # trio is the only backend checked for the same reason explained above for the test
+    # test_should_fetch_content_when_giving_http_url
     @respx.mock
-    async def test_should_work_with_http_url(self, page_content, tmp_path):
+    @pytest.mark.parametrize('anyio_backend', ['trio'])
+    async def test_should_work_with_http_url(self, page_content, tmp_path, anyio_backend):
         url = 'http://quotes.com'
-        respx.get(f'{url}/robots.txt', status_code=404)
-        respx.get(url, content=page_content('page1.html'))
+        respx.get(url, path='/robots.txt') % 404
+        respx.get(url, path='/') % {'html': page_content('page1.html')}
         for i in range(2, 4):
-            respx.get(f'{url}/page{i}.html', content=page_content(f'page{i}.html'))
+            respx.get(url, path=f'/page{i}.html') % {'html': page_content(f'page{i}.html')}
 
         backup_path = tmp_path / 'backup.mp'
         config = Configuration(

@@ -4,7 +4,7 @@ from typing import Set
 import attr
 
 from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
-from .utils.queue import Queue
+from .queue import Queue
 
 logger = logging.getLogger('scalpel')
 
@@ -48,7 +48,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
 
     * **reachable_urls:** A `set` of urls already fetched.
     * **followed_urls:** A `set` of urls already followed by other `StaticResponse` objects.
-    * **queue:** The `scalpel.trionic.Queue` used by the spider to handle incoming urls.
+    * **queue:** The `scalpel.any_io.Queue` used by the spider to handle incoming urls.
     * **url:** An optional keyword parameter representing the current url where content was fetched.
     * **text:** An optional keyword parameter representing the content of the resource fetched. Note that if you set
     the `url` parameter, you **must** set this one.
@@ -58,7 +58,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
     Usage:
 
     ```python
-    from scalpel.trionic import StaticResponse
+    from scalpel.any_io import StaticResponse
 
     response = StaticResponse(..., url='http://foo.com', text='<p>Hello world!</p>')
     print(response.css('p::text').get())  # 'Hello world!'
@@ -87,7 +87,7 @@ class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
     Usage:
 
     ```
-    from scalpel.trionic import SeleniumResponse
+    from scalpel.any_io import SeleniumResponse
 
     response = SeleniumResponse(...)
     # We assume we have a page source like '<p>Hello world!</p>'

@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple
 
-import trio
+import anyio
 from selenium.common.exceptions import WebDriverException
 
 logger = logging.getLogger('scalpel')
@@ -15,9 +15,9 @@ class SeleniumGetMixin:
         if not error_message:
             error_message = f'unable to get resource at {url}'
         try:
-            before = trio.current_time()
+            before = anyio.current_time()
             self._driver.get(url)
-            fetch_time = trio.current_time() - before
+            fetch_time = anyio.current_time() - before
         except WebDriverException:
             logger.exception(error_message)
             unreachable = True

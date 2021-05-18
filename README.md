@@ -1,7 +1,7 @@
 # Pyscalpel
 
 [![Pypi version](https://img.shields.io/pypi/v/pyscalpel.svg)](https://pypi.org/project/pyscalpel/)
-![](https://github.com/lewoudar/actions-tutorial/workflows/CI/badge.svg)
+![](https://github.com/lewoudar/scalpel/workflows/CI/badge.svg)
 [![Coverage Status](https://codecov.io/gh/lewoudar/scalpel/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/lewoudar/scalpel)
 [![Documentation Status](https://readthedocs.org/projects/scalpel/badge/?version=latest)](https://scalpel.readthedocs.io/en/latest/?badge=latest)
 [![License Apache 2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -10,7 +10,7 @@ Your easy-to-use, fast and powerful web scraping library.
 
 ## Why?
 
-I already known [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
+I already knew [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
 two things bothered me.
 - I feel like scrapy cannot integrate into an existing project, you need to treat your web scraping stuff like a project
 on its own.
@@ -25,6 +25,7 @@ on its own.
 ## Installation
  
 ```bash
+pip install pyscalpel  # # to only use the asyncio backend
 pip install pyscalpel[gevent] # to install the gevent backend
 pip install pyscalpel[trio] # to installl the trio backend
 pip install pyscalpel[full] # to install all the backends
@@ -33,6 +34,7 @@ pip install pyscalpel[full] # to install all the backends
 If you know about [poetry](https://python-poetry.org/) you can use it instead of pip.
 
 ```bash
+poetry add pyscalpel  # to only use the asyncio backend
 poetry add pyscalpel[gevent] # to install the gevent backend
 poetry add pyscalpel[trio] # to install the trio backend
 poetry add pyscalpel[full] # to install all the backends
@@ -44,6 +46,8 @@ pyscalpel works starting from **python 3.6**, it relies on robust packages:
 - [selenium](https://pypi.org/project/selenium/): A library for controlling a browser.
 - [gevent](http://www.gevent.org/): An asynchronous framework using the synchronous way. (optional)
 - [trio](https://trio.readthedocs.io/en/stable/): A modern asynchronous framework using `async/await` syntax. (optional)
+- [anyio](https://anyio.readthedocs.io/): An asynchronous networking and concurrency library that works on top of
+either asyncio or trio.
 - [parsel](https://parsel.readthedocs.io/): A library elements in HTML/XML documents.
 - [attrs](https://www.attrs.org/en/stable/): A library helping to write classes without pain.
 - [fake-useragent](https://pypi.org/project/fake-useragent/): A simple library to fake a user agent.
@@ -93,14 +97,14 @@ if __name__ == '__main__':
         print(quote_data)
 ```
 
-with trio
+with anyio
 
 ```python
 from pathlib import Path
 
-import trio
+import anyio
 from scalpel import Configuration
-from scalpel.trionic import StaticResponse, StaticSpider, read_mp
+from scalpel.any_io import StaticResponse, StaticSpider, read_mp
 
 
 async def parse(spider: StaticSpider, response: StaticResponse) -> None:
@@ -127,16 +131,18 @@ async def main():
         print(item)
 
 if __name__ == '__main__':
-    trio.run(main)
+    # by default, this will run the asyncio backend, if you want the trio backend, you must first install the trio 
+    # package and replace the following line with: anyio.run(main, backend='trio').
+    anyio.run(main)
 ```
 
 ## Known limitations
 
-pyscalpel aims to handle SPA (single page application) through the use of selenium. However due to the synchronous nature
-of selenium, it is hard to leverage trio and gevent asynchronous feature. You will notice that the *selenium spider* is
+pyscalpel aims to handle SPA (single page application) through the use of selenium. However, due to the synchronous nature
+of selenium, it is hard to leverage anyio and gevent asynchronous feature. You will notice that the *selenium spider* is
 slower than the *static spider*. For more information look at the documentation.
 
 ## Warning
 
-pyscalpel is a young project so it is expected to have breaking changes in the api without respecting the 
+pyscalpel is a young project, so it is expected to have breaking changes in the api without respecting the 
 [semver](https://semver.org/) principle. It is recommended to pin the version you are using for now.

@@ -2,7 +2,7 @@ from .files import read_mp, write_mp
 from .response import StaticResponse, SeleniumResponse
 from .selenium_spider import SeleniumSpider
 from .static_spider import StaticSpider
-from .utils.queue import Queue
+from .queue import Queue
 
 __all__ = [
     # files

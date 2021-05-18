@@ -58,12 +58,12 @@ spider = StaticSpider(urls=['http://foo.com'], parse=parse, config=config)
 spider.run()
 ```
 
-With trio:
+With anyio:
 
 ```python
-import trio
+import anyio
 from scalpel import Configuration
-from scalpel.trionic import StaticSpider
+from scalpel.any_io import StaticSpider
 
 
 def middleware(fetch):
@@ -107,7 +107,7 @@ async def main():
     spider = StaticSpider(urls=['http://foo.com'], parse=parse, config=config)
     await spider.run()
 
-trio.run(main)
+anyio.run(main)  # with trio: anyio.run(main, backend='trio')
 ```
 
 Output:

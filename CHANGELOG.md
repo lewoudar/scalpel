@@ -2,18 +2,22 @@
 
 The changelog format is based on a subset of [Keep a changelog](https://keepachangelog.com/en/1.0.0/).
 
-## Version 0.1.1
+## [Unreleased]
 
-Released on 2020-11-02
+## Version 0.1.2 - 2021-XX-XX
+
+### Changed
+
+- Changed trio backend to an anyio backend. This adds support to asyncio in addition to trio.
+
+## [0.1.1] - 2020-11-02
 
 ### Fixed
 
 - Package deployment via nox
 - Package installation for the gevent backend
 
-## Version 0.1.0
-
-Released on 2020-11-02
+## [0.1.0] - 2020-11-02
 
 ### Added
 

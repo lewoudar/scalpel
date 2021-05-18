@@ -41,7 +41,7 @@ class TestBaseStaticResponse:
         response = BaseStaticResponse(httpx_response=httpx_response)
 
         assert url == response.url
-        assert_dicts(headers, response.headers)
+        assert_dicts({**headers, 'content-length': '11'}, response.headers)
         assert_dicts({'name': 'John'}, response.cookies)
         assert content == response.content
         assert content.decode() == response.text

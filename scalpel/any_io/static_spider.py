@@ -2,18 +2,20 @@ import logging
 import math
 import platform
 from asyncio import iscoroutinefunction
+from pathlib import Path
 from typing import Callable, Optional, Any, Union
 
+import anyio
 import attr
 import httpx
-import trio
+from anyio.abc import TaskGroup
 from rfc3986 import uri_reference
 
 from scalpel.core.spider import Spider
 from .files import write_mp
 from .response import StaticResponse
 from .robots import RobotsAnalyzer
-from .utils.queue import Queue
+from .queue import Queue
 
 logger = logging.getLogger('scalpel')
 
@@ -38,21 +40,21 @@ class StaticSpider(Spider):
     Usage:
 
     ```
-    from scalpel.trionic import StaticSpider, StaticResponse
+    from scalpel.any_io import StaticSpider, StaticResponse
 
     async def parse(spider: StaticSpider, response: StaticResponse) -> None:
         ...
 
-    spider = StaticSpider(urls=['http://example.com'], parse=parse)
+    spider = StaticSpider(urls=['https://example.com'], parse=parse)
     await spider.run()
     ```
     """
     # order is important here, http_client must come before robots_analyzer since the latter used the former
-    _start_time: float = attr.ib(init=False, repr=False, factory=trio.current_time)
+    _start_time: float = attr.ib(init=False, repr=False, factory=anyio.current_time)
     _http_client: httpx.AsyncClient = attr.ib(init=False, repr=False)
     _robots_analyser: RobotsAnalyzer = attr.ib(init=False, repr=False)
     _fetch: Callable = attr.ib(init=False, repr=False)
-    _lock: trio.Lock = attr.ib(init=False, repr=False, factory=trio.Lock)
+    _lock: anyio.Lock = attr.ib(init=False, repr=False, factory=anyio.Lock)
     _queue: Queue = attr.ib(init=False, repr=False)
 
     def __attrs_post_init__(self):
@@ -75,7 +77,7 @@ class StaticSpider(Spider):
         logger.debug('getting a default robots analyzer')
         return RobotsAnalyzer(
             http_client=self._http_client,
-            robots_cache=trio.Path(self.config.robots_cache_folder),
+            robots_cache=Path(self.config.robots_cache_folder),
             user_agent=self.config.user_agent
         )
 
@@ -97,7 +99,7 @@ class StaticSpider(Spider):
 
     def _is_url_already_processed(self, url: str) -> False:
         processed = False
-        if url in self.reachable_urls or url in self.unreachable_urls or url in self.robots_excluded_urls:
+        if url in [*self.reachable_urls, *self.unreachable_urls, *self.robots_excluded_urls]:
             logger.debug('url %s has already been processed', url)
             self._queue.task_done()
             processed = True
@@ -116,10 +118,10 @@ class StaticSpider(Spider):
             logger.debug('url %s is a file url so we attempt to read its content')
             file_path = ur.path[1:] if platform.system() == 'Windows' else ur.path
             try:
-                before = trio.current_time()
-                async with await trio.open_file(file_path) as f:
+                before = anyio.current_time()
+                async with await anyio.open_file(file_path) as f:
                     text = await f.read()
-                fetch_time = trio.current_time() - before
+                fetch_time = anyio.current_time() - before
             except OSError:
                 logger.exception('unable to open file %s', url)
                 self.unreachable_urls.add(url)
@@ -169,10 +171,10 @@ class StaticSpider(Spider):
     async def _get_request_delay(self, url: str) -> Union[int, float]:
         if self.config.follow_robots_txt:
             return await self._robots_analyser.get_request_delay(url, self.config.request_delay)
-        await trio.sleep(0)  # checkpoint to ensure an async function in every case
+        await anyio.sleep(0)  # checkpoint to ensure an async function in every case
         return self.config.request_delay
 
-    async def worker(self, nursery: trio.Nursery) -> None:
+    async def worker(self, task_group: TaskGroup) -> None:
         while True:
             url = await self._queue.get()
             request_delay = await self._get_request_delay(url)
@@ -180,20 +182,22 @@ class StaticSpider(Spider):
                 self.robots_excluded_urls.add(url)
                 self._queue.task_done()
                 continue
-            nursery.start_soon(self._handle_url, url)
-            await trio.sleep(request_delay)
+
+            task_group.start_soon(self._handle_url, url)
+            await anyio.sleep(request_delay)
 
     async def _cleanup(self) -> None:
         await self._http_client.aclose()
         await self._queue.close()
 
+    # noinspection PyAsyncCall
     async def run(self) -> None:
         """Runs the spider."""
-        async with trio.open_nursery() as nursery:
-            nursery.start_soon(self.worker, nursery)
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(self.worker, tg)
             await self._queue.join()
             # at this point, all the urls were handled, so the only remaining task is the worker
-            nursery.cancel_scope.cancel()
+            tg.cancel_scope.cancel()
 
         await self._cleanup()
-        self._duration = trio.current_time() - self._start_time
+        self._duration = anyio.current_time() - self._start_time

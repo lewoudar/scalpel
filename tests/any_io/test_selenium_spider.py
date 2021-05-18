@@ -3,17 +3,20 @@ from datetime import datetime
 import httpx
 import pytest
 import respx
-import trio
+# noinspection PyProtectedMember
+from anyio._core._synchronization import Lock
 from selenium.common.exceptions import WebDriverException, NoSuchElementException
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from scalpel.any_io.files import read_mp
+from scalpel.any_io.queue import Queue
+from scalpel.any_io.response import SeleniumResponse
+from scalpel.any_io.robots import RobotsAnalyzer
+from scalpel.any_io.selenium_spider import SeleniumSpider, StaticSpider
 from scalpel.core.config import Configuration, Browser
 from scalpel.core.message_pack import datetime_decoder
-from scalpel.trionic import read_mp
-from scalpel.trionic.response import SeleniumResponse
-from scalpel.trionic.robots import RobotsAnalyzer
-from scalpel.trionic.selenium_spider import SeleniumSpider, StaticSpider
-from scalpel.trionic.utils.queue import Queue
+
+pytestmark = pytest.mark.anyio
 
 
 class TestSeleniumSpider:
@@ -31,7 +34,7 @@ class TestSeleniumSpider:
         assert isinstance(spider._http_client, httpx.AsyncClient)
         assert isinstance(spider._robots_analyser, RobotsAnalyzer)
         assert config == spider._config
-        assert isinstance(spider._lock, trio.Lock)
+        assert isinstance(spider._lock, Lock)
         assert isinstance(spider._queue, Queue)
 
         # cleanup
@@ -133,7 +136,7 @@ class TestSeleniumSpider:
         async def parse(sel_spider, response):
             parse_args.extend([sel_spider, response])
 
-        respx.get(f'{url}/robots.txt', status_code=404)
+        respx.get(f'{url}/robots.txt') % 404
         mocker.patch('selenium.webdriver.remote.webdriver.WebDriver.get', side_effect=WebDriverException)
         config = Configuration(follow_robots_txt=True, selenium_driver_log_file=None)
         spider = SeleniumSpider(urls=[url], parse=parse, config=config)
@@ -147,7 +150,11 @@ class TestSeleniumSpider:
         # cleanup
         await spider._cleanup()
 
-    async def test_should_fetch_content_when_giving_http_url(self, mocker):
+    # for an unknown reason asyncio timer on Windows does not work correctly which makes
+    # static_spider._total_fetch_time to be equal to 0.0 and therefore the test fails
+    # this si why the test is only run on trio backend
+    @pytest.mark.parametrize('anyio_backend', ['trio'])
+    async def test_should_fetch_content_when_giving_http_url(self, mocker, anyio_backend):
         parse_args = []
         url = 'http://foo.com'
 
@@ -266,7 +273,6 @@ class TestIntegrationSeleniumSpider:
         async for item in read_mp(backup_path, decoder=datetime_decoder):
             assert isinstance(item['date'], datetime)
             if item['author'] == 'Albert Einstein':
-                print(item)
                 albert_count += 1
 
         assert albert_count == 3

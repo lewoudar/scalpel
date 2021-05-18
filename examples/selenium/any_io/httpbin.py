@@ -1,10 +1,10 @@
 from datetime import datetime
 from pathlib import Path
 
-import trio
+import anyio
 
 from scalpel import Configuration, datetime_decoder
-from scalpel.trionic import SeleniumSpider, SeleniumResponse, read_mp
+from scalpel.any_io import SeleniumSpider, SeleniumResponse, read_mp
 
 
 async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
@@ -54,4 +54,4 @@ async def main() -> None:
 
 
 if __name__ == '__main__':
-    trio.run(main)
+    anyio.run(main)
