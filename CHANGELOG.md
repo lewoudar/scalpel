@@ -4,7 +4,7 @@ The changelog format is based on a subset of [Keep a changelog](https://keepacha
 
 ## [Unreleased]
 
-## Version 0.1.2 - 2021-XX-XX
+## Version 0.1.2 - 2021-05-18
 
 ### Changed
 
