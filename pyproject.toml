@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyscalpel"
-version = "0.1.1"
+version = "0.1.2"
 description = "Your easy-to-use, fast and powerful web scraping library"
 authors = ["lewoudar <lewoudar@gmail.com>"]
 readme = "README.md"
