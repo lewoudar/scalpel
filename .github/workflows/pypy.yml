@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Install lxml utility libraries
-        run: sudo apt install libxslt libxml2
+        run: sudo apt install libxml2 && sudo snap install libxslt
       - name: Install python dependencies
         run: python -m pip install -U pip nox
       - name: Lint
