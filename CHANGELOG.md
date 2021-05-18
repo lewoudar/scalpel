@@ -8,6 +8,11 @@ The changelog format is based on a subset of [Keep a changelog](https://keepacha
 
 ### Changed
 
+- Replaced trio backend by anyio. This allows to support both asyncio and trio for asynchronous backend with
+  async/await syntax
+
+### Changed
+
 - Changed trio backend to an anyio backend. This adds support to asyncio in addition to trio.
 
 ## [0.1.1] - 2020-11-02

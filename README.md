@@ -25,7 +25,7 @@ on its own.
 ## Installation
  
 ```bash
-pip install pyscalpel  # # to only use the asyncio backend
+pip install pyscalpel  # to only use the asyncio backend
 pip install pyscalpel[gevent] # to install the gevent backend
 pip install pyscalpel[trio] # to installl the trio backend
 pip install pyscalpel[full] # to install all the backends
