@@ -2,6 +2,7 @@
 
 [![Pypi version](https://img.shields.io/pypi/v/pyscalpel.svg)](https://pypi.org/project/pyscalpel/)
 ![](https://github.com/lewoudar/scalpel/workflows/CI/badge.svg)
+![](https://github.com/lewoudar/scalpel/workflows/PYPY_CI/badge.svg)
 [![Coverage Status](https://codecov.io/gh/lewoudar/scalpel/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/lewoudar/scalpel)
 [![Documentation Status](https://readthedocs.org/projects/scalpel/badge/?version=latest)](https://scalpel.readthedocs.io/en/latest/?badge=latest)
 [![License Apache 2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
@@ -10,7 +11,7 @@ Your easy-to-use, fast and powerful web scraping library.
 
 ## Why?
 
-I already known [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
+I already knew [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
 two things bothered me.
 - I feel like scrapy cannot integrate into an existing project, you need to treat your web scraping stuff like a project
 on its own.

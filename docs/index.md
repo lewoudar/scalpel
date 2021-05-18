@@ -4,7 +4,7 @@ Everything you need to know about pyscalpel.
 
 ## Why pyscalpel?
 
-I already known [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
+I already knew [scrapy](https://docs.scrapy.org/en/latest/) which is the reference in python for web scraping. But
 two things bothered me.
 
 - I feel like scrapy cannot integrate into an existing project, you need to treat your web scraping stuff like a project
