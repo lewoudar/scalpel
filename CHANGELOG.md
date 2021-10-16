@@ -4,12 +4,17 @@ The changelog format is based on a subset of [Keep a changelog](https://keepacha
 
 ## [Unreleased]
 
+### Changed
+
+- updated version of gevent from 20.9.0 to 21.8.0
+- Modified noxfile.py to support python 3.10 in tests.
+
 ## Version 0.1.2 - 2021-05-18
 
 ### Changed
 
 - Replaced trio backend by anyio. This allows to support both asyncio and trio for asynchronous backend with
-  async/await syntax
+  async/await syntax.
 
 ### Changed
 
