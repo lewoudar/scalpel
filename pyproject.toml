@@ -37,7 +37,7 @@ rfc3986 = { extras = ["idna"], version = "^1.4.0" }
 msgpack = "^1.0.0"
 gevent = { version = "^20.9.0", optional = true }
 trio = { version = "^0.17.0", optional = true }
-httpx = "^0.17.0"
+httpx = ">=0.17,<0.24"
 anyio = "^3.0.0"
 
 [tool.poetry.extras]
