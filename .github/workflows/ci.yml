@@ -14,7 +14,7 @@ jobs:
       max-parallel: 6
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest' ,'windows-latest' ]
-        python: [ 3.6, 3.7, 3.8, 3.9 ]
+        python: [ 3.7, 3.8, 3.9, '3.10' ]
         # windows and mac are slow to run python 3.9 so we skip these jobs
         # windows is also really slow on python 3.6 and sometimes produce weird errors so we skip it
         exclude:
@@ -40,10 +40,3 @@ jobs:
         run: nox -s tests-${{ matrix.python }}
         env:
           CODECOV_TOKEN: ${{ secrets.codecov_token }}
-      - name: Build and deploy
-        run: nox -s deploy
-        if: >
-          github.event_name == 'push' && contains(github.ref, 'refs/tags/') &&
-          matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
-        env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.pypi_token }}
