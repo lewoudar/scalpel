@@ -27,7 +27,7 @@ packages = [
 "Bug Tracker" = "https://github.com/lewoudar/scalpel/issues"
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = "^3.7"
 parsel = "^1.5.2"
 attrs = "^19.3.0"
 fake-useragent = "^0.1.11"
