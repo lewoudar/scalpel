@@ -1,5 +1,5 @@
 mkautodoc==0.1.0
-mkdocs-material==6.1.2
+mkdocs-material==7.3.6
 attrs==19.3.0
 configuror==0.2.0
 trio==0.17.0
@@ -8,7 +8,7 @@ anyio
 selenium==3.141.0
 idna>=2.0.0,<3.0.0
 rfc3986==1.4.0
-httpx==0.12.1
+httpx==0.17.1
 parsel==1.6.0
-msgpack==1.0.0
+msgpack==1.0.3
 fake-useragent==0.1.11
