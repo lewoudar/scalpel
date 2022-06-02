@@ -40,7 +40,7 @@ poetry add pyscalpel[trio] # to install the trio backend
 poetry add pyscalpel[full] # to install all the backends
 ```
 
-pyscalpel works starting from **python 3.6**, it relies on robust packages:
+pyscalpel works starting from **python 3.7**, it relies on robust packages:
 - [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit. 
 - [httpx](https://www.python-httpx.org/): A modern http client.
 - [selenium](https://pypi.org/project/selenium/): A library for controlling a browser.

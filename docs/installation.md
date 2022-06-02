@@ -1,6 +1,6 @@
 # Installation
 
-To install pyscalpel, you will need to have python and pip installed. For python the minimal version supported is **3.6**.
+To install pyscalpel, you will need to have python and pip installed. For python the minimal version supported is **3.7**.
 After you can just enter the following command:
 
 ```bash

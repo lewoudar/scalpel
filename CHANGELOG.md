@@ -4,7 +4,17 @@ The changelog format is based on a subset of [Keep a changelog](https://keepacha
 
 ## [Unreleased]
 
-## Version 0.1.2 - 2021-05-18
+## [0.2.0] - 2022-06-02
+
+### Security
+
+- Updated httpx package to version 0.23.0 (#10)
+
+### Removed
+
+- Dropped support for python3.6 (#10)
+
+## [0.1.2] - 2021-05-18
 
 ### Changed
 

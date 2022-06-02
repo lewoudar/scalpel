@@ -8,7 +8,7 @@ anyio
 selenium==3.141.0
 idna>=2.0.0,<3.0.0
 rfc3986==1.4.0
-httpx==0.17.1
+httpx==0.23.0
 parsel==1.6.0
 msgpack==1.0.3
 fake-useragent==0.1.11
