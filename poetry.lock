@@ -174,14 +174,17 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "colorlog"
-version = "4.8.0"
-description = "Log formatting with colors!"
+version = "6.6.0"
+description = "Add colours to the output of Python's logging module."
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.6"
 
 [package.dependencies]
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
+
+[package.extras]
+development = ["black", "flake8", "mypy", "pytest", "types-colorama"]
 
 [[package]]
 name = "configuror"
@@ -258,24 +261,24 @@ pyflakes = ">=2.3.0,<2.4.0"
 
 [[package]]
 name = "gevent"
-version = "20.12.1"
+version = "21.12.0"
 description = "Coroutine-based network library"
 category = "main"
 optional = true
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5"
 
 [package.dependencies]
 cffi = {version = ">=1.12.2", markers = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\""}
-greenlet = {version = ">=0.4.17,<2.0", markers = "platform_python_implementation == \"CPython\""}
+greenlet = {version = ">=1.1.0,<2.0", markers = "platform_python_implementation == \"CPython\""}
 "zope.event" = "*"
 "zope.interface" = "*"
 
 [package.extras]
 dnspython = ["dnspython (>=1.16.0,<2.0)", "idna"]
-docs = ["repoze.sphinx.autointerface", "sphinxcontrib-programoutput"]
+docs = ["repoze.sphinx.autointerface", "sphinxcontrib-programoutput", "zope.schema"]
 monitor = ["psutil (>=5.7.0)"]
-recommended = ["dnspython (>=1.16.0,<2.0)", "idna", "cffi (>=1.12.2)", "selectors2", "backports.socketpair", "psutil (>=5.7.0)"]
-test = ["dnspython (>=1.16.0,<2.0)", "idna", "requests", "objgraph", "cffi (>=1.12.2)", "selectors2", "futures", "mock", "backports.socketpair", "contextvars (==2.4)", "coverage (>=5.0)", "coveralls (>=1.7.0)", "psutil (>=5.7.0)"]
+recommended = ["cffi (>=1.12.2)", "dnspython (>=1.16.0,<2.0)", "idna", "selectors2", "backports.socketpair", "psutil (>=5.7.0)"]
+test = ["requests", "objgraph", "cffi (>=1.12.2)", "dnspython (>=1.16.0,<2.0)", "idna", "selectors2", "futures", "mock", "backports.socketpair", "contextvars (==2.4)", "coverage (>=5.0)", "coveralls (>=1.7.0)", "psutil (>=5.7.0)"]
 
 [[package]]
 name = "ghp-import"
@@ -589,16 +592,19 @@ python-versions = "*"
 
 [[package]]
 name = "nox"
-version = "2019.11.9"
+version = "2022.1.7"
 description = "Flexible test automation."
 category = "dev"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.6"
 
 [package.dependencies]
 argcomplete = ">=1.9.4,<2.0"
-colorlog = ">=2.6.1,<5.0.0"
+colorlog = ">=2.6.1,<7.0.0"
+importlib-metadata = {version = "*", markers = "python_version < \"3.8\""}
+packaging = ">=20.9"
 py = ">=1.4.0,<2.0.0"
+typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 virtualenv = ">=14.0.0"
 
 [package.extras]
@@ -1082,7 +1088,7 @@ trio = ["trio"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "daf0fa4035a3ceae8bd8554def0cbcafa0dbe1d7677651117cf89b5410ec37c3"
+content-hash = "c3818d36d12ce07d3fcd034a90855719b445cae5c80c651010bd91d8d5ada686"
 
 [metadata.files]
 anyio = [
@@ -1212,8 +1218,8 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 colorlog = [
-    {file = "colorlog-4.8.0-py2.py3-none-any.whl", hash = "sha256:3dd15cb27e8119a24c1a7b5c93f9f3b455855e0f73993b1c25921b2f646f1dcd"},
-    {file = "colorlog-4.8.0.tar.gz", hash = "sha256:59b53160c60902c405cdec28d38356e09d40686659048893e026ecbd589516b1"},
+    {file = "colorlog-6.6.0-py2.py3-none-any.whl", hash = "sha256:351c51e866c86c3217f08e4b067a7974a678be78f07f85fc2d55b8babde6d94e"},
+    {file = "colorlog-6.6.0.tar.gz", hash = "sha256:344f73204009e4c83c5b6beb00b3c45dc70fcdae3c80db919e0a4171d006fde8"},
 ]
 configuror = [
     {file = "configuror-0.2.0-py3-none-any.whl", hash = "sha256:661145619b7279b02a5ba5f6ae75bd6d144f1dc8a73fb782e39a846c338a732a"},
@@ -1293,30 +1299,39 @@ flake8 = [
     {file = "flake8-3.9.2.tar.gz", hash = "sha256:07528381786f2a6237b061f6e96610a4167b226cb926e2aa2b6b1d78057c576b"},
 ]
 gevent = [
-    {file = "gevent-20.12.1-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:0f9fa230c5878704b9e286ad5038bac3b70d293bf10e9efa8b2ae1d7d80e7e08"},
-    {file = "gevent-20.12.1-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:f020bfb34d57caa10029111be776524c378a4aac8417bc6fb1154b05e00fc220"},
-    {file = "gevent-20.12.1-cp27-cp27m-win32.whl", hash = "sha256:e233ae153b586b61e492806d4cd1be2217de7441922c02053b67de14800bce96"},
-    {file = "gevent-20.12.1-cp27-cp27m-win_amd64.whl", hash = "sha256:2d05f38a5ef1ebb7ceb692897674b11ba603914524765b989c65c020c7b08360"},
-    {file = "gevent-20.12.1-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:ffa1be13963db6aa55c50d2fd4a656c82f53a03a47e37aaa69e79a488123538d"},
-    {file = "gevent-20.12.1-cp35-cp35m-win32.whl", hash = "sha256:caec00914e8f21b2c77a29bbc2ef3abfeadf7515656e5451dfb14c2064733998"},
-    {file = "gevent-20.12.1-cp35-cp35m-win_amd64.whl", hash = "sha256:19bd3fe60dec45fe6420b7772496950215f1b36701905876ba1644b6b2064163"},
-    {file = "gevent-20.12.1-cp36-cp36m-win32.whl", hash = "sha256:9d001fc899db6e140110ae7484e58cd74b0dfa5cee021a0347f00bb441ac78bd"},
-    {file = "gevent-20.12.1-cp36-cp36m-win_amd64.whl", hash = "sha256:b57586ad3fedf13d351d2559b70d6fe593c50400315d52bb3c072285da60fa37"},
-    {file = "gevent-20.12.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:69ddc1767a02f68e71d5e0d3215aa4d28872187715627f71ff0eadd7b7a5e7f4"},
-    {file = "gevent-20.12.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:89c583744f91052ae987356660f5ed0b8fc59a1230b051d6ccc10d37a155fe01"},
-    {file = "gevent-20.12.1-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:f3faf1834464f1b0731aa6346cd9f41029fa9e208d6ecbce4a736c19562c86aa"},
-    {file = "gevent-20.12.1-cp37-cp37m-win32.whl", hash = "sha256:4baecba0fd614e14dc1f3f8c35616cb248cdb893de576150ed1fc7fc66b8ba3d"},
-    {file = "gevent-20.12.1-cp37-cp37m-win_amd64.whl", hash = "sha256:4b0a5626c4e534d184cdf00d66f06de3885beafaaa5f7b98d47186ea175629a1"},
-    {file = "gevent-20.12.1-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:81e38ed46e21e0b00b930efce1a1ff46c7722ad83d84052f71a757f23cbed1c0"},
-    {file = "gevent-20.12.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:895c76a89907d9d37fdfaf5321cb0fff0cba396f003bedb4f5fc13836da6f250"},
-    {file = "gevent-20.12.1-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:c3706a620e167c4bd007f16f113928324c4e07a7bae11d6d18d65f82abcd7a58"},
-    {file = "gevent-20.12.1-cp38-cp38-win32.whl", hash = "sha256:ba244028225ff8d3a58f344fcd16ab05b0e3642b34d81f51f7fa3c70761f6c34"},
-    {file = "gevent-20.12.1-cp38-cp38-win_amd64.whl", hash = "sha256:c570a2e3100f758a5c2f9b993ecf870ee784390e44e1a292c361d6b32fb3ad4c"},
-    {file = "gevent-20.12.1-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:f857adbe1bf41e620d86173a53100f4ec328eba3089069a4815b3d9f4229dee8"},
-    {file = "gevent-20.12.1-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:bf946a99e364ebcc95b82c794d5d1a67f13115adbefab7b9e12791f13184cfd5"},
-    {file = "gevent-20.12.1-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:60799fd7dcbb622f8435eb12436d48a8d27f8e7b3d23631e32ccc04ddd2097c2"},
-    {file = "gevent-20.12.1-pp27-pypy_73-win32.whl", hash = "sha256:7a808c63f065a303bbbe87c5c0754e06abb1e23e18752f418dce1eb3189cb43d"},
-    {file = "gevent-20.12.1.tar.gz", hash = "sha256:99b68765767bb3e2244a66b012883899a6f17c23b6dc1cd80b793df341e15f08"},
+    {file = "gevent-21.12.0-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:2afa3f3ad528155433f6ac8bd64fa5cc303855b97004416ec719a6b1ca179481"},
+    {file = "gevent-21.12.0-cp27-cp27m-win32.whl", hash = "sha256:177f93a3a90f46a5009e0841fef561601e5c637ba4332ab8572edd96af650101"},
+    {file = "gevent-21.12.0-cp27-cp27m-win_amd64.whl", hash = "sha256:a5ad4ed8afa0a71e1927623589f06a9b5e8b5e77810be3125cb4d93050d3fd1f"},
+    {file = "gevent-21.12.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:eae3c46f9484eaacd67ffcdf4eaf6ca830f587edd543613b0f5c4eb3c11d052d"},
+    {file = "gevent-21.12.0-cp310-cp310-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:e1899b921219fc8959ff9afb94dae36be82e0769ed13d330a393594d478a0b3a"},
+    {file = "gevent-21.12.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8c21cb5c9f4e14d75b3fe0b143ec875d7dbd1495fad6d49704b00e57e781ee0f"},
+    {file = "gevent-21.12.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:542ae891e2aa217d2cf6d8446538fcd2f3263a40eec123b970b899bac391c47a"},
+    {file = "gevent-21.12.0-cp310-cp310-win_amd64.whl", hash = "sha256:0082d8a5d23c35812ce0e716a91ede597f6dd2c5ff508a02a998f73598c59397"},
+    {file = "gevent-21.12.0-cp36-cp36m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:da8d2d51a49b2a5beb02ad619ca9ddbef806ef4870ba04e5ac7b8b41a5b61db3"},
+    {file = "gevent-21.12.0-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2cfff82f05f14b7f5d9ed53ccb7a609ae8604df522bb05c971bca78ec9d8b2b9"},
+    {file = "gevent-21.12.0-cp36-cp36m-musllinux_1_1_x86_64.whl", hash = "sha256:7909780f0cf18a1fc32aafd8c8e130cdd93c6e285b11263f7f2d1a0f3678bc50"},
+    {file = "gevent-21.12.0-cp36-cp36m-win32.whl", hash = "sha256:bb5cb8db753469c7a9a0b8a972d2660fe851aa06eee699a1ca42988afb0aaa02"},
+    {file = "gevent-21.12.0-cp36-cp36m-win_amd64.whl", hash = "sha256:c43f081cbca41d27fd8fef9c6a32cf83cb979345b20abc07bf68df165cdadb24"},
+    {file = "gevent-21.12.0-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:74fc1ef16b86616cfddcc74f7292642b0f72dde4dd95aebf4c45bb236744be54"},
+    {file = "gevent-21.12.0-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:cc2fef0f98ee180704cf95ec84f2bc2d86c6c3711bb6b6740d74e0afe708b62c"},
+    {file = "gevent-21.12.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:08b4c17064e28f4eb85604486abc89f442c7407d2aed249cf54544ce5c9baee6"},
+    {file = "gevent-21.12.0-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:973749bacb7bc4f4181a8fb2a7e0e2ff44038de56d08e856dd54a5ac1d7331b4"},
+    {file = "gevent-21.12.0-cp37-cp37m-win32.whl", hash = "sha256:6a02a88723ed3f0fd92cbf1df3c4cd2fbd87d82b0a4bac3e36a8875923115214"},
+    {file = "gevent-21.12.0-cp37-cp37m-win_amd64.whl", hash = "sha256:f289fae643a3f1c3b909d6b033e6921b05234a4907e9c9c8c3f1fe403e6ac452"},
+    {file = "gevent-21.12.0-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:3baeeccc4791ba3f8db27179dff11855a8f9210ddd754f6c9b48e0d2561c2aea"},
+    {file = "gevent-21.12.0-cp38-cp38-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:05c5e8a50cd6868dd36536c92fb4468d18090e801bd63611593c0717bab63692"},
+    {file = "gevent-21.12.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9d86438ede1cbe0fde6ef4cc3f72bf2f1ecc9630d8b633ff344a3aeeca272cdd"},
+    {file = "gevent-21.12.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:01928770972181ad8866ee37ea3504f1824587b188fcab782ef1619ce7538766"},
+    {file = "gevent-21.12.0-cp38-cp38-win32.whl", hash = "sha256:3c012c73e6c61f13c75e3a4869dbe6a2ffa025f103421a6de9c85e627e7477b1"},
+    {file = "gevent-21.12.0-cp38-cp38-win_amd64.whl", hash = "sha256:b7709c64afa8bb3000c28bb91ec42c79594a7cb0f322e20427d57f9762366a5b"},
+    {file = "gevent-21.12.0-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:ec21f9eaaa6a7b1e62da786132d6788675b314f25f98d9541f1bf00584ed4749"},
+    {file = "gevent-21.12.0-cp39-cp39-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:22ce1f38fdfe2149ffe8ec2131ca45281791c1e464db34b3b4321ae9d8d2efbb"},
+    {file = "gevent-21.12.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7ccffcf708094564e442ac6fde46f0ae9e40015cb69d995f4b39cc29a7643881"},
+    {file = "gevent-21.12.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:24d3550fbaeef5fddd794819c2853bca45a86c3d64a056a2c268d981518220d1"},
+    {file = "gevent-21.12.0-cp39-cp39-win32.whl", hash = "sha256:2bcec9f80196c751fdcf389ca9f7141e7b0db960d8465ed79be5e685bfcad682"},
+    {file = "gevent-21.12.0-cp39-cp39-win_amd64.whl", hash = "sha256:3dad62f55fad839d498c801e139481348991cee6e1c7706041b5fe096cb6a279"},
+    {file = "gevent-21.12.0-pp27-pypy_73-win_amd64.whl", hash = "sha256:9f9652d1e4062d4b5b5a0a49ff679fa890430b5f76969d35dccb2df114c55e0f"},
+    {file = "gevent-21.12.0.tar.gz", hash = "sha256:f48b64578c367b91fa793bf8eaaaf4995cb93c8bc45860e473bf868070ad094e"},
 ]
 ghp-import = [
     {file = "ghp-import-2.1.0.tar.gz", hash = "sha256:9c535c4c61193c2df8871222567d7fd7e5014d835f97dc7b7439069e2413d343"},
@@ -1601,8 +1616,8 @@ nodeenv = [
     {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
 ]
 nox = [
-    {file = "nox-2019.11.9-py2.py3-none-any.whl", hash = "sha256:0f4b489fdd0eb5665f8c5ee89e5aeb648beae6ccbb363b2492a6786f26e70d85"},
-    {file = "nox-2019.11.9.tar.gz", hash = "sha256:22d0f45ad2bd2d75fa4a243d8d8b84359dbf43134ec5cbff4de9f243b6d528b8"},
+    {file = "nox-2022.1.7-py3-none-any.whl", hash = "sha256:efee12f02d39405b16d68f60e7a06fe1fc450ae58669d6cdda8c7f48e3bae9e3"},
+    {file = "nox-2022.1.7.tar.gz", hash = "sha256:b375238cebb0b9df2fab74b8d0ce1a50cd80df60ca2e13f38f539454fcd97d7e"},
 ]
 outcome = [
     {file = "outcome-1.1.0-py2.py3-none-any.whl", hash = "sha256:c7dd9375cfd3c12db9801d080a3b63d4b0a261aa996c4c13152380587288d958"},
