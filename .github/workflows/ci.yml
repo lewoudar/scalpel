@@ -38,5 +38,8 @@ jobs:
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
       - name: Tests
         run: nox -s tests-${{ matrix.python }}
-        env:
-          CODECOV_TOKEN: ${{ secrets.codecov_token }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        if: matrix.python == '3.9'
+        with:
+          files: ./coverage-core.xml,./coverage-any_io.xml,./coverage-green.xml

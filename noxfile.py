@@ -40,8 +40,7 @@ def tests(session):
         if part == 'green':
             arguments.insert(3, '--concurrency=gevent')
         session.run(*arguments)
-        session.run('coverage', 'xml')
-        session.run('codecov')
+        session.run('coverage', 'xml', '-o', f'coverage-{part}.xml')
 
     if not CI_ENVIRONMENT:
         session.notify('clean-robots-cache')
