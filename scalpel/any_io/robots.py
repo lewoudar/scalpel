@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 from urllib.robotparser import RobotFileParser
 
 import anyio
@@ -53,14 +53,16 @@ class RobotsAnalyzer(RobotsMixin):
                 return False
             if response.status_code in (401, 403):
                 logger.info(
-                    'access to %s is %s, returning False', f'{robots_url}',
-                    httpx.codes.get_reason_phrase(response.status_code)
+                    'access to %s is %s, returning False',
+                    f'{robots_url}',
+                    httpx.codes.get_reason_phrase(response.status_code),
                 )
                 return False
             elif httpx.codes.is_error(response.status_code):
                 logger.info(
-                    'trying to access %s returns a %s error status code, returning True', f'{robots_url}',
-                    response.status_code
+                    'trying to access %s returns a %s error status code, returning True',
+                    f'{robots_url}',
+                    response.status_code,
                 )
                 return True
             else:

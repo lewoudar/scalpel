@@ -33,11 +33,7 @@ class TestRobotsAnalyzerInitialization:
 
     def test_should_correctly_instantiate_class_with_httpx_response_passed_as_argument(self, tmp_path):
         http_client = httpx.AsyncClient(headers={'User-Agent': 'python-httpx'})
-        analyzer = RobotsAnalyzer(
-            user_agent='Mozilla/5.0',
-            robots_cache=tmp_path,
-            http_client=http_client
-        )
+        analyzer = RobotsAnalyzer(user_agent='Mozilla/5.0', robots_cache=tmp_path, http_client=http_client)
 
         assert 'Mozilla/5.0' == analyzer._user_agent
         assert tmp_path == analyzer._robots_cache
@@ -78,7 +74,7 @@ class TestCanFetch:
 
     @pytest.mark.parametrize('status_code', [401, 403])
     async def test_should_return_false_when_robots_are_unauthorized_or_forbidden(
-            self, anyio_analyzer, httpx_mock, status_code
+        self, anyio_analyzer, httpx_mock, status_code
     ):
         httpx_mock.get('/robots.txt') % status_code
 
@@ -92,7 +88,7 @@ class TestCanFetch:
 
     @pytest.mark.parametrize('url_path', ['photos', 'videos'])
     async def test_should_return_false_when_requesting_forbidden_url(
-            self, httpx_mock, tmp_path, robots_content, url_path
+        self, httpx_mock, tmp_path, robots_content, url_path
     ):
         analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=tmp_path)
         httpx_mock.get('/robots.txt') % {'text': robots_content}
@@ -100,9 +96,7 @@ class TestCanFetch:
         assert await analyzer.can_fetch(f'http://example.com/{url_path}/1') is False
 
     @pytest.mark.parametrize('url_path', ['admin/', 'ajax/'])
-    async def test_should_return_true_when_requesting_allowed_url(
-            self, httpx_mock, tmp_path, robots_content, url_path
-    ):
+    async def test_should_return_true_when_requesting_allowed_url(self, httpx_mock, tmp_path, robots_content, url_path):
         analyzer = RobotsAnalyzer(user_agent='Googlebot', robots_cache=tmp_path)
         httpx_mock.get('/robots.txt') % {'text': robots_content}
 
@@ -110,7 +104,7 @@ class TestCanFetch:
 
     @respx.mock
     async def test_should_not_enter_if_block_if_robots_content_is_already_cached(
-            self, anyio_analyzer, tmp_path, robots_content
+        self, anyio_analyzer, tmp_path, robots_content
     ):
         request = respx.get('http://example.com/robots.txt')
         robots_path = tmp_path / 'example.com'
@@ -151,7 +145,7 @@ class TestGetRequestDelay:
         can_fetch_mock.assert_awaited_once_with(url)
 
     async def test_should_return_crawl_delay_value_if_robots_txt_specified_it(
-            self, httpx_mock, anyio_analyzer, robots_content
+        self, httpx_mock, anyio_analyzer, robots_content
     ):
         new_content = robots_content + '\nCrawl-delay: 2'
         httpx_mock.get('/robots.txt') % {'text': new_content}
@@ -159,7 +153,7 @@ class TestGetRequestDelay:
         assert await anyio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2
 
     async def test_should_call_crawl_delay_method_only_one_time(
-            self, mocker, anyio_analyzer, robots_content, httpx_mock
+        self, mocker, anyio_analyzer, robots_content, httpx_mock
     ):
         httpx_mock.get('/robots.txt') % {'text': robots_content}
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=2)
@@ -169,7 +163,7 @@ class TestGetRequestDelay:
         crawl_delay_mock.assert_called_once_with('*')
 
     async def test_should_return_request_rate_if_robots_txt_specified_it(
-            self, httpx_mock, anyio_analyzer, robots_content
+        self, httpx_mock, anyio_analyzer, robots_content
     ):
         new_content = robots_content + '\nRequest-rate: 2/5'
         httpx_mock.get('/robots.txt') % {'text': new_content}
@@ -177,7 +171,7 @@ class TestGetRequestDelay:
         assert await anyio_analyzer.get_request_delay('http://example.com/page/1', 0) == 2.5
 
     async def test_should_call_request_rate_method_only_one_time(
-            self, mocker, robots_content, anyio_analyzer, httpx_mock
+        self, mocker, robots_content, anyio_analyzer, httpx_mock
     ):
         httpx_mock.get('/robots.txt') % {'text': robots_content}
         RequestRate = collections.namedtuple('RequestRate', 'requests seconds')
@@ -189,14 +183,14 @@ class TestGetRequestDelay:
         request_rate_mock.assert_called_once_with('*')
 
     async def test_should_return_given_delay_if_no_crawl_delay_or_request_rate_are_given(
-            self, anyio_analyzer, httpx_mock, robots_content
+        self, anyio_analyzer, httpx_mock, robots_content
     ):
         httpx_mock.get('/robots.txt') % {'text': robots_content}
 
         assert await anyio_analyzer.get_request_delay('http://example.com/page/1', 3) == 3
 
     async def test_should_return_cache_given_delay_if_compatible_url_is_called_twice(
-            self, mocker, httpx_mock, robots_content, anyio_analyzer
+        self, mocker, httpx_mock, robots_content, anyio_analyzer
     ):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=None)
         httpx_mock.get('/robots.txt') % {'text': robots_content}

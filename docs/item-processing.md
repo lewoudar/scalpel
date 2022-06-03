@@ -23,13 +23,13 @@ config = Configuration(item_processors=[processor_1, processor_2])
 ```
 
 As you will have noticed in the example, item processors can be synchronous or asynchronous. Obviously the asynchronous
-version is only valid if you are dealing with an `asyncio` or `trio` spider. If you use an asynchronous function inside 
+version is only valid if you are dealing with an `asyncio` or `trio` spider. If you use an asynchronous function inside
 a green spider, you can be sure your application will crash.
 
 !!! note
     The processors are run in the order there are listed when instantiating configuration. So put the most important
     ones at the beginning.
-    
+
 ## Example
 
 If we come back to our quotes example in the [static spider](static-spider.md) we have done something like that in the

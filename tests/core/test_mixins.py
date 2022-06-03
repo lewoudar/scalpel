@@ -16,10 +16,7 @@ class TestSeleniumDriverMixin:
         def driver(self):
             return self._driver
 
-    @pytest.mark.parametrize(('browser', 'name'), [
-        (Browser.CHROME, 'chrome'),
-        (Browser.FIREFOX, 'firefox')
-    ])
+    @pytest.mark.parametrize(('browser', 'name'), [(Browser.CHROME, 'chrome'), (Browser.FIREFOX, 'firefox')])
     def test_should_instantiate_correctly_driver_attribute(self, browser, name):
         config = Configuration(selenium_browser=browser, selenium_driver_log_file=None)
         spider = self.CustomSpider(urls=['http://foo.com'], parse=lambda x, y: None, config=config)

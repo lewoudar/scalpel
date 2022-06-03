@@ -4,7 +4,7 @@
 htmlcov
 .nox
 .python-version
-coverage.xml
+coverage*.xml
 
 # byte-compiled / optimized
 __pycache__

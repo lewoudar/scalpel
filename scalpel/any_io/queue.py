@@ -1,10 +1,10 @@
 """Implementation of an anyio queue."""
 import logging
-from typing import Iterable, Any, Union
+from typing import Any, Iterable, Union
 
 import anyio
 import attr
-from anyio.streams.memory import MemoryObjectSendStream, MemoryObjectReceiveStream
+from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
 
 logger = logging.getLogger('scalpel')
 
@@ -69,6 +69,7 @@ class Queue:
     anyio.run(main)
     ```
     """
+
     _size: Union[int, float] = attr.ib(default=1, validator=attr.validators.instance_of((int, float)))
     _items: Iterable[Any] = attr.ib(factory=list, validator=attr.validators.instance_of((list, set, tuple)))
     _send_channel: MemoryObjectSendStream = attr.ib(init=False)

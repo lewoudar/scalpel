@@ -22,16 +22,18 @@ class SeleniumDriverMixin:
             options = FirefoxOptions()
             options.headless = True
             driver = webdriver.Firefox(
-                options=options, executable_path=self.config.selenium_driver_executable_path,
-                service_log_path=self.config.selenium_driver_log_file
+                options=options,
+                executable_path=self.config.selenium_driver_executable_path,
+                service_log_path=self.config.selenium_driver_log_file,
             )
         else:
             logger.debug('returning chrome driver')
             options = ChromeOptions()
             options.add_argument('--headless')
             driver = webdriver.Chrome(
-                options=options, executable_path=self.config.selenium_driver_executable_path,
-                service_log_path=self.config.selenium_driver_log_file
+                options=options,
+                executable_path=self.config.selenium_driver_executable_path,
+                service_log_path=self.config.selenium_driver_log_file,
             )
         driver.implicitly_wait(self.config.selenium_find_timeout)
         return driver

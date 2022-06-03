@@ -24,8 +24,9 @@ class TestReadMp:
         for file in [mp_file, f'{mp_file}']:
             assert [item for item in read_mp(file)] == given_data
 
-    def test_should_return_python_object_when_reading_file_with_custom_decoder(self, tmp_path, create_msgpack_file,
-                                                                               decode_datetime):
+    def test_should_return_python_object_when_reading_file_with_custom_decoder(
+        self, tmp_path, create_msgpack_file, decode_datetime
+    ):
         given_data = ['hello', datetime.now()]
         mp_file = tmp_path / 'data.mp'
         create_msgpack_file(mp_file, given_data)
@@ -59,8 +60,9 @@ class TestWriteMp:
         assert length > 0
         assert [content] == [item for item in read_mp(mp_file)]
 
-    def test_should_write_bytes_when_giving_content_in_write_mode_with_custom_encoder(self, tmp_path, encode_datetime,
-                                                                                      decode_datetime):
+    def test_should_write_bytes_when_giving_content_in_write_mode_with_custom_encoder(
+        self, tmp_path, encode_datetime, decode_datetime
+    ):
         content = {'name': 'Kevin', 'date': datetime.now()}
         mp_file = tmp_path / 'data.mp'
         length = write_mp(f'{mp_file}', content, mode='w', encoder=encode_datetime)
@@ -78,8 +80,9 @@ class TestWriteMp:
 
         assert content == [item for item in read_mp(mp_file)]
 
-    def test_should_write_bytes_when_giving_content_in_append_mode_with_custom_encoder(self, tmp_path, encode_datetime,
-                                                                                       decode_datetime):
+    def test_should_write_bytes_when_giving_content_in_append_mode_with_custom_encoder(
+        self, tmp_path, encode_datetime, decode_datetime
+    ):
         content = ['foo', datetime.now()]
         mp_file = tmp_path / 'data.mp'
 

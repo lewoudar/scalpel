@@ -74,12 +74,15 @@ class TestStaticSpider:
 
     # _get_static_response test
 
-    @pytest.mark.parametrize(('url', 'text', 'httpx_response'), [
-        ('file:///home/kevin/page.html', 'hello world', None),
-        ('', '', httpx.Response(200, request=httpx.Request('GET', 'http://foo.com')))
-    ])
+    @pytest.mark.parametrize(
+        ('url', 'text', 'httpx_response'),
+        [
+            ('file:///home/kevin/page.html', 'hello world', None),
+            ('', '', httpx.Response(200, request=httpx.Request('GET', 'http://foo.com'))),
+        ],
+    )
     async def test_should_return_static_response_when_giving_correct_input(
-            self, url, text, httpx_response, anyio_spider
+        self, url, text, httpx_response, anyio_spider
     ):
         static_response = anyio_spider._get_static_response(url, text, httpx_response)
 
@@ -93,13 +96,12 @@ class TestStaticSpider:
 
     # _handle_url tests
 
-    @pytest.mark.parametrize(('reachable_urls', 'unreachable_urls', 'robots_excluded_urls'), [
-        (set(), set(), {'http://foo.com'}),
-        (set(), {'http://foo.com'}, set()),
-        ({'http://foo.com'}, set(), set())
-    ])
+    @pytest.mark.parametrize(
+        ('reachable_urls', 'unreachable_urls', 'robots_excluded_urls'),
+        [(set(), set(), {'http://foo.com'}), (set(), {'http://foo.com'}, set()), ({'http://foo.com'}, set(), set())],
+    )
     async def test_should_do_nothing_if_url_is_already_present_in_one_url_set(
-            self, mocker, anyio_spider, reachable_urls, unreachable_urls, robots_excluded_urls
+        self, mocker, anyio_spider, reachable_urls, unreachable_urls, robots_excluded_urls
     ):
         url = 'http://foo.com'
         logger_mock = mocker.patch('logging.Logger.debug')
@@ -242,7 +244,6 @@ class TestStaticSpider:
         assert "I'm a processor" in out
 
     async def test_should_save_content_to_backup_file(self, tmp_path, capsys):
-
         def processor(item):
             print("I'm a processor")
             return item
@@ -262,10 +263,7 @@ class TestStaticSpider:
     # _get_request_delay tests
 
     @respx.mock
-    @pytest.mark.parametrize(('robots_content', 'value'), [
-        ('Disallow: /', -1),
-        ('Crawl-delay: 2', 2)
-    ])
+    @pytest.mark.parametrize(('robots_content', 'value'), [('Disallow: /', -1), ('Crawl-delay: 2', 2)])
     async def test_should_return_robots_txt_value_when_follow_robots_txt_is_true(self, robots_content, value):
         url = 'http://foo.com'
         respx.get(f'{url}/robots.txt') % {'text': f'User-agent:*\n{robots_content}'}
@@ -339,10 +337,7 @@ class TestIntegrationStaticSpider:
         quotes = [quote.strip() for quote in response.xpath('//blockquote/p/text()').getall()]
         authors = [author.strip() for author in response.css('blockquote footer::text').getall()]
         for quote, author in zip(quotes, authors):
-            await spider.save_item({
-                'quote': quote,
-                'author': author
-            })
+            await spider.save_item({'quote': quote, 'author': author})
 
         link = response.xpath('//a[2][contains(@href, "page")]/@href').get()
         if link is not None:
@@ -370,7 +365,7 @@ class TestIntegrationStaticSpider:
         stats = static_spider.statistics()
         followed_urls = {
             page_1_file_url.replace('1', '2').replace('///', '/'),
-            page_1_file_url.replace('1', '3').replace('///', '/')
+            page_1_file_url.replace('1', '3').replace('///', '/'),
         }
 
         assert stats.reachable_urls == {page_1_file_url} | followed_urls
@@ -392,9 +387,7 @@ class TestIntegrationStaticSpider:
 
         backup_path = tmp_path / 'backup.mp'
         config = Configuration(
-            item_processors=[self.processor],
-            backup_filename=f'{backup_path}',
-            follow_robots_txt=True
+            item_processors=[self.processor], backup_filename=f'{backup_path}', follow_robots_txt=True
         )
         static_spider = StaticSpider(urls=[url], parse=self.parse, config=config)
         await static_spider.run()

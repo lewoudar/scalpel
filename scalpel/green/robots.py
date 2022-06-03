@@ -7,6 +7,7 @@ import attr
 import httpx
 
 from scalpel.core.robots import RobotsMixin
+
 from .utils.io import open_file
 
 logger = logging.getLogger('scalpel')
@@ -55,14 +56,16 @@ class RobotsAnalyzer(RobotsMixin):
             # https://github.com/python/cpython/blob/master/Lib/urllib/robotparser.py
             if response.status_code in (401, 403):
                 logger.info(
-                    'access to %s is %s, returning False', f'{robots_url}',
-                    httpx.codes.get_reason_phrase(response.status_code)
+                    'access to %s is %s, returning False',
+                    f'{robots_url}',
+                    httpx.codes.get_reason_phrase(response.status_code),
                 )
                 return False
             elif httpx.codes.is_error(response.status_code):
                 logger.info(
-                    'trying to access %s returns a %s error status code, returning True', f'{robots_url}',
-                    response.status_code
+                    'trying to access %s returns a %s error status code, returning True',
+                    f'{robots_url}',
+                    response.status_code,
                 )
                 return True
             else:

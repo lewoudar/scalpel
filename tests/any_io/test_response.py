@@ -1,8 +1,8 @@
 import httpx
 import pytest
 
-from scalpel.any_io.response import StaticResponse, SeleniumResponse
 from scalpel.any_io.queue import Queue
+from scalpel.any_io.response import SeleniumResponse, StaticResponse
 
 pytestmark = pytest.mark.anyio
 
@@ -10,10 +10,9 @@ pytestmark = pytest.mark.anyio
 class TestStaticResponse:
     """Tests StaticResponse.follow method"""
 
-    @pytest.mark.parametrize(('reachable_urls', 'followed_urls'), [
-        ({'http://foo.com'}, set()),
-        (set(), {'http://foo.com'})
-    ])
+    @pytest.mark.parametrize(
+        ('reachable_urls', 'followed_urls'), [({'http://foo.com'}, set()), (set(), {'http://foo.com'})]
+    )
     async def test_should_not_follow_already_processed_url(self, mocker, reachable_urls, followed_urls):
         logger_mock = mocker.patch('logging.Logger.debug')
         url = 'http://foo.com'
@@ -21,10 +20,7 @@ class TestStaticResponse:
         httpx_response = httpx.Response(200, request=request)
         queue = Queue()
         response = StaticResponse(
-            reachable_urls=reachable_urls,
-            followed_urls=followed_urls,
-            queue=queue,
-            httpx_response=httpx_response
+            reachable_urls=reachable_urls, followed_urls=followed_urls, queue=queue, httpx_response=httpx_response
         )
 
         await response.follow(url)
@@ -38,10 +34,7 @@ class TestStaticResponse:
         httpx_response = httpx.Response(200, request=request)
         queue = Queue(2)
         response = StaticResponse(
-            reachable_urls={'http://bar.com'},
-            followed_urls=set(),
-            queue=queue,
-            httpx_response=httpx_response
+            reachable_urls={'http://bar.com'}, followed_urls=set(), queue=queue, httpx_response=httpx_response
         )
         await response.follow(url)
         queue_length = queue.length
@@ -55,10 +48,9 @@ class TestStaticResponse:
 class TestSeleniumResponse:
     """Tests SeleniumResponse.follow method"""
 
-    @pytest.mark.parametrize(('reachable_urls', 'followed_urls'), [
-        ({'http://foo.com'}, set()),
-        (set(), {'http://foo.com'})
-    ])
+    @pytest.mark.parametrize(
+        ('reachable_urls', 'followed_urls'), [({'http://foo.com'}, set()), (set(), {'http://foo.com'})]
+    )
     async def test_should_not_follow_already_processed_url(self, mocker, chrome_driver, reachable_urls, followed_urls):
         logger_mock = mocker.patch('logging.Logger.debug')
         url = 'http://foo.com'
@@ -79,7 +71,7 @@ class TestSeleniumResponse:
             handle='4',
             reachable_urls={'http://bar.com'},
             followed_urls=set(),
-            queue=Queue(size=1)
+            queue=Queue(size=1),
         )
         await response.follow(url)
 

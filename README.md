@@ -4,6 +4,7 @@
 ![](https://github.com/lewoudar/scalpel/workflows/CI/badge.svg)
 [![Coverage Status](https://codecov.io/gh/lewoudar/scalpel/branch/master/graphs/badge.svg?branch=master)](https://codecov.io/gh/lewoudar/scalpel)
 [![Documentation Status](https://readthedocs.org/projects/scalpel/badge/?version=latest)](https://scalpel.readthedocs.io/en/latest/?badge=latest)
+[![Code Style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/wntrblm/nox)
 [![License Apache 2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Your easy-to-use, fast and powerful web scraping library.
@@ -17,13 +18,13 @@ on its own.
 - Usage of [Twisted](https://twistedmatrix.com/trac/) who is a veteran in asynchronous programming, but I think
  that there are better asynchronous frameworks today. Note that this second point is not true anymore as I'm writing
  the document since scrapy adds support for [asyncio](https://docs.scrapy.org/en/latest/topics/asyncio.html)
- 
+
  After having made this observation I decided to create pyscalpel. And let's be honest, I also want to have my own web
  scraping library, and it is fun to write one ;)
- 
+
 
 ## Installation
- 
+
 ```bash
 pip install pyscalpel  # to only use the asyncio backend
 pip install pyscalpel[gevent] # to install the gevent backend
@@ -41,7 +42,7 @@ poetry add pyscalpel[full] # to install all the backends
 ```
 
 pyscalpel works starting from **python 3.7**, it relies on robust packages:
-- [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit. 
+- [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit.
 - [httpx](https://www.python-httpx.org/): A modern http client.
 - [selenium](https://pypi.org/project/selenium/): A library for controlling a browser.
 - [gevent](http://www.gevent.org/): An asynchronous framework using the synchronous way. (optional)
@@ -131,7 +132,7 @@ async def main():
         print(item)
 
 if __name__ == '__main__':
-    # by default, this will run the asyncio backend, if you want the trio backend, you must first install the trio 
+    # by default, this will run the asyncio backend, if you want the trio backend, you must first install the trio
     # package and replace the following line with: anyio.run(main, backend='trio').
     anyio.run(main)
 ```
@@ -144,5 +145,5 @@ slower than the *static spider*. For more information look at the documentation.
 
 ## Warning
 
-pyscalpel is a young project, so it is expected to have breaking changes in the api without respecting the 
+pyscalpel is a young project, so it is expected to have breaking changes in the api without respecting the
 [semver](https://semver.org/) principle. It is recommended to pin the version you are using for now.

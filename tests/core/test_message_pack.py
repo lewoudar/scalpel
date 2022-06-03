@@ -2,7 +2,7 @@ from datetime import datetime
 
 import msgpack
 
-from scalpel.core.message_pack import datetime_encoder, datetime_decoder
+from scalpel.core.message_pack import datetime_decoder, datetime_encoder
 
 
 def test_should_encode_and_decode_datetimes():

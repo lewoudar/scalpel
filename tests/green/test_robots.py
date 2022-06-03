@@ -30,11 +30,7 @@ class TestRobotsAnalyzerInstantiation:
 
     def test_should_correctly_instantiate_class_with_httpx_response_passed_as_argument(self, tmp_path):
         http_client = httpx.Client(headers={'User-Agent': 'python-httpx'})
-        analyzer = RobotsAnalyzer(
-            user_agent='Mozilla/5.0',
-            robots_cache=tmp_path,
-            http_client=http_client
-        )
+        analyzer = RobotsAnalyzer(user_agent='Mozilla/5.0', robots_cache=tmp_path, http_client=http_client)
 
         assert 'Mozilla/5.0' == analyzer._user_agent
         assert tmp_path == analyzer._robots_cache
@@ -76,7 +72,7 @@ class TestCanFetch:
 
     @pytest.mark.parametrize('status_code', [401, 403])
     def test_should_return_false_when_robots_are_unauthorized_or_forbidden(
-            self, green_analyzer, httpx_mock, status_code
+        self, green_analyzer, httpx_mock, status_code
     ):
         httpx_mock.get('/robots.txt') % status_code
 
@@ -104,7 +100,7 @@ class TestCanFetch:
 
     @respx.mock
     def test_should_not_enter_if_block_if_robots_content_is_already_cached(
-            self, green_analyzer, tmp_path, robots_content
+        self, green_analyzer, tmp_path, robots_content
     ):
         request = respx.get('http://example.com/robots.txt')
         robots_path = tmp_path / 'example.com'
@@ -144,7 +140,7 @@ class TestGetRequestDelay:
         can_fetch_mock.assert_called_once_with(url)
 
     def test_should_return_crawl_delay_value_if_robots_txt_specified_it(
-            self, green_analyzer, httpx_mock, robots_content
+        self, green_analyzer, httpx_mock, robots_content
     ):
         new_content = robots_content + '\nCrawl-delay: 2'
         httpx_mock.get('/robots.txt') % {'text': new_content}
@@ -176,14 +172,14 @@ class TestGetRequestDelay:
         request_rate_mock.assert_called_once_with('*')
 
     def test_should_return_given_delay_if_no_crawl_delay_or_request_rate_are_given(
-            self, green_analyzer, httpx_mock, robots_content
+        self, green_analyzer, httpx_mock, robots_content
     ):
         httpx_mock.get('/robots.txt') % {'text': robots_content}
 
         assert 3 == green_analyzer.get_request_delay('http://example.com/page/1', 3)
 
     def test_should_return_cache_given_delay_if_compatible_url_is_called_twice(
-            self, mocker, green_analyzer, httpx_mock, robots_content
+        self, mocker, green_analyzer, httpx_mock, robots_content
     ):
         crawl_delay_mock = mocker.patch('urllib.robotparser.RobotFileParser.crawl_delay', return_value=None)
         httpx_mock.get('/robots.txt') % {'text': robots_content}

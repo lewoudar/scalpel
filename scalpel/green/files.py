@@ -1,7 +1,7 @@
 """Utility functions to read and write mp files."""
 import logging
 from pathlib import Path
-from typing import Union, Iterator, Any, Callable
+from typing import Any, Callable, Iterator, Union
 
 import msgpack
 

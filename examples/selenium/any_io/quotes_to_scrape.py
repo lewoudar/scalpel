@@ -6,16 +6,18 @@ import anyio
 from selenium.common.exceptions import NoSuchElementException
 
 from scalpel import Configuration, datetime_decoder
-from scalpel.any_io import SeleniumSpider, SeleniumResponse, read_mp
+from scalpel.any_io import SeleniumResponse, SeleniumSpider, read_mp
 
 
 async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
     for quote_tag in response.driver.find_elements_by_xpath('//div[@class="quote"]'):
-        await spider.save_item({
-            'quote': quote_tag.find_element_by_xpath('./span[@class="text"]').text,
-            'author': quote_tag.find_element_by_xpath('./span/small').text,
-            'tags': [item.text for item in quote_tag.find_elements_by_xpath('./div/a')]
-        })
+        await spider.save_item(
+            {
+                'quote': quote_tag.find_element_by_xpath('./span[@class="text"]').text,
+                'author': quote_tag.find_element_by_xpath('./span/small').text,
+                'tags': [item.text for item in quote_tag.find_elements_by_xpath('./div/a')],
+            }
+        )
 
     next_link = None
     try:

@@ -10,11 +10,11 @@ class RobotsMixin:
     # noinspection PyTypeChecker
     @staticmethod
     def _get_request_delay(
-            host: str,
-            url: str,
-            robots_parser: RobotFileParser,
-            delay_mapping: Dict[str, Union[int, float]],
-            default_delay: Union[int, float]
+        host: str,
+        url: str,
+        robots_parser: RobotFileParser,
+        delay_mapping: Dict[str, Union[int, float]],
+        default_delay: Union[int, float],
     ) -> Union[int, float]:
         pass
 
@@ -30,7 +30,10 @@ class RobotsMixin:
             delay_mapping[host] = request_delay
             logger.debug(
                 'computing value "%s" from request delay info (%s/%s) from robots.txt for url %s',
-                request_delay, request_rate.requests, request_rate.seconds, url
+                request_delay,
+                request_rate.requests,
+                request_rate.seconds,
+                url,
             )
             return request_delay
 

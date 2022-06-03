@@ -1,7 +1,7 @@
 import logging
 import platform
 from time import time
-from typing import Callable, Optional, Any
+from typing import Any, Callable, Optional
 
 import attr
 import gevent
@@ -12,6 +12,7 @@ from gevent.queue import JoinableQueue
 from rfc3986 import uri_reference
 
 from scalpel.core.spider import Spider
+
 from .files import write_mp
 from .response import StaticResponse
 from .robots import RobotsAnalyzer
@@ -49,6 +50,7 @@ class StaticSpider(Spider):
     spider.run()
     ```
     """
+
     # order is important here, http_client must come before robots_analyzer since the latter used the former
     _start_time: float = attr.ib(init=False, factory=time, repr=False)
     _http_client: httpx.Client = attr.ib(init=False, repr=False)
@@ -78,7 +80,7 @@ class StaticSpider(Spider):
         return RobotsAnalyzer(
             http_client=self._http_client,
             robots_cache=self.config.robots_cache_folder,
-            user_agent=self.config.user_agent
+            user_agent=self.config.user_agent,
         )
 
     @_queue.default
@@ -87,7 +89,7 @@ class StaticSpider(Spider):
         return JoinableQueue(items=self.urls)
 
     def _get_static_response(
-            self, url: str = '', text: str = '', httpx_response: httpx.Response = None
+        self, url: str = '', text: str = '', httpx_response: httpx.Response = None
     ) -> StaticResponse:
         logger.debug(
             'returning StaticResponse object with url: %s, text: %s and httpx_response: %s', url, text, httpx_response

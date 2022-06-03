@@ -8,7 +8,6 @@ logger = logging.getLogger('scalpel')
 
 
 class SeleniumGetMixin:
-
     def _get_resource(self, url: str, error_message: str = '') -> Tuple[bool, float]:
         fetch_time = 0
         unreachable = False

@@ -1,6 +1,6 @@
 import datetime
 from pathlib import Path
-from typing import List, Any
+from typing import Any, List
 
 import msgpack
 import pytest

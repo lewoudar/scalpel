@@ -6,14 +6,14 @@ import respx
 from gevent.lock import RLock
 from gevent.pool import Pool
 from gevent.queue import JoinableQueue
-from selenium.common.exceptions import WebDriverException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from scalpel.core.config import Configuration, Browser
+from scalpel.core.config import Browser, Configuration
 from scalpel.core.message_pack import datetime_decoder
 from scalpel.green import read_mp
 from scalpel.green.robots import RobotsAnalyzer
-from scalpel.green.selenium_spider import SeleniumSpider, StaticSpider, SeleniumResponse
+from scalpel.green.selenium_spider import SeleniumResponse, SeleniumSpider, StaticSpider
 
 
 class TestSeleniumSpider:
@@ -40,10 +40,7 @@ class TestSeleniumSpider:
 
     # _get_selenium_response test
 
-    @pytest.mark.parametrize(('browser', 'handle'), [
-        (Browser.FIREFOX, '4'),
-        (Browser.CHROME, '4')
-    ])
+    @pytest.mark.parametrize(('browser', 'handle'), [(Browser.FIREFOX, '4'), (Browser.CHROME, '4')])
     def test_should_return_selenium_response_when_giving_correct_input(self, browser, handle):
         config = Configuration(selenium_driver_log_file=None, selenium_browser=browser)
         spider = SeleniumSpider(urls=['http://foo.com'], parse=lambda x, y: None, config=config)
@@ -61,13 +58,12 @@ class TestSeleniumSpider:
 
     # _handle_url test
 
-    @pytest.mark.parametrize(('reachable_urls', 'unreachable_urls', 'robots_excluded_urls'), [
-        (set(), set(), {'http://foo.com'}),
-        (set(), {'http://foo.com'}, set()),
-        ({'http://foo.com'}, set(), set())
-    ])
+    @pytest.mark.parametrize(
+        ('reachable_urls', 'unreachable_urls', 'robots_excluded_urls'),
+        [(set(), set(), {'http://foo.com'}), (set(), {'http://foo.com'}, set()), ({'http://foo.com'}, set(), set())],
+    )
     def test_should_do_nothing_if_url_is_already_present_in_one_url_set(
-            self, mocker, reachable_urls, unreachable_urls, robots_excluded_urls
+        self, mocker, reachable_urls, unreachable_urls, robots_excluded_urls
     ):
         url = 'http://foo.com'
         logger_mock = mocker.patch('logging.Logger.debug')
@@ -237,7 +233,6 @@ class TestSeleniumSpider:
 
 
 class TestIntegrationSeleniumSpider:
-
     @staticmethod
     def processor(item: dict) -> dict:
         item['date'] = datetime.now()
@@ -248,10 +243,7 @@ class TestIntegrationSeleniumSpider:
         quotes = [element.text for element in response.driver.find_elements_by_xpath('//blockquote/p')]
         authors = [element.text for element in response.driver.find_elements_by_xpath('//blockquote/footer')]
         for quote, author in zip(quotes, authors):
-            spider.save_item({
-                'quote': quote,
-                'author': author
-            })
+            spider.save_item({'quote': quote, 'author': author})
 
         link = None
         try:
@@ -270,15 +262,12 @@ class TestIntegrationSeleniumSpider:
             item_processors=[self.processor],
             backup_filename=f'{backup_path}',
             selenium_driver_log_file=None,
-            selenium_browser=browser
+            selenium_browser=browser,
         )
         spider = SeleniumSpider(urls=[page_1_file_url], parse=self.parse, config=config)
         spider.run()
         stats = spider.statistics()
-        followed_urls = {
-            page_1_file_url.replace('1', '2'),
-            page_1_file_url.replace('1', '3')
-        }
+        followed_urls = {page_1_file_url.replace('1', '2'), page_1_file_url.replace('1', '3')}
 
         assert followed_urls == stats.followed_urls
         assert {page_1_file_url} | followed_urls == stats.reachable_urls

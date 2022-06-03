@@ -1,6 +1,6 @@
 """Utilities to read / write files and manage different IO buffers"""
 from io import BufferedReader, open
-from typing import IO, AnyStr, Union, List, Optional, Iterator, Any, TypeVar, Callable
+from typing import IO, Any, AnyStr, Callable, Iterator, List, Optional, TypeVar, Union
 
 import attr
 from gevent import get_hub
@@ -15,6 +15,7 @@ class AsyncFile:
     A wrapper around builtins io objects like `io.StringIO` or `io.BufferedReader` running blocking operations like
     `read` or `write` in a threadpool to make it gevent cooperative.
     """
+
     _wrapper: Union[IO, BufferedReader] = attr.ib()
     _pool: ThreadPool = attr.ib(init=False)
 
@@ -118,14 +119,14 @@ def wrap_file(file: Union[IO, BufferedReader]) -> AsyncFile:
 
 
 def open_file(
-        file: File,
-        mode: str = 'r',
-        buffering: int = -1,
-        encoding: Optional[str] = None,
-        errors: Optional[str] = None,
-        newline: Optional[str] = None,
-        closefd: bool = True,
-        opener: Callable = None
+    file: File,
+    mode: str = 'r',
+    buffering: int = -1,
+    encoding: Optional[str] = None,
+    errors: Optional[str] = None,
+    newline: Optional[str] = None,
+    closefd: bool = True,
+    opener: Callable = None,
 ) -> AsyncFile:
     """
     An asynchronous version of the builtin `open` function running blocking operation in a threadpool.

@@ -13,7 +13,7 @@ async def parse(spider: StaticSpider, response: StaticResponse) -> None:
         data = {
             'message': quote.xpath('./span[@class="text"]/text()').get(),
             'author': quote.xpath('./span/small/text()').get(),
-            'tags': quote.xpath('./div/a/text()').getall()
+            'tags': quote.xpath('./div/a/text()').getall(),
         }
         await spider.save_item(data)
 
