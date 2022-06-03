@@ -3,7 +3,7 @@ import math
 import platform
 from asyncio import iscoroutinefunction
 from pathlib import Path
-from typing import Callable, Optional, Any, Union
+from typing import Any, Callable, Optional, Union
 
 import anyio
 import attr
@@ -12,10 +12,11 @@ from anyio.abc import TaskGroup
 from rfc3986 import uri_reference
 
 from scalpel.core.spider import Spider
+
 from .files import write_mp
+from .queue import Queue
 from .response import StaticResponse
 from .robots import RobotsAnalyzer
-from .queue import Queue
 
 logger = logging.getLogger('scalpel')
 
@@ -49,6 +50,7 @@ class StaticSpider(Spider):
     await spider.run()
     ```
     """
+
     # order is important here, http_client must come before robots_analyzer since the latter used the former
     _start_time: float = attr.ib(init=False, repr=False, factory=anyio.current_time)
     _http_client: httpx.AsyncClient = attr.ib(init=False, repr=False)
@@ -58,7 +60,6 @@ class StaticSpider(Spider):
     _queue: Queue = attr.ib(init=False, repr=False)
 
     def __attrs_post_init__(self):
-
         async def _get_fetch(url: str) -> httpx.Response:
             return await self._http_client.get(url)
 
@@ -78,7 +79,7 @@ class StaticSpider(Spider):
         return RobotsAnalyzer(
             http_client=self._http_client,
             robots_cache=Path(self.config.robots_cache_folder),
-            user_agent=self.config.user_agent
+            user_agent=self.config.user_agent,
         )
 
     @_queue.default
@@ -87,14 +88,13 @@ class StaticSpider(Spider):
         return Queue(size=math.inf, items=self.urls)
 
     def _get_static_response(
-            self, url: str = '', text: str = '', httpx_response: httpx.Response = None
+        self, url: str = '', text: str = '', httpx_response: httpx.Response = None
     ) -> StaticResponse:
         logger.debug(
             'returning StaticResponse object with url: %s, text: %s and httpx_response: %s', url, text, httpx_response
         )
         return StaticResponse(
-            self.reachable_urls, self.followed_urls, self._queue, url=url, text=text,
-            httpx_response=httpx_response
+            self.reachable_urls, self.followed_urls, self._queue, url=url, text=text, httpx_response=httpx_response
         )
 
     def _is_url_already_processed(self, url: str) -> False:

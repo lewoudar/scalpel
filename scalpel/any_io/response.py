@@ -3,14 +3,14 @@ from typing import Set
 
 import attr
 
-from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
+from scalpel.core.response import BaseSeleniumResponse, BaseStaticResponse
+
 from .queue import Queue
 
 logger = logging.getLogger('scalpel')
 
 
 class FollowMixin:
-
     async def follow(self, url: str) -> None:
         """
         Follows given url if it hasn't be fetched yet.
@@ -65,6 +65,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
     print(response.xpath('//p/text()').get())  # 'Hello world!'
     ```
     """
+
     pass
 
 
@@ -94,4 +95,5 @@ class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
     print(response.driver.find_element_by_xpath('//p').text)  # Hello world!
     ```
     """
+
     pass

@@ -21,7 +21,7 @@ poetry add pyscalpel[full] # to install all the backends
 
 This project relies on robust packages:
 
-- [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit. 
+- [configuror](https://configuror.readthedocs.io/en/latest/): A configuration toolkit.
 - [httpx](https://www.python-httpx.org/): A modern http client.
 - [selenium](https://pypi.org/project/selenium/): A library for controlling a browser.
 - [gevent](http://www.gevent.org/): An asynchronous framework using the synchronous way. (optional)

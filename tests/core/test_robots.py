@@ -18,6 +18,7 @@ def get_robots_parser(robots_content):
 
 class TestGetRequestDelay:
     """Tests method get_request_delay"""
+
     url = 'example.com/foo'
     host = 'example.com'
 

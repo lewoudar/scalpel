@@ -5,12 +5,13 @@ from unittest.mock import call
 import pytest
 
 # noinspection PyProtectedMember
-from scalpel.green.utils.io import AsyncFile, _has, wrap_file, open_file
+from scalpel.green.utils.io import AsyncFile, _has, open_file, wrap_file
 
 
 # noinspection PyMethodMayBeStatic
 class DummyIO:
     """A file-like class to help in tests"""
+
     writelines_called = False
     flush_called = False
     close_called = False
@@ -65,24 +66,28 @@ class DummyIO:
 # noinspection PyTypeChecker
 class TestAsyncFile:
     """Tests class AsyncFile"""
+
     _io = DummyIO()
 
-    @pytest.mark.parametrize(('method', 'args'), [
-        ('read', (2,)),
-        ('read1', (2,)),
-        ('readline', (2,)),
-        ('readlines', (2,)),
-        ('readinto', (bytearray(10),)),
-        ('readinto1', (bytearray(10),)),
-        ('seek', (0, 0)),
-        ('tell', ()),
-        ('write', ('hello',)),
-        ('writelines', ([],)),
-        ('truncate', (None,)),
-        ('peek', (None,)),
-        ('flush', ()),
-        ('close', ())
-    ])
+    @pytest.mark.parametrize(
+        ('method', 'args'),
+        [
+            ('read', (2,)),
+            ('read1', (2,)),
+            ('readline', (2,)),
+            ('readlines', (2,)),
+            ('readinto', (bytearray(10),)),
+            ('readinto1', (bytearray(10),)),
+            ('seek', (0, 0)),
+            ('tell', ()),
+            ('write', ('hello',)),
+            ('writelines', ([],)),
+            ('truncate', (None,)),
+            ('peek', (None,)),
+            ('flush', ()),
+            ('close', ()),
+        ],
+    )
     def test_should_call_underlying_io_methods_wrapped_in_threadpool(self, mocker, method, args):
         mocker.patch('scalpel.green.utils.io.get_hub')
         async_file = AsyncFile(self._io)
@@ -90,27 +95,33 @@ class TestAsyncFile:
 
         async_file._pool.spawn.assert_called_once_with(getattr(self._io, method), *args)
 
-    @pytest.mark.parametrize(('method', 'args', 'result'), [
-        ('read', (), 'hello'),
-        ('read1', (), 'hello'),
-        ('readline', (), 'hello\n'),
-        ('readinto', (bytearray(10),), 10),
-        ('readinto1', (bytearray(10),), 10),
-        ('seek', (6, 0), 6),
-        ('tell', (), 2),
-        ('write', ('hello',), 5),
-        ('truncate', (10,), 10),
-        ('peek', (5,), b'hello')
-    ])
+    @pytest.mark.parametrize(
+        ('method', 'args', 'result'),
+        [
+            ('read', (), 'hello'),
+            ('read1', (), 'hello'),
+            ('readline', (), 'hello\n'),
+            ('readinto', (bytearray(10),), 10),
+            ('readinto1', (bytearray(10),), 10),
+            ('seek', (6, 0), 6),
+            ('tell', (), 2),
+            ('write', ('hello',), 5),
+            ('truncate', (10,), 10),
+            ('peek', (5,), b'hello'),
+        ],
+    )
     def test_should_return_io_method_value_when_appropriate(self, method, args, result):
         async_file = AsyncFile(self._io)
         assert result == getattr(async_file, method)(*args)
 
-    @pytest.mark.parametrize(('method', 'args', 'flag'), [
-        ('writelines', ['hello\n'], 'writelines_called'),
-        ('flush', (), 'flush_called'),
-        ('close', (), 'close_called')
-    ])
+    @pytest.mark.parametrize(
+        ('method', 'args', 'flag'),
+        [
+            ('writelines', ['hello\n'], 'writelines_called'),
+            ('flush', (), 'flush_called'),
+            ('close', (), 'close_called'),
+        ],
+    )
     def test_should_call_correctly_io_methods(self, method, args, flag):
         async_file = AsyncFile(self._io)
         getattr(async_file, method)(*args)
@@ -178,8 +189,9 @@ class TestWrapFile:
         with pytest.raises(TypeError) as exc_info:
             wrap_file(f)
 
-        assert f'{f} does not implement close method which is' \
-               f' mandatory for a file-like object' == str(exc_info.value)
+        assert f'{f} does not implement close method which is' f' mandatory for a file-like object' == str(
+            exc_info.value
+        )
 
     def test_should_raise_error_if_read_or_write_is_not_implemented(self):
         class Foo:
@@ -190,8 +202,9 @@ class TestWrapFile:
         with pytest.raises(TypeError) as exc_info:
             wrap_file(f)
 
-        assert f'{f} does not implement read or write method' \
-               f' which is mandatory for a file-like object' == str(exc_info.value)
+        assert f'{f} does not implement read or write method' f' which is mandatory for a file-like object' == str(
+            exc_info.value
+        )
 
     def test_should_return_async_file_when_giving_object_with_correct_interface(self):
         async_file = wrap_file(DummyIO())

@@ -4,7 +4,7 @@ from typing import Set
 import attr
 from gevent.queue import JoinableQueue
 
-from scalpel.core.response import BaseStaticResponse, BaseSeleniumResponse
+from scalpel.core.response import BaseSeleniumResponse, BaseStaticResponse
 
 logger = logging.getLogger('scalpel')
 
@@ -64,6 +64,7 @@ class StaticResponse(CommonAttributes, FollowMixin, BaseStaticResponse):
     print(response.xpath('//p/text()').get())  # 'Hello world!'
     ```
     """
+
     pass
 
 
@@ -93,4 +94,5 @@ class SeleniumResponse(CommonAttributes, FollowMixin, BaseSeleniumResponse):
     print(response.driver.find_element_by_xpath('//p').text)  # Hello world!
     ```
     """
+
     pass

@@ -105,14 +105,14 @@ async def main() -> None:
 anyio.run(main)
 ```
 
-If you run the program, the content `<title>Quotes to Scrape</title>` will be printed twice. I deliberately wrote the 
+If you run the program, the content `<title>Quotes to Scrape</title>` will be printed twice. I deliberately wrote the
 instruction to select the title twice to demonstrate how to use css and xpath selectors on the `StaticResponse` object.
 
 !!! note
-    The css and xpath methods are shortcuts to the parsel 
+    The css and xpath methods are shortcuts to the parsel
     [Selector](https://parsel.readthedocs.io/en/latest/parsel.html#module-parsel.selector) methods. Moreover these methods
     return a [SelectorList](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) where you
-    can apply further filters. To know more about parsel, you can read the 
+    can apply further filters. To know more about parsel, you can read the
     [documentation](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) but we will cover
     some features in this guide.
 
@@ -164,7 +164,7 @@ Now if we look carefully at the html source of the website, we notice that all q
     </span>
     <div class="tags">
         Tags:
-        <meta class="keywords" itemprop="keywords" content="change,deep-thoughts,thinking,world" /    > 
+        <meta class="keywords" itemprop="keywords" content="change,deep-thoughts,thinking,world" /    >
         <a class="tag" href="/tag/change/page/1/">change</a>
         <a class="tag" href="/tag/deep-thoughts/page/1/">deep-thoughts</a>
         <a class="tag" href="/tag/thinking/page/1/">thinking</a>
@@ -216,19 +216,19 @@ We will see an output like the following (I truncated it here):
 
 Victory! We have all the quotes printed!
 
-If you are wondering *why the for loop?*, remember that `xpath` and `css` response methods return 
+If you are wondering *why the for loop?*, remember that `xpath` and `css` response methods return
 [SelectorList](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList) objects so we can
 iterate on it. Also if you look the second selector `./span[@class="text"]/text()`, you noticed that it starts with `./`
 it is because the new search is relative the first one, we search inside the ``<div class="quote"..>`` quote elements.
 If this seems unclear for you, don't hesitate to look at the
  [parsel tutorial](https://parsel.readthedocs.io/en/latest/usage.html) before continuing this guide.
- 
+
 Ok now let's scrape the author of the quote and the related tags. The author is inside a `<small class="author"..>`
 and tags are inside `<a>` tags which are also inside a `<div class='tags'..>`. So with this knowledge, we can write the
 following code.
- 
+
 With gevent:
- 
+
 ```python
 from scalpel.green import StaticResponse, StaticSpider
 
@@ -276,7 +276,7 @@ tags ['abilities', 'choices']
 ...
 ```
 
-There we goooo! May be you noticed usage of 
+There we goooo! May be you noticed usage of
 [Selector.getall](https://parsel.readthedocs.io/en/latest/parsel.html#parsel.selector.SelectorList.getall) for the tags.
 This is because we have many elements matching the selector and we want all the values. This is different from the `get`
 method which returns only the first element of the list.
@@ -340,7 +340,7 @@ anyio.run(main)
 
 !!! note
     You don't necessarily have to specify a backup file. A default one is created for you in the form `backup-<uuid>.mp`
-    where `<uuid>` represents a random [UUID](https://tools.ietf.org/html/rfc4122.html) value. 
+    where `<uuid>` represents a random [UUID](https://tools.ietf.org/html/rfc4122.html) value.
 
 Now we are done, but.. wait a minute! How will we read the file we just created? Since we use `msgpack` to serialize
 objects the builtin `open` function will be useless. This is where pyscalpel [msgpack utilities](api.md#msgpack) come in
@@ -372,10 +372,10 @@ Yeah! Now we have useful data that we can exploit.
 
 ## Going further
 
-In the previous part we wrote a spider to scrape all quotes on the first page of 
-[quotes.toscrape](https://quotes.toscrape.com). This is already a good step but we might want to go further and 
+In the previous part we wrote a spider to scrape all quotes on the first page of
+[quotes.toscrape](https://quotes.toscrape.com). This is already a good step but we might want to go further and
 retrieved all quote information on the website. We need a way to *follow* the link on the next page and process it.
-For that the `StaticSpider.follow` method helps us. 
+For that the `StaticSpider.follow` method helps us.
 
 So if we look closely at the HTML structure of the website, we notice that the link to the next page is referenced like
 this:
@@ -433,7 +433,7 @@ async def parse(spider: StaticSpider, response: StaticResponse) -> None:
             'tags': quote.xpath('./div/a/text()').getall()
         }
         await spider.save_item(data)
-    
+
     next_link = response.xpath('//nav/ul/li[@class="next"]/a').xpath('@href').get()
     if next_link is not None:
         await response.follow(next_link)
@@ -450,7 +450,7 @@ anyio.run(main)
 ```
 
 There we go! So now, if you read the file created, *data.mp* in the example case, you will get all quote information from
-the first page to the last page. Don't hesitate to look at the 
+the first page to the last page. Don't hesitate to look at the
 [examples](https://github.com/lewoudar/scalpel/tree/master/examples) folder for more code snippets to view.
 
 Some important notes:
@@ -458,7 +458,7 @@ Some important notes:
 * In the previous code, we check if the link we want to follow exists, `if next_link is not None`, it is important because
 on the [last](https://quotes.toscrape.com/page/10/) page there is no next link 😛
 * On the last line I printed spider [statistics](api.md#spiderstatistics) which contains many information like the total
-time taken by the spider, urls scrapped, followed or rejected due to robots.txt rules. You will probably need these 
+time taken by the spider, urls scrapped, followed or rejected due to robots.txt rules. You will probably need these
 information at some point in time.
 
 ## Good to know
@@ -511,7 +511,7 @@ from scalpel.any_io import StaticResponse, StaticSpider
 
 
 class Parser:
-    
+
     async def __call__(self, spider: StaticSpider, response: StaticResponse) -> None:
         print(response.text)
 

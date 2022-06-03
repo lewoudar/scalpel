@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
-from typing import Union, Set, List, Tuple, Callable
+from typing import Callable, List, Set, Tuple, Union
 
 import attr
-from rfc3986 import iri_reference, validators, exceptions
+from rfc3986 import exceptions, iri_reference, validators
 
 from .config import Configuration
 
@@ -56,6 +56,7 @@ def url_validator(_, attribute: attr.Attribute, urls: URLS):
 @attr.s
 class State:
     """An empty class used to store arbitrary data."""
+
     pass
 
 
@@ -75,6 +76,7 @@ class SpiderStatistics:
     * **average_fetch_time:** The average time to fetch an url (or read a file in case of file urls).
     * **total_time:** The total execution time of the spider.
     """
+
     reachable_urls: Set[str] = attr.ib()
     unreachable_urls: Set[str] = attr.ib()
     robot_excluded_urls: Set[str] = attr.ib()
@@ -140,5 +142,5 @@ class Spider:
             followed_urls=self.followed_urls,
             request_counter=self.request_counter,
             average_fetch_time=self._total_fetch_time / self.request_counter if self.request_counter else 0.0,
-            total_time=self._duration
+            total_time=self._duration,
         )

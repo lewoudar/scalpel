@@ -1,14 +1,18 @@
 from .__version__ import __version__, version_info
-from .core.config import Configuration, Browser
-from .core.spider import State, SpiderStatistics
-from .core.message_pack import datetime_encoder, datetime_decoder
+from .core.config import Browser, Configuration
+from .core.message_pack import datetime_decoder, datetime_encoder
+from .core.spider import SpiderStatistics, State
 
 __all__ = [
-    '__version__', 'version_info',
+    '__version__',
+    'version_info',
     # config
-    'Configuration', 'Browser',
+    'Configuration',
+    'Browser',
     # message pack
-    'datetime_encoder', 'datetime_decoder',
+    'datetime_encoder',
+    'datetime_decoder',
     # spider
-    'State', 'SpiderStatistics'
+    'State',
+    'SpiderStatistics',
 ]

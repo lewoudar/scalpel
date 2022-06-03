@@ -5,16 +5,18 @@ from pathlib import Path
 from selenium.common.exceptions import NoSuchElementException
 
 from scalpel import Configuration, datetime_decoder
-from scalpel.green import SeleniumSpider, SeleniumResponse, read_mp
+from scalpel.green import SeleniumResponse, SeleniumSpider, read_mp
 
 
 def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
     for quote_tag in response.driver.find_elements_by_xpath('//div[@class="quote"]'):
-        spider.save_item({
-            'quote': quote_tag.find_element_by_xpath('./span[@class="text"]').text,
-            'author': quote_tag.find_element_by_xpath('./span/small').text,
-            'tags': [item.text for item in quote_tag.find_elements_by_xpath('./div/a')]
-        })
+        spider.save_item(
+            {
+                'quote': quote_tag.find_element_by_xpath('./span[@class="text"]').text,
+                'author': quote_tag.find_element_by_xpath('./span/small').text,
+                'tags': [item.text for item in quote_tag.find_elements_by_xpath('./div/a')],
+            }
+        )
 
     next_link = None
     try:

@@ -16,7 +16,7 @@
 ::: scalpel.Browser
     :docstring:
     :members:
- 
+
 ## `msgpack`
 
 ::: scalpel.datetime_encoder
@@ -55,12 +55,12 @@
 ::: scalpel.green.SeleniumSpider
     :docstring:
     :members:
- 
+
 ## `green.io`
- 
+
 ::: scalpel.green.AsyncFile
     :docstring:
- 
+
 ::: scalpel.green.wrap_file
     :docstring:
 
@@ -68,7 +68,7 @@
     :docstring:
 
 ## `green.StaticResponse`
- 
+
 ::: scalpel.green.StaticResponse
     :docstring:
     :members:
@@ -93,7 +93,7 @@
     :members:
 
 ## `trionic.StaticResponse`
- 
+
 ::: scalpel.trionic.StaticResponse
     :docstring:
     :members:

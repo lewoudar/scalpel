@@ -4,7 +4,7 @@ from pathlib import Path
 import anyio
 
 from scalpel import Configuration, datetime_decoder
-from scalpel.any_io import SeleniumSpider, SeleniumResponse, read_mp
+from scalpel.any_io import SeleniumResponse, SeleniumSpider, read_mp
 
 
 async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
@@ -12,22 +12,16 @@ async def parse(spider: SeleniumSpider, response: SeleniumResponse) -> None:
         block.click()
         h4_text = block.find_element_by_xpath('./h4').text
         title, description = h4_text.split('\n')
-        result = {
-            'title': title,
-            'description': description,
-            'operations': []
-        }
+        result = {'title': title, 'description': description, 'operations': []}
 
         methods = (method.text for method in block.find_elements_by_xpath('.//span[@class="opblock-summary-method"]'))
         paths = (path.text for path in block.find_elements_by_xpath('.//span[@class="opblock-summary-path"]/a/span'))
-        descriptions = (description.text for description in
-                        block.find_elements_by_xpath('.//div[@class="opblock-summary-description"]'))
+        descriptions = (
+            description.text
+            for description in block.find_elements_by_xpath('.//div[@class="opblock-summary-description"]')
+        )
         for method, path, description in zip(methods, paths, descriptions):
-            result['operations'].append({
-                'method': method,
-                'path': path,
-                'description': description
-            })
+            result['operations'].append({'method': method, 'path': path, 'description': description})
         await spider.save_item(result)
 
 

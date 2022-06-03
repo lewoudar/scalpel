@@ -12,15 +12,15 @@ useless.
 Let's see an example with [httpbin](http://httpbin.org/) to understand what the implications are. This website is a SPA
 created with [react](https://reactjs.org/). For information, this website provides a simple interface to play with
 HTTP requests (testing your http client). If you click on the *HTTP methods* menu, you will see five requests you can
-make. Ok now look at the HTML source with `ctrl + u` and you will see... almost nothing if not weird information. 
+make. Ok now look at the HTML source with `ctrl + u` and you will see... almost nothing if not weird information.
 The reason is simple, the page is loaded via [javascript](https://en.wikipedia.org/wiki/JavaScript), in other words
 almost all content is loaded dynamically after the page is fetched. Now right click on the menu *HTTP methods* and click
 *Inspect Element* (or *Inspect* depending on your browser), you will see the HTML related to this menu :)
 
-I will not do a course on browser dev tools, there are many resources on the web but this is basically how you can 
+I will not do a course on browser dev tools, there are many resources on the web but this is basically how you can
 inspect the HTML source of SPA applications.
 
-Like I said early static spiders are useless in the case of SPA applications because the inner 
+Like I said early static spiders are useless in the case of SPA applications because the inner
 [httpx](https://www.python-httpx.org/) client they rely on do not know how to deal with javascript loading.
 So how can we scrape data from SPA applications? There are not many choices here, we need a browser! And we don't only
 need a browser but also a tool able to handle a browser without human interaction commonly called a *driver*.
@@ -34,15 +34,15 @@ is not very detailed about how to install browser drivers. Although you can find
 some tips:
 
 * For Windows users, the simplest thing to do is to install your driver via [chocolatey](https://chocolatey.org/). It is
-an awesome package manager for Windows. Just search *selenium* on the 
+an awesome package manager for Windows. Just search *selenium* on the
 [packages](https://chocolatey.org/packages?q=selenium) page and you will see all drivers available and instructions to
 install them.
-* For Mac OS users, the installation is also really simple via [homebrew](https://brew.sh/index_fr) 
+* For Mac OS users, the installation is also really simple via [homebrew](https://brew.sh/index_fr)
 an awesome package manager for Mac OS. You can for example install *chromedriver* with `brew cask install chromedriver`.
 To search for a specific driver, refer to the different [packages](https://formulae.brew.sh/) pages.
 * For linux users, well.. this is probably the most complicated. There are many ways to do depending on the OS you
-are using, unfortunately I can't give you an all-in-one solution. Nevertheless, for ubuntu users here is a 
-[recipe](https://gist.github.com/ziadoz/3e8ab7e944d02fe872c3454d17af31a5) to install chrome and his driver, and here 
+are using, unfortunately I can't give you an all-in-one solution. Nevertheless, for ubuntu users here is a
+[recipe](https://gist.github.com/ziadoz/3e8ab7e944d02fe872c3454d17af31a5) to install chrome and his driver, and here
 is a [forum question](https://askubuntu.com/questions/870530/how-to-install-geckodriver-in-ubuntu) with a way to install
 *geckodriver* (take care to update the version used in the example).
 
@@ -52,9 +52,9 @@ There are some [Configuration](api.md#configuration) attributes related to a sel
 
 * `selenium_find_timeout`: this indicates the number of seconds `selenium` should wait to search for a DOM element.
 * `selenium_browser`: a [Browser](api.md#browser) enum to indicate the underlying browser used by selenium. Only two
-values are possible for now, `FIREFOX` for the firefox browser and `CHROME` for the chrome browser. Defaults to 
+values are possible for now, `FIREFOX` for the firefox browser and `CHROME` for the chrome browser. Defaults to
 `FIREFOX`, so if you are using chrome make sure to change this attribute.
-* `selenium_driver_log_file`: A path to a file were browser drivers will write debug information. Defaults to 
+* `selenium_driver_log_file`: A path to a file were browser drivers will write debug information. Defaults to
 `driver.log`. You can set it to `None` if you don't want this log file.
 * `selenium_driver_executable_path`: the path to the driver executable used by the spider. Defaults to `geckodriver` for
 firefox and `chromedriver` for chrome. If for some reason, you don't add the driver executable in your `PATH`
@@ -98,13 +98,13 @@ that the structure is like the following:
                     <use href="#large-arrow" xlink:href="#large-arrow"></use>
                 </svg>
             </button>
-        </div>    
+        </div>
     </h4>
     <noscript></noscript>
 </div>
 ```
-We see that the menu title is in a `h4` tag. The description of the methods is inside a 
-`<div class="opblock XXX">..</div>` and inside it we have: 
+We see that the menu title is in a `h4` tag. The description of the methods is inside a
+`<div class="opblock XXX">..</div>` and inside it we have:
 
 * the method name in a `<span class="opblock-summary-method"..>..</span>`
 * the route path in a `span[class="opblock-summary-path]/a/span`
@@ -213,17 +213,17 @@ Testing different HTTP verbs
 Some notes:
 
 * the first obvious changes are the uses of `SeleniumSpider` and `SeleniumResponse` instead of `StaticSpider` and
-`StaticResponse`. The usage of `SeleniumSpider` will not differ from `StaticSpider` but for the 
-[SeleniumResponse](api.md#greenseleniumresponse) class there are no more `css` and `xpath` methods. 
+`StaticResponse`. The usage of `SeleniumSpider` will not differ from `StaticSpider` but for the
+[SeleniumResponse](api.md#greenseleniumresponse) class there are no more `css` and `xpath` methods.
 Instead we have a `drive` attribute which represents a selenium `WebDriver` object and will be used to interact with
 the browser.
-* You may have noticed usage of `_` in the definition of the parse function `parse(_, response: SeleniumResponse)` 
+* You may have noticed usage of `_` in the definition of the parse function `parse(_, response: SeleniumResponse)`
 this is because I don't use the spider object in the function body so I mark it explicitly. It is a good practice in
 my opinion.
 * The `driver` attribute is a selenium webdriver object where we can apply a lot of methods like `find_elements_by_xpath`
-which look familiar to the `StaticResponse.xpath` method. You can look at the entire webdriver api 
+which look familiar to the `StaticResponse.xpath` method. You can look at the entire webdriver api
 [here](https://www.selenium.dev/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webdriver.html).
-* Do not hesitate to look at the [examples](https://github.com/lewoudar/scalpel/tree/master/examples) 
+* Do not hesitate to look at the [examples](https://github.com/lewoudar/scalpel/tree/master/examples)
 for more code snippets to view.
 
 !!! danger
@@ -247,7 +247,7 @@ from scalpel.green import StaticResponse
 def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
     response.follow('/page/2')  # not good
-    # the reason is that for now scalpel cannot guaranteed that the next line 
+    # the reason is that for now scalpel cannot guaranteed that the next line
     # will be executed on the page you expected
     response.xpath('//div')
 ```
@@ -260,7 +260,7 @@ from scalpel.any_io import StaticResponse
 async def parse(_, response: StaticResponse) -> None:
     response.xpath('//p')
     await response.follow('/page/2')  # not good
-    # the reason is that for now scalpel cannot guaranteed that the next line 
+    # the reason is that for now scalpel cannot guaranteed that the next line
     # will be executed on the page you expected
     response.xpath('//div')
 ```

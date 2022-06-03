@@ -20,7 +20,7 @@ class TestReadMp:
         assert f'{decoder} is not callable' == str(exc_info.value)
 
     async def test_should_return_python_objects_when_reading_file_without_custom_decoder(
-            self, tmp_path, create_msgpack_file
+        self, tmp_path, create_msgpack_file
     ):
         given_data = [[1, 2], 'hello', {'fruit': 'apple'}]
         mp_file = tmp_path / 'data.mp'
@@ -30,7 +30,7 @@ class TestReadMp:
             assert [item async for item in read_mp(file)] == given_data
 
     async def test_should_return_python_objects_when_reading_file_with_custom_decoder(
-            self, tmp_path, decode_datetime, create_msgpack_file
+        self, tmp_path, decode_datetime, create_msgpack_file
     ):
         given_data = ['hello', datetime.now()]
         mp_file = tmp_path / 'data.mp'
@@ -67,7 +67,7 @@ class TestWriteMp:
         assert [content] == [item async for item in read_mp(mp_file)]
 
     async def test_should_write_bytes_when_giving_content_in_write_mode_with_custom_encoder(
-            self, tmp_path, encode_datetime, decode_datetime
+        self, tmp_path, encode_datetime, decode_datetime
     ):
         content = {'name': 'Kevin', 'date': datetime.now()}
         mp_file = tmp_path / 'data.mp'
@@ -87,7 +87,7 @@ class TestWriteMp:
         assert content == [item async for item in read_mp(mp_file)]
 
     async def test_should_write_bytes_when_giving_content_in_append_mode_with_custom_encoder(
-            self, tmp_path, encode_datetime, decode_datetime
+        self, tmp_path, encode_datetime, decode_datetime
     ):
         content = ['foo', datetime.now()]
         mp_file = tmp_path / 'data.mp'

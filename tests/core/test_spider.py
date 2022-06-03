@@ -28,11 +28,9 @@ class TestUrlsValidator:
 
         assert f'urls is not a set, list or tuple instance: {urls}' == str(exc_info.value)
 
-    @pytest.mark.parametrize('urls', [
-        ['http://foo.com', b'http://bar.com'],
-        ('http://foo.com', 4),
-        {'http://foo.com', 4.5}
-    ])
+    @pytest.mark.parametrize(
+        'urls', [['http://foo.com', b'http://bar.com'], ('http://foo.com', 4), {'http://foo.com', 4.5}]
+    )
     def test_should_raise_error_when_list_is_composed_of_non_string_elements(self, urls):
         with pytest.raises(TypeError) as exc_info:
             Spider(urls, self.dummy_parse)
@@ -70,11 +68,14 @@ class TestUrlsValidator:
 
         assert 'url file:// must provide a path to a local file' == str(exc_info.value)
 
-    @pytest.mark.parametrize('urls', [
-        ['http://foo.com', 'https://foobar.com'],
-        ('http://bar.com', 'file:///'),
-        {'http://foo.com', 'file:///path/to/unknown/file'}
-    ])
+    @pytest.mark.parametrize(
+        'urls',
+        [
+            ['http://foo.com', 'https://foobar.com'],
+            ('http://bar.com', 'file:///'),
+            {'http://foo.com', 'file:///path/to/unknown/file'},
+        ],
+    )
     def test_should_not_raise_error_when_giving_correct_list_of_urls(self, urls):
         try:
             Spider(urls, self.dummy_parse)
@@ -91,6 +92,7 @@ class TestUrlsValidator:
 
 class TestParseAttribute:
     """Tests spider parse attribute"""
+
     urls = ['http://foo.com']
 
     # noinspection PyTypeChecker
@@ -233,7 +235,7 @@ class TestSpiderStatisticsClass:
             unreachable_urls=unreachable_urls,
             robot_excluded_urls=robot_excluded_urls,
             request_counter=2,
-            total_time=4.6
+            total_time=4.6,
         )
 
         assert reachable_urls == stats.reachable_urls

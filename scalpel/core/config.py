@@ -6,13 +6,13 @@ import uuid
 from enum import Enum, auto
 from importlib import import_module
 from pathlib import Path
-from typing import List, Callable, Any, Dict, Union, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import attr
 from configuror import Config
-from fake_useragent import UserAgent, FakeUserAgentError
+from fake_useragent import FakeUserAgentError, UserAgent
 
-from .message_pack import datetime_encoder, datetime_decoder
+from .message_pack import datetime_decoder, datetime_encoder
 
 logger = logging.getLogger('scalpel')
 
@@ -24,8 +24,9 @@ def check_value_greater_or_equal_than_0(_, attribute: attr.Attribute, value: int
         raise ValueError(message)
 
 
-def check_max_delay_greater_or_equal_than_min_delay(instance: 'Configuration', attribute: attr.Attribute,
-                                                    value: int) -> None:
+def check_max_delay_greater_or_equal_than_min_delay(
+    instance: 'Configuration', attribute: attr.Attribute, value: int
+) -> None:
     if instance.min_request_delay > value:
         message = f'{attribute.name} must be greater or equal than min_request_delay'
         logger.exception(message)
@@ -139,6 +140,7 @@ def str_converter(value: Any) -> Optional[str]:
 
 class Browser(Enum):
     """An enum with different browser values."""
+
     FIREFOX = auto()
     CHROME = auto()
 
@@ -157,8 +159,7 @@ positive_int_validators = [attr.validators.instance_of(int), check_value_greater
 max_delay_validators = [*positive_int_validators, check_max_delay_greater_or_equal_than_min_delay]
 positive_float_validators = [attr.validators.instance_of(float), check_value_greater_or_equal_than_0]
 middleware_validator = attr.validators.deep_iterable(
-    member_validator=attr.validators.is_callable(),
-    iterable_validator=attr.validators.instance_of((list, tuple))
+    member_validator=attr.validators.is_callable(), iterable_validator=attr.validators.instance_of((list, tuple))
 )
 backup_filename_validators = [attr.validators.instance_of(str), check_file_can_be_created]
 selenium_path_validators = [attr.validators.optional(attr.validators.instance_of(str)), check_file_can_be_created]
@@ -223,6 +224,7 @@ class Configuration:
     )
     ```
     """
+
     min_request_delay: int = attr.ib(default=0, converter=int, validator=positive_int_validators)
     max_request_delay: int = attr.ib(default=0, converter=int, validator=max_delay_validators)
     fetch_timeout: float = attr.ib(default=5.0, converter=float, validator=positive_float_validators)
@@ -266,8 +268,10 @@ class Configuration:
         except FakeUserAgentError:
             # for the fallback, I use a recent version found on http://useragentstring.com/
             # not sure if this is the best strategy but we will stick with it for now
-            fallback = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                       'Chrome/41.0.2225.0 Safari/537.36'
+            fallback = (
+                'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/41.0.2225.0 Safari/537.36'
+            )
             logger.debug('returning fallback value for user agent: %s', fallback)
             return fallback
 
@@ -289,8 +293,7 @@ class Configuration:
         # I don't use self.selenium_browser.name attribute because some tests fail here when testing browser attribute
         # with a string
         logger.debug(
-            'returning default executable path to %s since browser selected is %s', executable,
-            self.selenium_browser
+            'returning default executable path to %s since browser selected is %s', executable, self.selenium_browser
         )
         return executable
 

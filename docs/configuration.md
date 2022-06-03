@@ -1,9 +1,9 @@
 # Configuration
- 
+
 Pyscalpel allows you to configure various parameters for your spider using different flexible ways.
- 
+
 ## Instantiating directly the Configuration class
- 
+
 The first obvious way to configure your spider is to use the class `Configuration` directly in your code.
 
 ```python
@@ -30,14 +30,14 @@ set some values on the fly, but it is a good idea to only set your configuration
 To follow the [12 factor app](https://12factor.net/config) principles, you need to store your configuration in your
 environment. One easy way to accomplish this is to use `.env` files.
 
-To know what name you need to use in your `.env` file for a configuration variable, just put the `Configuration` 
+To know what name you need to use in your `.env` file for a configuration variable, just put the `Configuration`
 attribute in **capital letters** and prefixed it with `SCALPEL_` i.e if you want to set the
 `Configuration.min_request_delay` property, you need to set the environment variable `SCALPEL_MIN_REQUEST_DELAY`.
 
-The value of the attribute is simple for string and numbers, but it is less obvious for other types, here are what 
+The value of the attribute is simple for string and numbers, but it is less obvious for other types, here are what
 you can expected for the following cases:
 
-- For boolean values like `Configuration.follow_robots_txt`, the values `true`, `yes`, `y` and `1` are evaluated to 
+- For boolean values like `Configuration.follow_robots_txt`, the values `true`, `yes`, `y` and `1` are evaluated to
 `True` and values `false`, `no`, `n` and `0` are evaluated to `False`.
 - For `Enum` like [Browser](api.md#browser), just write the enum values like `FIREFOX` or `CHROME`.
 - For callables like `Configuration.msgpack_encoder` just write the path to the callable using dot notation. For example

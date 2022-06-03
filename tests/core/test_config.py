@@ -8,7 +8,7 @@ import pytest
 from configuror import DecodeError
 from fake_useragent import FakeUserAgentError
 
-from scalpel.core.config import Configuration, bool_converter, callable_list_converter, Browser
+from scalpel.core.config import Browser, Configuration, bool_converter, callable_list_converter
 from scalpel.core.message_pack import datetime_decoder, datetime_encoder
 from tests.helpers import assert_dicts
 
@@ -87,12 +87,15 @@ class TestCallableListConverter:
         with pytest.raises(AttributeError):
             callable_list_converter('foo.bar')
 
-    @pytest.mark.parametrize('callable_string', [
-        'custom_math.add:custom_math.minus',
-        'custom_math.add, custom_math.minus',
-        'custom_math.add;  custom_math.minus',
-        'custom_math.add custom_math.minus'
-    ])
+    @pytest.mark.parametrize(
+        'callable_string',
+        [
+            'custom_math.add:custom_math.minus',
+            'custom_math.add, custom_math.minus',
+            'custom_math.add;  custom_math.minus',
+            'custom_math.add custom_math.minus',
+        ],
+    )
     def test_should_return_correct_list_of_callable_when_given_correct_string_input(self, math_module, callable_string):
         assert [math_module.add, math_module.minus] == callable_list_converter(callable_string)
 
@@ -100,12 +103,10 @@ class TestCallableListConverter:
         assert [math_module.minus, math_module.add] == callable_list_converter(['custom_math.minus', 'custom_math.add'])
 
 
-@pytest.mark.parametrize(('attribute', 'value'), [
-    ('min_request_delay', -1),
-    ('max_request_delay', -1),
-    ('fetch_timeout', -1.0),
-    ('selenium_find_timeout', -1.0)
-])
+@pytest.mark.parametrize(
+    ('attribute', 'value'),
+    [('min_request_delay', -1), ('max_request_delay', -1), ('fetch_timeout', -1.0), ('selenium_find_timeout', -1.0)],
+)
 def test_should_raise_error_when_value_is_less_than_0(attribute, value):
     with pytest.raises(ValueError) as exc_info:
         Configuration(**{attribute: value})
@@ -119,19 +120,13 @@ class TestRequestDelayAttributes:
     Checks request_delay property
     """
 
-    @pytest.mark.parametrize('parameter', [
-        {'min_request_delay': 'foo'},
-        {'max_request_delay': 'foo'}
-    ])
+    @pytest.mark.parametrize('parameter', [{'min_request_delay': 'foo'}, {'max_request_delay': 'foo'}])
     def test_should_raise_error_when_value_does_not_represent_integer(self, parameter):
         with pytest.raises(ValueError):
             Configuration(**parameter)
 
     # noinspection PyTypeChecker
-    @pytest.mark.parametrize(('min_delay', 'max_delay'), [
-        ('1', '2'),
-        (1.5, 2.1)
-    ])
+    @pytest.mark.parametrize(('min_delay', 'max_delay'), [('1', '2'), (1.5, 2.1)])
     def test_should_convert_string_or_float_to_integer(self, min_delay, max_delay):
         config = Configuration(min_request_delay=min_delay, max_request_delay=max_delay)
         assert 1 == config.min_request_delay
@@ -153,10 +148,13 @@ class TestRequestDelayAttributes:
         except ValueError:
             pytest.fail('unexpected error when min delay and max delay equal to 1')
 
-    @pytest.mark.parametrize(('min_delay', 'max_delay'), [
-        (1, 1),
-        (2, 5),
-    ])
+    @pytest.mark.parametrize(
+        ('min_delay', 'max_delay'),
+        [
+            (1, 1),
+            (2, 5),
+        ],
+    )
     def test_request_property_is_between_min_and_max_delay(self, min_delay, max_delay):
         config = Configuration(min_request_delay=min_delay, max_request_delay=max_delay)
 
@@ -165,19 +163,18 @@ class TestRequestDelayAttributes:
 
 
 class TestTimeoutAttributes:
-
-    @pytest.mark.parametrize('parameter', [
-        {'fetch_timeout': 'foo'},
-        {'selenium_find_timeout': 'foo'},
-    ])
+    @pytest.mark.parametrize(
+        'parameter',
+        [
+            {'fetch_timeout': 'foo'},
+            {'selenium_find_timeout': 'foo'},
+        ],
+    )
     def test_should_raise_error_when_timeout_is_not_float(self, parameter):
         with pytest.raises(ValueError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize(('fetch_timeout', 'selenium_find_timeout'), [
-        ('1.0', '1'),
-        (1, 2)
-    ])
+    @pytest.mark.parametrize(('fetch_timeout', 'selenium_find_timeout'), [('1.0', '1'), (1, 2)])
     def test_should_convert_string_or_int_to_float(self, fetch_timeout, selenium_find_timeout):
         config = Configuration(fetch_timeout=fetch_timeout, selenium_find_timeout=selenium_find_timeout)
         assert float(fetch_timeout) == config.fetch_timeout
@@ -228,10 +225,7 @@ class TestFollowRobotsTxt:
         with pytest.raises(ValueError):
             Configuration(follow_robots_txt='foo')
 
-    @pytest.mark.parametrize(('given_value', 'expected_value'), [
-        ('1', True),
-        ('no', False)
-    ])
+    @pytest.mark.parametrize(('given_value', 'expected_value'), [('1', True), ('no', False)])
     def test_should_convert_string_to_correct_boolean_value(self, given_value, expected_value):
         config = Configuration(follow_robots_txt=given_value)
         assert config.follow_robots_txt is expected_value
@@ -282,10 +276,7 @@ class TestSeleniumDriverLogPath:
         path = Path(config.selenium_driver_log_file)
         assert path.is_absolute()
 
-    @pytest.mark.parametrize(('given', 'expected'), [
-        ('foo.log', 'foo.log'),
-        (4, '4')
-    ])
+    @pytest.mark.parametrize(('given', 'expected'), [('foo.log', 'foo.log'), (4, '4')])
     def test_should_convert_given_values_when_needed(self, given, expected):
         config = Configuration(selenium_driver_log_file=given)
         assert expected == config.selenium_driver_log_file
@@ -318,12 +309,15 @@ class TestSeleniumBrowser:
             pytest.fail('unexpected error when setting selenium browser attribute')
 
     # noinspection PyTypeChecker
-    @pytest.mark.parametrize(('str_browser', 'browser'), [
-        ('firefox', Browser.FIREFOX),
-        ('Chrome', Browser.CHROME),
-        ('FIREFOX', Browser.FIREFOX),
-        ('chrome', Browser.CHROME)
-    ])
+    @pytest.mark.parametrize(
+        ('str_browser', 'browser'),
+        [
+            ('firefox', Browser.FIREFOX),
+            ('Chrome', Browser.CHROME),
+            ('FIREFOX', Browser.FIREFOX),
+            ('chrome', Browser.CHROME),
+        ],
+    )
     def test_should_not_raise_error_when_value_is_a_compatible_string(self, str_browser, browser):
         try:
             config = Configuration(selenium_browser=str_browser)
@@ -353,10 +347,9 @@ class TestSeleniumDriverExecutablePath:
         config = Configuration(selenium_driver_executable_path=executable)
         assert f'{executable.absolute()}' == config.selenium_driver_executable_path
 
-    @pytest.mark.parametrize(('browser', 'expected'), [
-        (Browser.FIREFOX, 'geckodriver'),
-        (Browser.CHROME, 'chromedriver')
-    ])
+    @pytest.mark.parametrize(
+        ('browser', 'expected'), [(Browser.FIREFOX, 'geckodriver'), (Browser.CHROME, 'chromedriver')]
+    )
     def test_should_return_correct_default_value_when_no_one_is_given(self, browser, expected):
         config = Configuration(selenium_browser=browser)
         assert expected == config.selenium_driver_executable_path
@@ -408,39 +401,43 @@ class TestRobotsCacheFolder:
 class TestMiddlewareAttributes:
     """Checks attributes response_middlewares and item_processors"""
 
-    @pytest.mark.parametrize('parameter', [
-        {'response_middlewares': {}},
-        {'response_middlewares': set()},
-        {'item_processors': {}},
-        {'item_processors': set()}
-    ])
+    @pytest.mark.parametrize(
+        'parameter',
+        [
+            {'response_middlewares': {}},
+            {'response_middlewares': set()},
+            {'item_processors': {}},
+            {'item_processors': set()},
+        ],
+    )
     def test_should_raise_error_when_value_is_not_a_sequence(self, parameter):
         with pytest.raises(TypeError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize('parameter', [
-        {'response_middlewares': [lambda x: x, 'foo']},
-        {'item_processors': (lambda x: x, 'bar')}
-    ])
+    @pytest.mark.parametrize(
+        'parameter', [{'response_middlewares': [lambda x: x, 'foo']}, {'item_processors': (lambda x: x, 'bar')}]
+    )
     def test_should_raise_error_when_item_in_iterable_is_not_a_callable(self, parameter):
         with pytest.raises(TypeError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize('parameter', [
-        {'response_middlewares': 'custom_math.add hello'},
-        {'item_processors': 'custom_math.add hello'}
-    ])
+    @pytest.mark.parametrize(
+        'parameter', [{'response_middlewares': 'custom_math.add hello'}, {'item_processors': 'custom_math.add hello'}]
+    )
     @pytest.mark.usefixtures('math_module')
     def test_should_raise_error_when_string_path_does_not_represent_a_callable(self, parameter):
         with pytest.raises(ValueError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize('parameter', [
-        {'response_middlewares': [lambda x: x]},
-        {'response_middlewares': (lambda x: x,)},
-        {'item_processors': [lambda x: x]},
-        {'item_processors': (lambda x: x,)}
-    ])
+    @pytest.mark.parametrize(
+        'parameter',
+        [
+            {'response_middlewares': [lambda x: x]},
+            {'response_middlewares': (lambda x: x,)},
+            {'item_processors': [lambda x: x]},
+            {'item_processors': (lambda x: x,)},
+        ],
+    )
     def test_should_not_raise_error_when_giving_correct_sequence(self, parameter):
         try:
             Configuration(**parameter)
@@ -451,7 +448,7 @@ class TestMiddlewareAttributes:
     def test_should_convert_string_to_callable_list(self, math_module):
         config = Configuration(
             item_processors='custom_math.add, custom_math.minus',
-            response_middlewares='custom_math.add:custom_math.minus'
+            response_middlewares='custom_math.add:custom_math.minus',
         )
 
         assert [math_module.add, math_module.minus] == config.response_middlewares
@@ -465,28 +462,19 @@ class TestMiddlewareAttributes:
 class TestMsgPackAttributes:
     """Tests msgpack_encoder and msgpack decoder attributes"""
 
-    @pytest.mark.parametrize('parameter', [
-        {'msgpack_encoder': 4},
-        {'msgpack_decoder': 4}
-    ])
+    @pytest.mark.parametrize('parameter', [{'msgpack_encoder': 4}, {'msgpack_decoder': 4}])
     def test_should_raise_error_when_msgpack_encoder_or_decoder_is_not_a_callable(self, parameter):
         with pytest.raises(TypeError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize('parameter', [
-        {'msgpack_decoder': 'hello'},
-        {'msgpack_encoder': 'hello'}
-    ])
+    @pytest.mark.parametrize('parameter', [{'msgpack_decoder': 'hello'}, {'msgpack_encoder': 'hello'}])
     def test_should_raise_error_when_msgpack_encoder_or_decoder_is_not_a_string_representing_a_callable(
-            self, parameter
+        self, parameter
     ):
         with pytest.raises(ValueError):
             Configuration(**parameter)
 
-    @pytest.mark.parametrize('parameter', [
-        {'msgpack_encoder': lambda x: x},
-        {'msgpack_decoder': lambda x: x}
-    ])
+    @pytest.mark.parametrize('parameter', [{'msgpack_encoder': lambda x: x}, {'msgpack_decoder': lambda x: x}])
     def test_should_not_raise_error_when_msgpack_encoder_or_decoder_is_a_callable(self, parameter):
         try:
             Configuration(**parameter)
@@ -495,16 +483,13 @@ class TestMsgPackAttributes:
 
     # noinspection PyTypeChecker
     def test_should_not_raise_error_when_msgpack_encoder_or_decoder_is_a_string_representing_a_callable(
-            self, math_module
+        self, math_module
     ):
         config = None
         try:
             # ok, the functions don't look as normal msgpack encoder or decoder, but it is just to test that the feature
             # works as expected
-            config = Configuration(
-                msgpack_encoder='custom_math.add',
-                msgpack_decoder='custom_math.minus'
-            )
+            config = Configuration(msgpack_encoder='custom_math.add', msgpack_decoder='custom_math.minus')
         except Exception as e:
             pytest.fail(f'unexpected error when instantiating msgpack encoder or decoder: {e}')
 
@@ -519,10 +504,13 @@ class TestMsgPackAttributes:
 class TestMethodGetDictWithLowerKeys:
     """tests method _get_dict_with_lower_keys"""
 
-    @pytest.mark.parametrize(('given_dict', 'expected_dict'), [
-        ({'foo': 'bar', 'fruit': 'pineapple'}, {'foo': 'bar', 'fruit': 'pineapple'}),
-        ({'FOO': 2, 'Fruit': 'TOMATO'}, {'foo': 2, 'fruit': 'TOMATO'})
-    ])
+    @pytest.mark.parametrize(
+        ('given_dict', 'expected_dict'),
+        [
+            ({'foo': 'bar', 'fruit': 'pineapple'}, {'foo': 'bar', 'fruit': 'pineapple'}),
+            ({'FOO': 2, 'Fruit': 'TOMATO'}, {'foo': 2, 'fruit': 'TOMATO'}),
+        ],
+    )
     def test_should_return_correct_dict_given_correct_input(self, given_dict, expected_dict):
         assert_dicts(expected_dict, Configuration._get_dict_with_lower_keys(given_dict))
 
@@ -542,8 +530,8 @@ class TestMethodScalpelAttributes:
                 'foo': 'bar',
                 'USER_AGENT': 'Mozilla/5.0',
                 'fruit': 'pineapple',
-                '_config': 'foobar'
-            }
+                '_config': 'foobar',
+            },
         }
         expected = {'min_request_delay': 1, 'user_agent': 'Mozilla/5.0'}
 

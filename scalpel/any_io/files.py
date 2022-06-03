@@ -1,7 +1,7 @@
 """Utility async functions to read and write mp files."""
 import logging
 from pathlib import Path
-from typing import Union, AsyncIterator, Any, Callable
+from typing import Any, AsyncIterator, Callable, Union
 
 import anyio
 import msgpack
