@@ -36,6 +36,9 @@ jobs:
       - name: Lint
         run: nox -s lint
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
+      - name: Scan packages for vulnerabilities
+        run: nox -s safety
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.9'
       - name: Tests
         run: nox -s tests-${{ matrix.python }}
       - name: Upload coverage to Codecov
