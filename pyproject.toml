@@ -60,7 +60,7 @@ respx = "^0.19.0"
 pre-commit = "^2.19.0"
 isort = "^5.10.1"
 black = "^22.3.0"
-safety = "^1.10.3"
+safety = "^2.0.0"
 
 [tool.isort]
 line_length = 120

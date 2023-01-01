@@ -24,7 +24,7 @@ def lint(session):
 @nox.session(python=PYTHON_VERSIONS[-1])
 def safety(session):
     """Checks vulnerabilities of the installed packages."""
-    session.install('poetry>=1.0.0,<2.0.0')
+    session.install('poetry>=1.0.0,<1.3.0')
     session.run('poetry', 'install')
     session.run('safety', 'check')
 
@@ -42,7 +42,7 @@ def tests(session):
             session.error(f'{item} is not part of {to_test}')
     to_test = session.posargs if session.posargs else to_test
 
-    session.install('poetry>=1.0.0,<2.0.0')
+    session.install('poetry>=1.0.0,<1.3.0')
     session.run('poetry', 'install', '-E', 'full')
     for part in to_test:
         arguments = ['coverage', 'run', f'--source=scalpel/{part}', '-m', 'pytest', f'tests/{part}']
@@ -58,7 +58,7 @@ def tests(session):
 @nox.session(python=PYTHON_VERSIONS[-1])
 def docs(session):
     """Builds the documentation."""
-    session.install('poetry>=1.0.0,<2.0.0')
+    session.install('poetry>=1.0.0,<1.3.0')
     session.run('poetry', 'install')
     session.run('mkdocs', 'build', '--clean')
 
@@ -68,7 +68,7 @@ def deploy(session):
     """
     Deploys on pypi.
     """
-    session.install('poetry>=1.0.0,<2.0.0')
+    session.install('poetry>=1.0.0,<1.3.0')
     if 'POETRY_PYPI_TOKEN_PYPI' not in os.environ:
         session.error('you must specify your pypi token api to deploy your package')
 
