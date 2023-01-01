@@ -46,7 +46,7 @@ trio = ["trio"]
 full = ["gevent", "trio"]
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.0"
+pytest = "^5.2"
 nox = "^2022.1.0"
 flake8 = "^3.7.9"
 bandit = "^1.6.2"
