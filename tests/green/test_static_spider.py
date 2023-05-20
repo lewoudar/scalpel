@@ -298,7 +298,7 @@ class TestStaticSpider:
         static_spider.save_item(fruit_2)
         out, _ = capsys.readouterr()
 
-        assert [fruit_1, fruit_2] == [item for item in read_mp(f'{backup.resolve()}')]
+        assert [fruit_1, fruit_2] == list(read_mp(f'{backup.resolve()}'))
         assert "I'm a processor" in out
 
     # simple test of run and statistics methods, more reliable tests are below
