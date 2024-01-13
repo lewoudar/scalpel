@@ -3,7 +3,7 @@ mkdocs-material==7.3.6
 attrs==19.3.0
 configuror==0.2.0
 trio==0.17.0
-gevent==20.9.0
+gevent==23.9.0
 anyio
 selenium==3.141.0
 idna>=2.0.0,<3.0.0
