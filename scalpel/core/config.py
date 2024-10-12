@@ -42,7 +42,7 @@ def check_file_presence(_, attribute: attr.Attribute, filename: str) -> None:
 
 
 def check_driver_presence(config: 'Configuration', attribute: attr.Attribute, filename: str) -> None:
-    if filename in ['chromedriver', 'geckodriver']:
+    if filename in {'chromedriver', 'geckodriver'}:
         return
     check_file_presence(config, attribute, filename)
 
@@ -115,10 +115,10 @@ def callable_list_converter(value: Any) -> Union[List[Callable], Any]:
         logger.debug('%s is not a string or a list of strings, returned it as it is', value)
         return value
 
-    callables = []
-    for str_callable in str_callable_list:
-        callables.append(get_callable_from_string(str_callable))
-
+    callables = [
+        get_callable_from_string(str_callable)
+        for str_callable in str_callable_list
+    ]
     logger.debug('returning callables: %s', callables)
     return callables
 
@@ -133,9 +133,7 @@ def msgpack_converter(value: Any) -> Union[Callable, Any]:
 def str_converter(value: Any) -> Optional[str]:
     if value is None:
         return
-    if isinstance(value, Path):
-        return str(value.absolute())
-    return str(value)
+    return str(value.absolute()) if isinstance(value, Path) else str(value)
 
 
 class Browser(Enum):

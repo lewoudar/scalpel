@@ -16,8 +16,6 @@ class RobotsMixin:
         delay_mapping: Dict[str, Union[int, float]],
         default_delay: Union[int, float],
     ) -> Union[int, float]:
-        pass
-
         crawl_delay = robots_parser.crawl_delay('*')
         if crawl_delay is not None:
             delay_mapping[host] = crawl_delay

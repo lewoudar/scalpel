@@ -138,7 +138,7 @@ class TestAsyncFile:
         mocker.patch('scalpel.green.utils.io.AsyncFile.readline', return_value='')
         async_file = AsyncFile(self._io)
 
-        assert [] == [line for line in async_file]
+        assert [] == list(async_file)
 
     def test_should_return_custom_io_property_not_defined_in_async_file_class(self):
         async_file = AsyncFile(self._io)
@@ -254,8 +254,6 @@ class TestOpenFile:
 
         result = []
         with open_file(dummy_file) as f:
-            for line in f:
-                result.append(line)
-
+            result.extend(iter(f))
         assert f.closed
         assert input_data == result

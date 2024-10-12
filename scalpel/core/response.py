@@ -22,30 +22,21 @@ class BaseStaticResponse:
     @property
     def url(self) -> str:
         """The url associated to the response object."""
-        if self._url:
-            _url = self._url
-        else:
-            _url = f'{self._httpx_response.url}'
+        _url = self._url if self._url else f'{self._httpx_response.url}'
         logger.debug('returning response url: %s', _url)
         return _url
 
     @property
     def headers(self) -> Dict[str, str]:
         """A `dict` of http headers in case of an HTTP url. Empty `dict` otherwise."""
-        if self._url:
-            _headers = {}
-        else:
-            _headers = dict(self._httpx_response.headers)
+        _headers = {} if self._url else dict(self._httpx_response.headers)
         logger.debug('returning response headers:\n %s', _headers)
         return _headers
 
     @property
     def text(self) -> str:
         """The string content associated to the url."""
-        if self._text:
-            _text = self._text
-        else:
-            _text = self._httpx_response.text
+        _text = self._text if self._text else self._httpx_response.text
         logger.debug('returning response text content:\n %s', _text)
         return _text
 
@@ -62,10 +53,7 @@ class BaseStaticResponse:
     @property
     def cookies(self) -> Dict[str, str]:
         """A `dict` of cookies associated to the response in case of an HTTP url. Empty `dict` otherwise."""
-        if self._url:
-            _cookies = {}
-        else:
-            _cookies = dict(self._httpx_response.cookies)
+        _cookies = {} if self._url else dict(self._httpx_response.cookies)
         logger.debug('returning response cookies: %s', _cookies)
         return _cookies
 

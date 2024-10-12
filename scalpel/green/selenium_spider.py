@@ -67,9 +67,8 @@ class SeleniumSpider(SeleniumGetMixin, StaticSpider, SeleniumDriverMixin):
         error_message = ''
         if ur.scheme == 'file':
             error_message = f'unable to open file {url}'
-        else:
-            if self._is_url_excluded_for_spider(url):
-                return
+        elif self._is_url_excluded_for_spider(url):
+            return
         unreachable, fetch_time = self._get_resource(url, error_message)
         if unreachable:
             self.unreachable_urls.add(url)

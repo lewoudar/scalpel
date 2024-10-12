@@ -37,8 +37,7 @@ def read_mp(filename: Union[str, Path], decoder: Callable = None) -> Iterator[An
     with open_file(filename, 'rb') as f:
         unpacker = msgpack.Unpacker(f, object_hook=decoder)
         logger.debug('reading data from file %s', filename)
-        for data in unpacker:
-            yield data
+        yield from unpacker
 
 
 def write_mp(filename: Union[str, Path], data: Any, mode: str = 'a', encoder: Callable = None) -> int:

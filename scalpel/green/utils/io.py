@@ -73,10 +73,10 @@ class AsyncFile:
 
     def __iter__(self) -> Iterator[AnyStr]:
         while True:
-            line = self.readline()
-            if not line:
+            if line := self.readline():
+                yield line
+            else:
                 break
-            yield line
 
     def __getattr__(self, item: str) -> Any:
         return getattr(self._wrapper, item)
